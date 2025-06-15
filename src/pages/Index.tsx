@@ -9,6 +9,7 @@ import { QuickAccess } from "@/components/mobile/QuickAccess";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
 import { PWAInstaller } from "@/components/PWAInstaller";
+import { ProgramPreview } from "@/components/mobile/ProgramPreview";
 import { usePrefetch } from "@/hooks/usePrefetch";
 import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { useMemoryManager } from "@/hooks/useMemoryManager";
@@ -57,11 +58,20 @@ const Index = () => {
           <CountdownTimer />
         </motion.div>
 
-        {/* São Cristóvão Tracker */}
+        {/* Program Preview */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <ProgramPreview />
+        </motion.div>
+
+        {/* São Cristóvão Tracker */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
         >
           <SaoCristovaoTracker />
         </motion.div>
@@ -70,7 +80,7 @@ const Index = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
           <NewsCarousel />
         </motion.div>
@@ -79,7 +89,7 @@ const Index = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
         >
           <PhotoCarousel />
         </motion.div>
@@ -88,7 +98,7 @@ const Index = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
         >
           <QuickAccess />
         </motion.div>
