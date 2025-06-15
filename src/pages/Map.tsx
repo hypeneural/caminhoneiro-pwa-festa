@@ -3,6 +3,7 @@ import { Map as MapIcon, Navigation, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
+import ProcissaoMap from "@/components/map/ProcissaoMap";
 
 const Map = () => {
   return (
@@ -33,28 +34,7 @@ const Map = () => {
       {/* Main content */}
       <main className="pt-16 pb-20">
         {/* Map Container */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="h-[50vh] bg-muted relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-trucker-blue/20 to-trucker-green/20 flex items-center justify-center">
-            <div className="text-center">
-              <MapIcon className="w-16 h-16 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Mapa da Procissão</p>
-            </div>
-          </div>
-          
-          {/* Current Location Indicator */}
-          <motion.div
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-          >
-            <div className="w-4 h-4 bg-trucker-red rounded-full shadow-lg"></div>
-          </motion.div>
-        </motion.div>
+        <ProcissaoMap />
 
         {/* Location Details */}
         <motion.div
