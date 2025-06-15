@@ -120,10 +120,8 @@ export const PhotoCarousel = React.memo(() => {
   }
 
   const renderPhotoItem = React.useCallback((photo: any, index: number, isVisible: boolean) => {
-    return measureRender(() => (
-      <PhotoCard key={photo.id} photo={photo} index={index} />
-    ));
-  }, [measureRender]);
+    return <PhotoCard key={photo.id} photo={photo} index={index} />;
+  }, []);
 
   return (
     <ErrorBoundary fallback={CarouselErrorFallback}>

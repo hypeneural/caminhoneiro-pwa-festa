@@ -104,10 +104,8 @@ export const NewsCarousel = React.memo(() => {
   }
 
   const renderNewsItem = React.useCallback((news: any, index: number, isVisible: boolean) => {
-    return measureRender(() => (
-      <NewsCard key={news.id} news={news} index={index} />
-    ));
-  }, [measureRender]);
+    return <NewsCard key={news.id} news={news} index={index} />;
+  }, []);
 
   return (
     <ErrorBoundary fallback={CarouselErrorFallback}>
