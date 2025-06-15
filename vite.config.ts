@@ -164,11 +164,8 @@ VitePWA({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('framer-motion')) {
               return 'vendor';
-            }
-            if (id.includes('framer-motion')) {
-              return 'motion';
             }
             if (id.includes('@radix-ui')) {
               return 'ui';
