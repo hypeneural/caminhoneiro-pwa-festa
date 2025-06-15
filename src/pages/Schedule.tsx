@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 
 const Schedule = () => {
   const scheduleItems = [
@@ -187,6 +188,8 @@ const Schedule = () => {
           </motion.div>
         </motion.div>
       </main>
+
+      <BottomNavigation />
     </div>
   );
 };

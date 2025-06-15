@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Map as MapIcon, Navigation, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 
 const Map = () => {
   return (
@@ -123,6 +124,8 @@ const Map = () => {
           </div>
         </motion.div>
       </main>
+
+      <BottomNavigation />
     </div>
   );
 };

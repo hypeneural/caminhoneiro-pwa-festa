@@ -58,22 +58,46 @@ const navigationTabs: BottomNavTab[] = [
   }
 ];
 
+// Pages that are accessible through "Mais" menu
+const moreMenuRoutes = [
+  "/radio",
+  "/videos", 
+  "/historia",
+  "/noticias",
+  "/rota",
+  "/cameras",
+  "/stories",
+  "/about",
+  "/contact",
+  "/settings"
+];
+
 export function BottomNavigation() {
   const location = useLocation();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const getTabForRoute = (route: string) => {
-    return navigationTabs.find(tab => tab.route === route) || navigationTabs[0];
+    // Check if route is in main navigation
+    const mainNavTab = navigationTabs.find(tab => tab.route === route);
+    if (mainNavTab) return mainNavTab;
+    
+    // Check if route is in "Mais" menu
+    if (moreMenuRoutes.includes(route)) {
+      return navigationTabs.find(tab => tab.id === "mais") || navigationTabs[0];
+    }
+    
+    return navigationTabs[0]; // Default to home
   };
 
   const currentTab = getTabForRoute(location.pathname);
+  const isMoreMenuActive = moreMenuRoutes.includes(location.pathname);
 
   return (
     <>
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border/50 shadow-lg pb-safe">
         <div className="flex items-center justify-around h-16 px-2">
           {navigationTabs.map((tab) => {
-            const isActive = tab.id === currentTab.id;
+            const isActive = tab.id === currentTab.id || (tab.id === "mais" && isMoreMenuActive);
             const isMoreTab = tab.id === "mais";
 
             if (isMoreTab) {
@@ -86,14 +110,32 @@ export function BottomNavigation() {
                 >
                   <button
                     onClick={() => setIsMoreMenuOpen(true)}
-                    className="flex flex-col items-center justify-center w-full py-2 px-1 rounded-lg transition-colors relative text-muted-foreground hover:text-foreground"
+                    className={`flex flex-col items-center justify-center w-full py-2 px-1 rounded-lg transition-colors relative ${
+                      isActive 
+                        ? 'text-trucker-blue' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
                     <div className="relative">
-                      <tab.icon className="w-6 h-6 text-muted-foreground" />
+                      <tab.icon className={`w-6 h-6 ${
+                        isActive ? 'text-trucker-blue' : 'text-muted-foreground'
+                      }`} />
                     </div>
-                    <span className="text-xs font-medium mt-1 text-muted-foreground">
+                    <span className={`text-xs font-medium mt-1 ${
+                      isActive ? 'text-trucker-blue' : 'text-muted-foreground'
+                    }`}>
                       {tab.title}
                     </span>
+                    
+                    {/* Active indicator */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-trucker-blue rounded-full"
+                        initial={false}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    )}
                   </button>
                 </motion.div>
               );

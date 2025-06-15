@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Camera, Grid3x3, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 
 const Gallery = () => {
   return (
@@ -63,6 +64,8 @@ const Gallery = () => {
           </div>
         </motion.div>
       </main>
+
+      <BottomNavigation />
     </div>
   );
 };
