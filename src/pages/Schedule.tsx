@@ -8,6 +8,7 @@ import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { CountdownBadge } from "@/components/mobile/CountdownBadge";
 import { EventCard } from "@/components/mobile/EventCard";
 import { PullToRefresh } from "@/components/mobile/PullToRefresh";
+import { NavigationActions } from "@/components/ui/navigation-actions";
 
 const Schedule = () => {
   const [selectedDay, setSelectedDay] = useState<'saturday' | 'sunday'>('saturday');
@@ -347,22 +348,22 @@ const Schedule = () => {
                         <span>Estacionamento disponível</span>
                       </div>
                     </div>
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                    <NavigationActions 
+                      coordinates={{
+                        latitude: -27.24173,
+                        longitude: -48.646721
+                      }}
+                      address="Capela Santa Teresinha, Rua Santa Teresinha, 123 - Centro, Tijucas - SC"
+                      title="Como chegar na Capela"
                     >
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => {
-                          if (navigator.vibrate) navigator.vibrate(50);
-                          window.open('https://maps.google.com/?q=Capela+Santa+Teresinha+Tijucas', '_blank');
-                        }}
                         className="border-green-300/50 text-green-700 hover:bg-green-100/50 backdrop-blur-sm"
                       >
                         Ver Mapa
                       </Button>
-                    </motion.div>
+                    </NavigationActions>
                   </div>
                 </Card>
               </motion.div>

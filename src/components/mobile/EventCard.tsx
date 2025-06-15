@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { NavigationActions } from '@/components/ui/navigation-actions';
 
 interface EventCardProps {
   event: {
@@ -407,24 +408,25 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
                     </div>
                   )}
 
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (navigator.vibrate) navigator.vibrate(50);
-                        window.open(`https://maps.google.com/?q=${encodeURIComponent(event.address || event.location)}`, '_blank');
+                  {event.address && (
+                    <NavigationActions
+                      coordinates={{
+                        latitude: -27.24173,
+                        longitude: -48.646721
                       }}
-                      className="w-full bg-background/50 hover:bg-trucker-blue/10 border-trucker-blue/30"
+                      address={event.address}
+                      title={`Como chegar em ${event.location}`}
                     >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Abrir no Google Maps
-                    </Button>
-                  </motion.div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="w-full bg-background/50 hover:bg-trucker-blue/10 border-trucker-blue/30"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Abrir navegação
+                      </Button>
+                    </NavigationActions>
+                  )}
                 </motion.div>
               </motion.div>
             )}
