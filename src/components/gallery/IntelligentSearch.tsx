@@ -1,49 +1,37 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { Search, Filter, X, Truck, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Filter, Truck, Calendar, MapPin, Camera, Zap } from 'lucide-react';
+import Fuse from 'fuse.js';
+
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TouchFeedback } from '@/components/ui/touch-feedback';
-import Fuse from 'fuse.js';
-import { Photo, GalleryFilters } from '@/types/gallery';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { SmartFiltersModal } from './SmartFiltersModal';
+import { PlateSearchModal } from './PlateSearchModal';
+import { SortModal } from './SortModal';
+import { GalleryFilters } from '@/types/gallery';
 
 interface IntelligentSearchProps {
-  photos: Photo[];
   filters: GalleryFilters;
   onFiltersChange: (filters: Partial<GalleryFilters>) => void;
   onClearFilters: () => void;
   isFiltersActive: boolean;
+  photos: any[];
 }
 
-interface SearchSuggestion {
-  type: 'plate' | 'category' | 'photographer' | 'tag' | 'location';
-  value: string;
-  count: number;
-  icon: React.ComponentType<any>;
-}
-
-const QUICK_FILTERS = [
-  { label: 'Hoje', value: 'today', icon: Calendar },
-  { label: 'Caminhões', value: 'caminhoes', icon: Truck },
-  { label: 'Carretas', value: 'carretas', icon: Truck },
-  { label: 'Família', value: 'familia', icon: Camera },
-  { label: 'Shows', value: 'shows', icon: Zap },
-];
-
-export function IntelligentSearch({
-  photos,
-  filters,
-  onFiltersChange,
-  onClearFilters,
-  isFiltersActive
+export function IntelligentSearch({ 
+  filters, 
+  onFiltersChange, 
+  onClearFilters, 
+  isFiltersActive,
+  photos
 }: IntelligentSearchProps) {
-  const [searchQuery, setSearchQuery] = useState(filters.searchQuery || '');
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [searchInput, setSearchInput] = useState(filters.searchQuery);
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [isPlateSearchOpen, setIsPlateSearchOpen] = useState(false);
+  const [isSortModalOpen, setIsSortModalOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const isMobile = useIsMobile();
 
   // Fuse.js setup for intelligent search
   const fuse = useMemo(() => {
@@ -52,347 +40,240 @@ export function IntelligentSearch({
         { name: 'title', weight: 0.3 },
         { name: 'description', weight: 0.2 },
         { name: 'vehiclePlate', weight: 0.4 },
-        { name: 'tags', weight: 0.1 },
-        { name: 'photographer', weight: 0.1 },
-        { name: 'category', weight: 0.2 }
+        { name: 'tags', weight: 0.1 }
       ],
       threshold: 0.3,
-      includeScore: true,
-      includeMatches: true
+      includeScore: true
     };
     return new Fuse(photos, options);
   }, [photos]);
 
-  // Generate intelligent suggestions
-  const generateSuggestions = useCallback((query: string) => {
-    if (query.length < 2) {
+  // Generate smart suggestions
+  useEffect(() => {
+    if (searchInput.length > 1) {
+      const results = fuse.search(searchInput);
+      const suggestions = results
+        .slice(0, 5)
+        .map(result => result.item.title || result.item.vehiclePlate || result.item.description)
+        .filter(Boolean);
+      setSuggestions(suggestions);
+      setShowSuggestions(true);
+    } else {
       setSuggestions([]);
-      return;
+      setShowSuggestions(false);
     }
-
-    const suggestions: SearchSuggestion[] = [];
-    
-    // Vehicle plates suggestions
-    const plateMatches = photos
-      .filter(photo => photo.vehiclePlate?.toLowerCase().includes(query.toLowerCase()))
-      .map(photo => photo.vehiclePlate!)
-      .filter((plate, index, self) => self.indexOf(plate) === index)
-      .slice(0, 3);
-      
-    plateMatches.forEach(plate => {
-      suggestions.push({
-        type: 'plate',
-        value: plate,
-        count: photos.filter(p => p.vehiclePlate === plate).length,
-        icon: Truck
-      });
-    });
-
-    // Category suggestions
-    const categoryMatches = photos
-      .filter(photo => photo.category.toLowerCase().includes(query.toLowerCase()))
-      .map(photo => photo.category)
-      .filter((category, index, self) => self.indexOf(category) === index)
-      .slice(0, 2);
-      
-    categoryMatches.forEach(category => {
-      suggestions.push({
-        type: 'category',
-        value: category,
-        count: photos.filter(p => p.category === category).length,
-        icon: Camera
-      });
-    });
-
-    // Photographer suggestions
-    const photographerMatches = photos
-      .filter(photo => photo.photographer?.toLowerCase().includes(query.toLowerCase()))
-      .map(photo => photo.photographer!)
-      .filter((photographer, index, self) => self.indexOf(photographer) === index)
-      .slice(0, 2);
-      
-    photographerMatches.forEach(photographer => {
-      suggestions.push({
-        type: 'photographer',
-        value: photographer,
-        count: photos.filter(p => p.photographer === photographer).length,
-        icon: Camera
-      });
-    });
-
-    setSuggestions(suggestions.slice(0, 5));
-  }, [photos]);
+  }, [searchInput, fuse]);
 
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchQuery !== filters.searchQuery) {
-        onFiltersChange({ searchQuery });
-      }
-      generateSuggestions(searchQuery);
-    }, 300);
+      onFiltersChange({ searchQuery: searchInput });
+    }, 150);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, filters.searchQuery, onFiltersChange, generateSuggestions]);
+  }, [searchInput, onFiltersChange]);
 
-  const handleSuggestionClick = useCallback((suggestion: SearchSuggestion) => {
-    switch (suggestion.type) {
-      case 'plate':
-        onFiltersChange({ vehiclePlate: suggestion.value, searchQuery: '' });
-        setSearchQuery('');
-        break;
-      case 'category':
-        onFiltersChange({ 
-          category: [...filters.category, suggestion.value], 
-          searchQuery: '' 
-        });
-        setSearchQuery('');
-        break;
-      case 'photographer':
-        onFiltersChange({ searchQuery: suggestion.value });
-        setSearchQuery(suggestion.value);
-        break;
-    }
+  const handleClearAll = useCallback(() => {
+    setSearchInput('');
+    onClearFilters();
     setShowSuggestions(false);
-    
-    // Haptic feedback
-    if (isMobile && 'vibrate' in navigator) {
-      navigator.vibrate(15);
-    }
-  }, [filters.category, onFiltersChange, isMobile]);
+  }, [onClearFilters]);
 
-  const handleQuickFilter = useCallback((filterValue: string) => {
-    if (filterValue === 'today') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      
-      onFiltersChange({
-        dateRange: { start: today, end: tomorrow }
-      });
-    } else {
-      onFiltersChange({
-        category: [...filters.category, filterValue]
-      });
-    }
-    
-    // Haptic feedback
-    if (isMobile && 'vibrate' in navigator) {
-      navigator.vibrate(20);
-    }
-  }, [filters.category, onFiltersChange, isMobile]);
-
-  const handleClearSearch = useCallback(() => {
-    setSearchQuery('');
-    onFiltersChange({ searchQuery: '', vehiclePlate: '' });
-    setSuggestions([]);
+  const handlePlateSearch = useCallback((plate: string) => {
+    onFiltersChange({ vehiclePlate: plate });
   }, [onFiltersChange]);
 
+  const handleSortChange = useCallback((sortBy: string) => {
+    onFiltersChange({ sortBy: sortBy as any });
+  }, [onFiltersChange]);
+
+  const activeFiltersCount = [
+    filters.category.length > 0,
+    filters.dateRange.start || filters.dateRange.end,
+    filters.timeOfDay !== 'all',
+    filters.sortBy !== 'newest',
+    filters.vehiclePlate,
+    filters.searchQuery
+  ].filter(Boolean).length;
+
   return (
-    <div className="relative">
-      {/* Search Bar */}
-      <motion.div
-        className="relative"
-        animate={{
-          scale: isSearchFocused ? 1.02 : 1,
-        }}
-        transition={{ duration: 0.2 }}
-      >
+    <div className="bg-background/95 backdrop-blur-sm border-b border-border/50 sticky top-16 z-40">
+      <div className="p-4 space-y-3">
+        {/* Main Search Bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => {
-              setIsSearchFocused(true);
-              setShowSuggestions(true);
-            }}
-            onBlur={() => {
-              setIsSearchFocused(false);
-              setTimeout(() => setShowSuggestions(false), 150);
-            }}
-            placeholder="Buscar por placa, categoria, fotógrafo..."
-            className="pl-10 pr-20 h-12 bg-background/95 backdrop-blur-sm border-border/50 focus:border-primary/50 transition-all duration-200"
+            type="text"
+            placeholder="Buscar fotos, descrições, tags..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="pl-10 pr-12 bg-background border-border/50 focus:border-trucker-blue transition-colors h-12"
           />
-          
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-            {(searchQuery || isFiltersActive) && (
-              <TouchFeedback>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearSearch}
-                  className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </TouchFeedback>
-            )}
-            
-            <TouchFeedback>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-8 w-8 p-0 transition-colors ${
-                  isFiltersActive 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'hover:bg-muted'
-                }`}
-              >
-                <Filter className="w-4 h-4" />
-              </Button>
-            </TouchFeedback>
-          </div>
+          {searchInput && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 w-8 h-8 p-0"
+              onClick={() => setSearchInput('')}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         </div>
-      </motion.div>
 
-      {/* Search Suggestions */}
-      <AnimatePresence>
-        {showSuggestions && suggestions.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-full left-0 right-0 z-50 mt-2 bg-background/95 backdrop-blur-lg border border-border/50 rounded-xl shadow-xl overflow-hidden"
+        {/* Suggestions */}
+        <AnimatePresence>
+          {showSuggestions && suggestions.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-background border border-border/50 rounded-lg shadow-lg overflow-hidden"
+            >
+              {suggestions.map((suggestion, index) => (
+                <motion.button
+                  key={suggestion}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="w-full text-left px-4 py-2 hover:bg-muted transition-colors text-sm"
+                  onClick={() => {
+                    setSearchInput(suggestion);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  {suggestion}
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Quick Actions Row */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          {/* Vehicle Plate Search Button */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setIsPlateSearchOpen(true)}
+            className={`flex items-center gap-2 h-10 min-w-fit ${
+              filters.vehiclePlate 
+                ? 'bg-trucker-blue text-trucker-blue-foreground border-trucker-blue' 
+                : ''
+            }`}
           >
-            <div className="p-2 space-y-1">
-              {suggestions.map((suggestion, index) => {
-                const Icon = suggestion.icon;
-                return (
-                  <TouchFeedback key={`${suggestion.type}-${suggestion.value}`}>
-                    <motion.button
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors text-left group"
-                    >
-                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                        <Icon className="w-4 h-4 text-primary" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">
-                          {suggestion.value}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {suggestion.count} foto{suggestion.count !== 1 ? 's' : ''}
-                        </p>
-                      </div>
-                      
-                      <Badge variant="secondary" className="text-xs">
-                        {suggestion.type === 'plate' && 'Placa'}
-                        {suggestion.type === 'category' && 'Categoria'}
-                        {suggestion.type === 'photographer' && 'Fotógrafo'}
-                        {suggestion.type === 'tag' && 'Tag'}
-                        {suggestion.type === 'location' && 'Local'}
-                      </Badge>
-                    </motion.button>
-                  </TouchFeedback>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Quick Filters */}
-      <motion.div 
-        className="flex gap-2 mt-3 pb-1 overflow-x-auto scrollbar-hide"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        {QUICK_FILTERS.map((filter, index) => {
-          const Icon = filter.icon;
-          const isActive = filter.value === 'today' 
-            ? !!filters.dateRange.start
-            : filters.category.includes(filter.value);
-            
-          return (
-            <TouchFeedback key={filter.value}>
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => handleQuickFilter(filter.value)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? 'bg-primary text-primary-foreground shadow-lg'
-                    : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{filter.label}</span>
-              </motion.button>
-            </TouchFeedback>
-          );
-        })}
-      </motion.div>
-
-      {/* Active Filters Display */}
-      <AnimatePresence>
-        {isFiltersActive && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mt-3 flex flex-wrap gap-2"
-          >
-            {filters.category.map((category) => (
-              <Badge
-                key={category}
-                variant="secondary"
-                className="flex items-center gap-1"
-              >
-                <span>{category}</span>
-                <TouchFeedback>
-                  <button
-                    onClick={() => onFiltersChange({
-                      category: filters.category.filter(c => c !== category)
-                    })}
-                    className="ml-1 hover:text-destructive"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </TouchFeedback>
-              </Badge>
-            ))}
-            
+            <Truck className="w-4 h-4" />
+            <span className="text-sm">
+              {filters.vehiclePlate ? `Placa: ${filters.vehiclePlate}` : 'Buscar Placa'}
+            </span>
             {filters.vehiclePlate && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <Truck className="w-3 h-3" />
-                <span>{filters.vehiclePlate}</span>
-                <TouchFeedback>
-                  <button
-                    onClick={() => onFiltersChange({ vehiclePlate: '' })}
-                    className="ml-1 hover:text-destructive"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </TouchFeedback>
+              <X 
+                className="w-3 h-3 ml-1 cursor-pointer hover:text-destructive" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFiltersChange({ vehiclePlate: '' });
+                }}
+              />
+            )}
+          </Button>
+
+          {/* Smart Filters Button */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setIsFiltersModalOpen(true)}
+            className={`flex items-center gap-2 h-10 min-w-fit ${
+              activeFiltersCount > 0 
+                ? 'bg-trucker-blue text-trucker-blue-foreground border-trucker-blue' 
+                : ''
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span className="text-sm">Filtros</span>
+            {activeFiltersCount > 0 && (
+              <Badge variant="secondary" className="text-xs px-1.5 py-0 h-5 min-w-5">
+                {activeFiltersCount}
               </Badge>
             )}
-            
-            {filters.dateRange.start && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                <span>Hoje</span>
-                <TouchFeedback>
-                  <button
-                    onClick={() => onFiltersChange({ dateRange: {} })}
-                    className="ml-1 hover:text-destructive"
+          </Button>
+
+          {/* Sort Button */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setIsSortModalOpen(true)}
+            className="flex items-center gap-2 h-10 min-w-fit"
+          >
+            <ArrowUpDown className="w-4 h-4" />
+            <span className="text-sm">
+              {filters.sortBy === 'newest' ? 'Recentes' :
+               filters.sortBy === 'oldest' ? 'Antigas' :
+               filters.sortBy === 'most-viewed' ? 'Visualizadas' :
+               filters.sortBy === 'most-liked' ? 'Curtidas' : 'Ordenar'}
+            </span>
+          </Button>
+        </div>
+
+        {/* Active Filters Display */}
+        <AnimatePresence>
+          {isFiltersActive && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex flex-wrap gap-1 pt-2"
+            >
+              {filters.category.map(category => (
+                <Badge
+                  key={category}
+                  variant="secondary"
+                  className="text-xs flex items-center gap-1"
+                >
+                  <Truck className="w-3 h-3" />
+                  {category}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-3 h-3 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                    onClick={() => {
+                      const newCategories = filters.category.filter(c => c !== category);
+                      onFiltersChange({ category: newCategories });
+                    }}
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </TouchFeedback>
-              </Badge>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    <X className="w-2 h-2" />
+                  </Button>
+                </Badge>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Smart Filters Modal */}
+      <SmartFiltersModal
+        isOpen={isFiltersModalOpen}
+        onClose={() => setIsFiltersModalOpen(false)}
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+        onClearFilters={onClearFilters}
+        photos={photos}
+      />
+
+      {/* Plate Search Modal */}
+      <PlateSearchModal
+        isOpen={isPlateSearchOpen}
+        onClose={() => setIsPlateSearchOpen(false)}
+        onSearch={handlePlateSearch}
+        currentPlate={filters.vehiclePlate}
+      />
+
+      {/* Sort Modal */}
+      <SortModal
+        isOpen={isSortModalOpen}
+        onClose={() => setIsSortModalOpen(false)}
+        currentSort={filters.sortBy}
+        onSortChange={handleSortChange}
+      />
     </div>
   );
 }

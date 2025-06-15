@@ -48,6 +48,9 @@ const PhotoItem = React.memo(({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [showActions, setShowActions] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
+  const [lastTap, setLastTap] = useState<number>(0);
+  const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null);
   const isMobile = useIsMobile();
   
   // Motion values for advanced interactions
@@ -70,26 +73,66 @@ const PhotoItem = React.memo(({
     scale.set(1);
   }, [scale]);
 
-  const handleClick = useCallback(() => {
-    if (isSelectionMode && onToggleSelection) {
-      onToggleSelection(photo.id);
+  // Touch handlers for native-like interactions
+  const handleTouchStart = useCallback((e: React.TouchEvent, photoId: string) => {
+    const touch = e.touches[0];
+    setTouchStartPos({ x: touch.clientX, y: touch.clientY });
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent, photo: Photo) => {
+    e.preventDefault();
+    
+    if (!touchStartPos) return;
+    
+    const touch = e.changedTouches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartPos.x);
+    const deltaY = Math.abs(touch.clientY - touchStartPos.y);
+    
+    // If it's a swipe (significant movement), ignore
+    if (deltaX > 10 || deltaY > 10) {
+      setTouchStartPos(null);
+      return;
+    }
+    
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+    
+    if (now - lastTap < DOUBLE_TAP_DELAY) {
+      // Double tap - toggle favorite
+      onToggleFavorite?.(photo.id);
       
-      // Stronger haptic for selection
-      if (isMobile && 'vibrate' in navigator) {
-        navigator.vibrate(25);
+      // Haptic feedback for double tap
+      if (navigator.vibrate) {
+        navigator.vibrate([10, 50, 10]);
       }
     } else {
-      onPhotoClick(photo);
+      // Single tap
+      setLastTap(now);
+      
+      setTimeout(() => {
+        if (Date.now() - lastTap >= DOUBLE_TAP_DELAY) {
+          if (isSelectionMode) {
+            onToggleSelection?.(photo.id);
+          } else {
+            onPhotoClick(photo);
+          }
+        }
+      }, DOUBLE_TAP_DELAY);
     }
-  }, [photo, onPhotoClick, isSelectionMode, onToggleSelection, isMobile]);
+    
+    setTouchStartPos(null);
+  }, [touchStartPos, lastTap, isSelectionMode, onPhotoClick, onToggleFavorite, onToggleSelection]);
 
-  const handleLongPress = useCallback(() => {
+  // Long press handler for selection mode
+  const handleLongPress = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    
     if (onToggleSelection) {
       onToggleSelection(photo.id);
       
       // Strong haptic for long press
       if (isMobile && 'vibrate' in navigator) {
-        navigator.vibrate([10, 50, 10]);
+        navigator.vibrate([30, 100, 30]);
       }
     }
   }, [photo.id, onToggleSelection, isMobile]);
@@ -127,19 +170,15 @@ const PhotoItem = React.memo(({
         haptic
       >
         <motion.div
-          className="relative bg-background rounded-2xl overflow-hidden shadow-sm h-full cursor-pointer group"
-          style={{ scale: scaleSpring }}
-          onTouchStart={handlePress}
-          onTouchEnd={handleRelease}
-          onTouchCancel={handleRelease}
-          onMouseDown={handlePress}
-          onMouseUp={handleRelease}
-          onMouseLeave={() => {
-            handleRelease();
-            setShowActions(false);
+          className="relative group cursor-pointer select-none touch-manipulation"
+          onTouchStart={(e) => handleTouchStart(e, photo.id)}
+          onTouchEnd={(e) => handleTouchEnd(e, photo)}
+          onContextMenu={handleLongPress}
+          style={{ 
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+            touchAction: 'manipulation'
           }}
-          onClick={handleClick}
-          onMouseEnter={() => setShowActions(true)}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ 
             opacity: 1, 
@@ -153,120 +192,122 @@ const PhotoItem = React.memo(({
           }}
           whileHover={{ scale: 1.02 }}
         >
-          {/* Selection Indicator */}
-          <AnimatePresence>
-            {isSelectionMode && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0 }}
-                className="absolute top-2 left-2 z-20"
-              >
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                  isSelected 
-                    ? 'bg-primary border-primary' 
-                    : 'bg-background/80 border-white/50 backdrop-blur-sm'
-                }`}>
-                  {isSelected && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="w-3 h-3 bg-primary-foreground rounded-full"
-                    />
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Main Image */}
-          <div className="relative aspect-square overflow-hidden">
-            <OptimizedImage
-              src={photo.thumbnailUrl}
-              alt={photo.title || `Foto ${photo.id}`}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              onLoad={() => setImageLoaded(true)}
-              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              loading="lazy"
-            />
-
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-            {/* Action Buttons */}
+          <div className="relative bg-background rounded-2xl overflow-hidden shadow-sm h-full">
+            {/* Selection Indicator */}
             <AnimatePresence>
-              {(showActions || isMobile) && !isSelectionMode && (
+              {isSelectionMode && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-2 right-2 flex gap-1"
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0 }}
+                  className="absolute top-2 left-2 z-20"
                 >
-                  <TouchFeedback>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={`w-8 h-8 backdrop-blur-sm rounded-full transition-all ${
-                        isFavorite 
-                          ? 'bg-red-500/90 text-white hover:bg-red-600/90' 
-                          : 'bg-black/30 text-white/90 hover:bg-black/50'
-                      }`}
-                      onClick={handleFavoriteClick}
-                    >
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                    isSelected 
+                      ? 'bg-trucker-blue border-trucker-blue' 
+                      : 'bg-background/80 border-white/50 backdrop-blur-sm'
+                  }`}>
+                    {isSelected && (
                       <motion.div
-                        animate={isFavorite ? { scale: [1, 1.3, 1] } : {}}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-current' : ''}`} />
-                      </motion.div>
-                    </Button>
-                  </TouchFeedback>
-                  
-                  <TouchFeedback>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-8 h-8 bg-black/30 text-white/90 hover:bg-black/50 backdrop-blur-sm rounded-full"
-                      onClick={handleShare}
-                    >
-                      <Share2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </TouchFeedback>
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-3 h-3 bg-trucker-blue-foreground rounded-full"
+                      />
+                    )}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Loading State */}
-            {!imageLoaded && (
-              <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
+            {/* Main Image */}
+            <div className="relative aspect-square overflow-hidden">
+              <OptimizedImage
+                src={photo.thumbnailUrl}
+                alt={photo.title || `Foto ${photo.id}`}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                onLoad={() => setImageLoaded(true)}
+                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                loading="lazy"
+              />
+
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+              {/* Action Buttons */}
+              <AnimatePresence>
+                {(showActions || isMobile) && !isSelectionMode && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-2 right-2 flex gap-1"
+                  >
+                    <TouchFeedback>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`w-8 h-8 backdrop-blur-sm rounded-full transition-all ${
+                          isFavorite 
+                            ? 'bg-red-500/90 text-white hover:bg-red-600/90' 
+                            : 'bg-black/30 text-white/90 hover:bg-black/50'
+                        }`}
+                        onClick={handleFavoriteClick}
+                      >
+                        <motion.div
+                          animate={isFavorite ? { scale: [1, 1.3, 1] } : {}}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-current' : ''}`} />
+                        </motion.div>
+                      </Button>
+                    </TouchFeedback>
+                    
+                    <TouchFeedback>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-8 h-8 bg-black/30 text-white/90 hover:bg-black/50 backdrop-blur-sm rounded-full"
+                        onClick={handleShare}
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </TouchFeedback>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Loading State */}
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-trucker-blue border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+
+            {/* Enhanced Selection Overlay */}
+            <AnimatePresence>
+              {isSelected && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-trucker-blue/20 border-2 border-trucker-blue rounded-2xl"
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Pressed State Overlay */}
+            <AnimatePresence>
+              {isPressed && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black/10 rounded-2xl"
+                />
+              )}
+            </AnimatePresence>
           </div>
-
-          {/* Enhanced Selection Overlay */}
-          <AnimatePresence>
-            {isSelected && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-primary/20 border-2 border-primary rounded-2xl"
-              />
-            )}
-          </AnimatePresence>
-
-          {/* Pressed State Overlay */}
-          <AnimatePresence>
-            {isPressed && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/10 rounded-2xl"
-              />
-            )}
-          </AnimatePresence>
         </motion.div>
       </TouchFeedback>
     </div>
@@ -419,8 +460,8 @@ export function NativePhotoGrid({
               className="flex items-center gap-3 text-muted-foreground"
             >
               <div className="relative">
-                <div className="w-6 h-6 border-2 border-primary/20 rounded-full" />
-                <div className="absolute inset-0 w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-trucker-blue/20 rounded-full" />
+                <div className="absolute inset-0 w-6 h-6 border-2 border-trucker-blue border-t-transparent rounded-full animate-spin" />
               </div>
               <span className="text-sm font-medium">Carregando mais fotos...</span>
             </motion.div>

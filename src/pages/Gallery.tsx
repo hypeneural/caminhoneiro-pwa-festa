@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Camera } from "lucide-react";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
-import { AdvancedSearchBar } from "@/components/gallery/AdvancedSearchBar";
+import { IntelligentSearch } from "@/components/gallery/IntelligentSearch";
 import { NativePhotoGrid } from "@/components/gallery/NativePhotoGrid";
 import { PullToRefresh } from "@/components/gallery/PullToRefresh";
 import { PhotoLightbox } from "@/components/gallery/PhotoLightbox";
@@ -53,8 +53,8 @@ const Gallery = () => {
         </div>
       </motion.header>
 
-      {/* Advanced Search */}
-      <AdvancedSearchBar
+      {/* Intelligent Search */}
+      <IntelligentSearch
         filters={filters}
         onFiltersChange={updateFilters}
         onClearFilters={clearFilters}
