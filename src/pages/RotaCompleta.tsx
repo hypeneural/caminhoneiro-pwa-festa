@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useTraccarData } from '@/hooks/useTraccarData';
 import MapRenderer from '@/components/map/MapRenderer';
+import { BottomNavigation } from '@/components/mobile/BottomNavigation';
 
 const RotaCompleta = () => {
   const navigate = useNavigate();
@@ -65,6 +66,8 @@ const RotaCompleta = () => {
           />
         </div>
       </div>
+      
+      <BottomNavigation />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, MessageCircle, Instagram, Facebook } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 
 export default function Contact() {
   return (
@@ -155,6 +156,8 @@ export default function Contact() {
           </Card>
         </motion.div>
       </div>
+      
+      <BottomNavigation />
     </div>
   );
 }

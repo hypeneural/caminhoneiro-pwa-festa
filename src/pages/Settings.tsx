@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 
 export default function Settings() {
   return (
@@ -205,6 +206,8 @@ export default function Settings() {
           </Card>
         </motion.div>
       </div>
+      
+      <BottomNavigation />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Video, MapPin, Users, Wifi } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 
 interface Camera {
   id: string;
@@ -149,6 +150,8 @@ export default function Cameras() {
           </div>
         </Card>
       </div>
+      
+      <BottomNavigation />
     </div>
   );
 }

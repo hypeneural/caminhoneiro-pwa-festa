@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Heart, Users, Calendar, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 
 export default function About() {
   return (
@@ -118,6 +119,8 @@ export default function About() {
           </Card>
         </motion.div>
       </div>
+      
+      <BottomNavigation />
     </div>
   );
 }
