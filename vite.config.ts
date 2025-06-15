@@ -175,9 +175,7 @@ VitePWA({
             }
             return 'vendor';
           }
-          if (id.includes('/components/mobile/')) {
-            return 'mobile';
-          }
+          // Remove mobile chunk splitting to avoid dependency issues
         },
       },
     },
