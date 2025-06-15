@@ -1,5 +1,4 @@
-import React, { Suspense, lazy } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import React from "react";
 import { motion } from "framer-motion";
 import { MapPin, Gauge, Battery, Route, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +9,8 @@ import { useInView } from "react-intersection-observer";
 import { useTraccarData } from "@/hooks/useTraccarData";
 import { TrackerSkeleton } from "@/components/tracker/TrackerSkeleton";
 import { TrackerError } from "@/components/tracker/TrackerError";
+import MapRenderer from "@/components/map/MapRenderer";
+import { useMapRenderer } from "@/hooks/useMapRenderer";
 import {
   convertKnotsToKmh,
   convertMetersToKm,
@@ -19,13 +20,11 @@ import {
   isRecentUpdate
 } from "@/utils/trackerUtils";
 
-// Lazy load do componente do mapa
-const TruckerMap = lazy(() => import("@/components/tracker/TruckerMap"));
-
 export const SaoCristovaoTracker = () => {
   const navigate = useNavigate();
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
   const { data, isLoading, isError, refetch, isFetching } = useTraccarData();
+  const { logMapEvent } = useMapRenderer();
 
   // Estado de carregamento inicial
   if (isLoading && !data) {
@@ -87,34 +86,14 @@ export const SaoCristovaoTracker = () => {
             </span>
           </div>
 
-          {/* Mapa real com lazy loading e fallback */}
+          {/* Mapa robusto com fallbacks em camadas */}
           <div ref={ref} className="relative h-32 rounded-lg overflow-hidden">
             {inView ? (
-              <Suspense fallback={
-                <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg flex items-center justify-center">
-                  <div className="animate-pulse text-2xl">🚛</div>
-                </div>
-              }>
-                <ErrorBoundary 
-                  FallbackComponent={({ error, resetErrorBoundary }) => {
-                    console.error('❌ Erro no mapa:', error);
-                    return (
-                      <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="text-2xl mb-2">🗺️</div>
-                          <div className="text-xs text-muted-foreground">Erro no mapa</div>
-                          <div className="text-xs text-red-500 mt-1">{error.message}</div>
-                        </div>
-                      </div>
-                    );
-                  }}
-                  onError={(error, errorInfo) => {
-                    console.error('🚨 ErrorBoundary capturou erro:', error, errorInfo);
-                  }}
-                >
-                  <TruckerMap data={data} />
-                </ErrorBoundary>
-              </Suspense>
+              <MapRenderer 
+                data={data} 
+                height="h-32"
+                showSpeed={true}
+              />
             ) : (
               <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg flex items-center justify-center">
                 <div className="text-2xl">🗺️</div>

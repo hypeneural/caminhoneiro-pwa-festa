@@ -4,7 +4,7 @@ import { ArrowLeft, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useTraccarData } from '@/hooks/useTraccarData';
-import TruckerMap from '@/components/tracker/TruckerMap';
+import MapRenderer from '@/components/map/MapRenderer';
 
 const RotaCompleta = () => {
   const navigate = useNavigate();
@@ -58,9 +58,11 @@ const RotaCompleta = () => {
       {/* Mapa em tela cheia */}
       <div className="h-[calc(100vh-80px)]">
         <div className="relative w-full h-full">
-          <div style={{ height: 'calc(100vh - 80px)' }}>
-            <TruckerMap data={data} />
-          </div>
+          <MapRenderer 
+            data={data} 
+            height="h-full"
+            showSpeed={true}
+          />
         </div>
       </div>
     </div>
