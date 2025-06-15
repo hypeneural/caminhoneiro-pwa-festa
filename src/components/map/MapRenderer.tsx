@@ -264,25 +264,45 @@ const MapRenderer: React.FC<MapRendererProps> = ({
   // Inicialização do mapa
   useEffect(() => {
     const initializeMap = async () => {
+      console.log('🚀 MapRenderer: Iniciando inicialização do mapa');
+      console.log('📍 MapRenderer: Dados recebidos:', {
+        latitude: data?.latitude,
+        longitude: data?.longitude,
+        address: data?.address,
+        speed: data?.speed,
+        fixTime: data?.fixTime
+      });
+      
       setMapState(prev => ({ ...prev, isLoading: true }));
 
+      // Health check do Leaflet
+      console.log('🏥 MapRenderer: Verificando saúde do Leaflet...');
+      const leafletHealthy = checkLeafletHealth();
+      console.log('🏥 MapRenderer: Leaflet disponível:', leafletHealthy);
+
       // Tenta renderizar na ordem de prioridade
-      if (checkLeafletHealth()) {
+      if (leafletHealthy) {
+        console.log('✅ MapRenderer: Tentando renderizar com Leaflet');
         await renderLeafletMap();
       } else {
+        console.log('⚠️ MapRenderer: Leaflet indisponível, usando mapa estático');
         renderStaticMap();
       }
     };
 
     if (data?.latitude && data?.longitude) {
+      console.log('🗺️ MapRenderer: Coordenadas válidas encontradas, inicializando mapa');
       initializeMap();
     } else {
+      console.log('❌ MapRenderer: Coordenadas inválidas, renderizando placeholder');
+      console.log('📊 MapRenderer: Dados inválidos:', { data });
       renderPlaceholder();
     }
 
     // Cleanup
     return () => {
       if (mapInstanceRef.current) {
+        console.log('🧹 MapRenderer: Limpando instância do mapa');
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
