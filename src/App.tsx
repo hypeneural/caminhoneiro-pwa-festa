@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
 import { appShell } from "@/services/app-shell";
 import { cacheManager } from "@/services/advanced-cache";
-import { useEffect } from "react";
 import Index from "./pages/Index";
 import Gallery from "./pages/Gallery";
 import Stories from "./pages/Stories";
