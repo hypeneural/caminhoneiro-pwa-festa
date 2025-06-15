@@ -8,6 +8,8 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "start_url": "/?utm_source=pwa",
+  "prefer_related_applications": false,
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "lang": "pt-BR",
   "categories": ["entertainment", "lifestyle", "travel"],
   "screenshots": [
