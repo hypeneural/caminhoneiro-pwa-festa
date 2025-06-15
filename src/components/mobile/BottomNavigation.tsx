@@ -78,29 +78,33 @@ export function BottomNavigation() {
 
             if (isMoreTab) {
               return (
-                <motion.button
+                <motion.div
                   key={tab.id}
-                  onClick={() => setIsMoreMenuOpen(true)}
+                  className="flex-1"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95, y: 2 }}
-                  className="flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors relative text-muted-foreground hover:text-foreground"
                 >
-                  <div className="relative">
-                    <tab.icon className="w-6 h-6 text-muted-foreground" />
-                  </div>
-                  <span className="text-xs font-medium mt-1 text-muted-foreground">
-                    {tab.title}
-                  </span>
-                </motion.button>
+                  <button
+                    onClick={() => setIsMoreMenuOpen(true)}
+                    className="flex flex-col items-center justify-center w-full py-2 px-1 rounded-lg transition-colors relative text-muted-foreground hover:text-foreground"
+                  >
+                    <div className="relative">
+                      <tab.icon className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <span className="text-xs font-medium mt-1 text-muted-foreground">
+                      {tab.title}
+                    </span>
+                  </button>
+                </motion.div>
               );
             }
 
             return (
-              <Link key={tab.id} to={tab.route}>
-                <motion.button
+              <Link key={tab.id} to={tab.route} className="flex-1">
+                <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95, y: 2 }}
-                  className={`flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors relative ${
+                  className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors relative ${
                     isActive 
                       ? 'text-trucker-blue' 
                       : 'text-muted-foreground hover:text-foreground'
@@ -136,7 +140,7 @@ export function BottomNavigation() {
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   )}
-                </motion.button>
+                </motion.div>
               </Link>
             );
           })}

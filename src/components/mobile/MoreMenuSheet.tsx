@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { useNativeShare } from "@/hooks/useNativeShare";
 
 interface MoreMenuSheetProps {
   open: boolean;
@@ -43,7 +44,7 @@ const menuItems = {
     { icon: Download, label: "Download Offline", hasSwitch: true, color: "text-trucker-green" },
   ],
   app: [
-    { icon: Share2, label: "Compartilhar App", route: "/share", color: "text-trucker-red" },
+    { icon: Share2, label: "Compartilhar App", isShare: true, color: "text-trucker-red" },
     { icon: Info, label: "Sobre a Festa", route: "/about", color: "text-trucker-yellow" },
     { icon: Phone, label: "Contato", route: "/contact", color: "text-trucker-orange" },
     { icon: Settings, label: "Configurações", route: "/settings", color: "text-muted-foreground" },
@@ -51,7 +52,14 @@ const menuItems = {
 };
 
 export function MoreMenuSheet({ open, onOpenChange }: MoreMenuSheetProps) {
+  const { shareApp } = useNativeShare();
+  
   const handleLinkClick = () => {
+    onOpenChange(false);
+  };
+
+  const handleShareClick = async () => {
+    await shareApp();
     onOpenChange(false);
   };
 
@@ -167,16 +175,28 @@ export function MoreMenuSheet({ open, onOpenChange }: MoreMenuSheetProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + index * 0.05 }}
                 >
-                  <Link
-                    to={item.route}
-                    onClick={handleLinkClick}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors active:scale-95"
-                  >
-                    <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                      <item.icon className={`w-5 h-5 ${item.color}`} />
-                    </div>
-                    <span className="font-medium text-card-foreground">{item.label}</span>
-                  </Link>
+                  {item.isShare ? (
+                    <button
+                      onClick={handleShareClick}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors active:scale-95 w-full"
+                    >
+                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                        <item.icon className={`w-5 h-5 ${item.color}`} />
+                      </div>
+                      <span className="font-medium text-card-foreground">{item.label}</span>
+                    </button>
+                  ) : (
+                    <Link
+                      to={item.route}
+                      onClick={handleLinkClick}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors active:scale-95"
+                    >
+                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                        <item.icon className={`w-5 h-5 ${item.color}`} />
+                      </div>
+                      <span className="font-medium text-card-foreground">{item.label}</span>
+                    </Link>
+                  )}
                 </motion.div>
               ))}
             </div>
