@@ -162,21 +162,7 @@ VitePWA({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('framer-motion')) {
-              return 'vendor';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui';
-            }
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
-            return 'vendor';
-          }
-          // Remove mobile chunk splitting to avoid dependency issues
-        },
+        manualChunks: undefined, // Disable manual chunking to avoid dependency issues
       },
     },
     target: 'esnext',
