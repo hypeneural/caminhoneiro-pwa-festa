@@ -51,13 +51,81 @@ const MapRenderer: React.FC<MapRendererProps> = ({
     }
   };
 
-  // Renderização com Leaflet nativo
+  // Sistema híbrido de tiles gratuitos
+  const TILE_PROVIDERS = [
+    {
+      name: 'CartoDB Light',
+      url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
+      attribution: '© CartoDB'
+    },
+    {
+      name: 'OpenStreetMap',
+      url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: '© OpenStreetMap'
+    },
+    {
+      name: 'CartoDB Voyager',
+      url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager/{z}/{x}/{y}.png',
+      attribution: '© CartoDB'
+    }
+  ];
+
+  // Teste de conectividade com tile provider
+  const testTileProvider = (provider: typeof TILE_PROVIDERS[0]): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        resolve(false);
+      }, 3000);
+      
+      img.onload = () => {
+        clearTimeout(timeout);
+        resolve(true);
+      };
+      
+      img.onerror = () => {
+        clearTimeout(timeout);
+        resolve(false);
+      };
+      
+      // Testa um tile específico da região
+      const testUrl = provider.url
+        .replace('{s}', 'a')
+        .replace('{z}', '10')
+        .replace('{x}', '612')
+        .replace('{y}', '391');
+      
+      img.src = testUrl;
+    });
+  };
+
+  // Encontra o melhor provider disponível
+  const findBestTileProvider = async () => {
+    for (const provider of TILE_PROVIDERS) {
+      console.log(`🧪 Testando provider: ${provider.name}`);
+      const isAvailable = await testTileProvider(provider);
+      if (isAvailable) {
+        console.log(`✅ Provider disponível: ${provider.name}`);
+        return provider;
+      }
+    }
+    console.log('❌ Nenhum provider de tiles disponível');
+    return null;
+  };
+
+  // Renderização com Leaflet nativo híbrido
   const renderLeafletMap = async () => {
     try {
-      console.log('🗺️ Tentando renderizar mapa Leaflet...');
+      console.log('🗺️ Iniciando sistema híbrido de mapas...');
       
       if (!mapContainerRef.current) {
         throw new Error('Container não encontrado');
+      }
+
+      // Testa conectividade e encontra melhor provider
+      const bestProvider = await findBestTileProvider();
+      if (!bestProvider) {
+        throw new Error('Nenhum tile provider disponível');
       }
 
       // Importa Leaflet dinamicamente
@@ -72,30 +140,81 @@ const MapRenderer: React.FC<MapRendererProps> = ({
       // Cria o mapa
       const map = L.map(mapContainerRef.current, {
         center: [data.latitude, data.longitude],
-        zoom: 14,
+        zoom: 15,
         zoomControl: false,
-        attributionControl: false
+        attributionControl: false,
+        preferCanvas: true
       });
 
-      // Adiciona tiles
-      L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
-        maxZoom: 19
-      }).addTo(map);
+      // Adiciona tiles com o melhor provider
+      const tileLayer = L.tileLayer(bestProvider.url, {
+        maxZoom: 19,
+        attribution: bestProvider.attribution,
+        errorTileUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgZmlsbD0iI2Y5ZmFmYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjM3M2VjIj7wn5aPPC90ZXh0Pjwvc3ZnPg=='
+      });
+      
+      tileLayer.addTo(map);
+
+      // Ponto de partida (Igreja)
+      const startIcon = L.divIcon({
+        html: `<div style="
+          background: hsl(var(--trucker-blue)); 
+          color: white; 
+          border-radius: 50%; 
+          width: 28px; 
+          height: 28px; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          border: 2px solid white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          font-size: 14px;
+        ">⛪</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        className: 'custom-start-icon'
+      });
 
       // Ícone do caminhão
       const truckIcon = L.divIcon({
         html: `<div style="
           transform: rotate(${data.course || 0}deg);
-          font-size: 24px;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+          font-size: 28px;
+          filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+          transition: transform 0.3s ease;
         ">🚛</div>`,
         iconSize: [32, 32],
         iconAnchor: [16, 16],
         className: 'custom-truck-icon'
       });
 
-      // Adiciona marcador
+      // Coordenadas do ponto de partida
+      const START_POINT: [number, number] = [-27.236099, -48.644599];
+      
+      // Adiciona marcadores
+      L.marker(START_POINT, { icon: startIcon }).addTo(map);
       L.marker([data.latitude, data.longitude], { icon: truckIcon }).addTo(map);
+
+      // Linha de rota
+      const routeLine = L.polyline([
+        START_POINT,
+        [data.latitude, data.longitude]
+      ], {
+        color: 'hsl(var(--trucker-blue))',
+        weight: 3,
+        opacity: 0.8,
+        dashArray: '5, 5'
+      }).addTo(map);
+
+      // Ajusta zoom para mostrar ambos os pontos
+      const group = L.featureGroup([
+        L.marker(START_POINT),
+        L.marker([data.latitude, data.longitude])
+      ]);
+      map.fitBounds(group.getBounds(), { 
+        padding: [20, 20],
+        maxZoom: 16 
+      });
 
       mapInstanceRef.current = map;
       
@@ -105,9 +224,9 @@ const MapRenderer: React.FC<MapRendererProps> = ({
         isLoading: false
       });
 
-      console.log('✅ Mapa Leaflet renderizado com sucesso');
+      console.log(`✅ Mapa híbrido renderizado com ${bestProvider.name}`);
     } catch (error) {
-      console.error('❌ Erro no Leaflet:', error);
+      console.error('❌ Erro no sistema híbrido:', error);
       renderStaticMap();
     }
   };
