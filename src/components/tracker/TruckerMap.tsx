@@ -75,8 +75,21 @@ const AutoBounds: React.FC<{ truckPosition: LatLngExpression }> = ({ truckPositi
 export const TruckerMap: React.FC<TruckerMapProps> = ({ data }) => {
   console.log('🗺️ Renderizando TruckerMap com dados:', data);
   
+  // Verificações de segurança
+  if (!data || typeof data.latitude !== 'number' || typeof data.longitude !== 'number') {
+    console.error('❌ Dados inválidos para o mapa:', data);
+    throw new Error('Dados de localização inválidos');
+  }
+
+  if (isNaN(data.latitude) || isNaN(data.longitude)) {
+    console.error('❌ Coordenadas inválidas:', { lat: data.latitude, lng: data.longitude });
+    throw new Error('Coordenadas são NaN');
+  }
+  
   const truckPosition: LatLngExpression = [data.latitude, data.longitude];
   const truckIcon = createTruckIcon(data.course || 0);
+  
+  console.log('✅ Posição do caminhão:', truckPosition);
   
   // Simulação de rastro recente (últimos pontos)
   // Em uma implementação real, isso viria de uma API histórica
@@ -87,6 +100,8 @@ export const TruckerMap: React.FC<TruckerMapProps> = ({ data }) => {
     truckPosition
   ];
 
+  console.log('🎯 Renderizando MapContainer com centro:', truckPosition);
+  
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
       <MapContainer
@@ -96,6 +111,9 @@ export const TruckerMap: React.FC<TruckerMapProps> = ({ data }) => {
         zoomControl={false}
         attributionControl={false}
         style={{ height: '100%', width: '100%' }}
+        whenReady={() => {
+          console.log('✅ Mapa criado com sucesso');
+        }}
       >
         <TileLayer
           url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png"

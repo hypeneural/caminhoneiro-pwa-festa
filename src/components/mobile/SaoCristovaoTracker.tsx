@@ -96,14 +96,21 @@ export const SaoCristovaoTracker = () => {
                 </div>
               }>
                 <ErrorBoundary 
-                  FallbackComponent={({ error, resetErrorBoundary }) => (
-                    <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-2xl mb-2">🗺️</div>
-                        <div className="text-xs text-muted-foreground">Mapa indisponível</div>
+                  FallbackComponent={({ error, resetErrorBoundary }) => {
+                    console.error('❌ Erro no mapa:', error);
+                    return (
+                      <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-2xl mb-2">🗺️</div>
+                          <div className="text-xs text-muted-foreground">Erro no mapa</div>
+                          <div className="text-xs text-red-500 mt-1">{error.message}</div>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  }}
+                  onError={(error, errorInfo) => {
+                    console.error('🚨 ErrorBoundary capturou erro:', error, errorInfo);
+                  }}
                 >
                   <TruckerMap data={data} />
                 </ErrorBoundary>
