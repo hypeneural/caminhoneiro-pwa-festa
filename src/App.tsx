@@ -9,6 +9,10 @@ import Gallery from "./pages/Gallery";
 import Map from "./pages/Map";
 import Schedule from "./pages/Schedule";
 import More from "./pages/More";
+import Radio from "./pages/Radio";
+import Videos from "./pages/Videos";
+import Historia from "./pages/Historia";
+import Noticias from "./pages/Noticias";
 import NotFound from "./pages/NotFound";
 import { OfflineFallback } from "./components/OfflineFallback";
 import { ErrorBoundary } from "react-error-boundary";
@@ -28,6 +32,10 @@ const App = () => (
               <Route path="/galeria" element={<Gallery />} />
               <Route path="/mapa" element={<Map />} />
               <Route path="/programacao" element={<Schedule />} />
+              <Route path="/radio" element={<Radio />} />
+              <Route path="/videos" element={<Videos />} />
+              <Route path="/historia" element={<Historia />} />
+              <Route path="/noticias" element={<Noticias />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
