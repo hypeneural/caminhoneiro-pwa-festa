@@ -1,8 +1,10 @@
 import type { VitePWAOptions } from 'vite-plugin-pwa';
 
 export const pwaConfig: Partial<VitePWAOptions> = {
-  registerType: 'autoUpdate',
+  registerType: 'prompt',
   injectRegister: 'auto',
+  minify: true,
+  includeManifestIcons: true,
   workbox: {
     globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}'],
     cleanupOutdatedCaches: true,

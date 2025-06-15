@@ -4,6 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
+import { appShell } from "@/services/app-shell";
+import { cacheManager } from "@/services/advanced-cache";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import Gallery from "./pages/Gallery";
 import Stories from "./pages/Stories";
@@ -23,9 +26,56 @@ import NotFound from "./pages/NotFound";
 import { OfflineFallback } from "./components/OfflineFallback";
 import { ErrorBoundary } from "react-error-boundary";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000,   // 10 minutes
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors
+        if (error && 'status' in error && typeof error.status === 'number') {
+          return error.status >= 500 && failureCount < 2;
+        }
+        return failureCount < 2;
+      },
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: 'always'
+    }
+  }
+});
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    // Initialize App Shell and advanced caching
+    const initializeApp = async () => {
+      await appShell.initialize();
+      
+      // Process any queued background syncs
+      const isOnline = navigator.onLine;
+      if (isOnline) {
+        await cacheManager.processSyncQueue();
+      }
+
+      // Monitor storage quota
+      cacheManager.checkStorageQuota();
+    };
+
+    initializeApp();
+
+    // Setup online/offline handlers
+    const handleOnline = () => cacheManager.processSyncQueue();
+    const handleOffline = () => console.log('📴 App went offline');
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <AppProvider>
       <TooltipProvider>
@@ -58,6 +108,7 @@ const App = () => (
       </TooltipProvider>
     </AppProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

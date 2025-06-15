@@ -21,28 +21,23 @@ export const usePWA = (): PWAState => {
   const [needRefresh, setNeedRefresh] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
-  // Service Worker registration
+  // Modern Service Worker registration via Vite PWA
   useEffect(() => {
+    // The service worker is now managed by Vite PWA plugin
+    // Check for available updates
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then((registration) => {
-          console.log('SW registered:', registration);
-          
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  setNeedRefresh(true);
-                }
-              });
-            }
-          });
-        })
-        .catch((error) => {
-          console.log('SW registration failed:', error);
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                setNeedRefresh(true);
+              }
+            });
+          }
         });
+      });
     }
   }, []);
 
