@@ -1,140 +1,126 @@
+import React from "react";
 import { Newspaper } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useNews } from "@/hooks/useNews";
+import { useNavigation } from "@/hooks/useNavigation";
+import { ROUTES, THEME_COLORS, APP_TEXTS } from "@/constants";
 
-interface NewsItem {
-  id: string;
-  title: string;
-  summary: string;
-  imageUrl: string;
-  publishedAt: Date;
-  category: string;
-  categoryColor: string;
-}
+const NewsCard = React.memo(({ news, index }: { news: any; index: number }) => {
+  const { navigateTo } = useNavigation();
 
-const mockNews: NewsItem[] = [
-  {
-    id: "1",
-    title: "Inscrições abertas para a bênção dos caminhões",
-    summary: "Caminhoneiros podem se inscrever gratuitamente para participar da tradicional bênção que acontecerá no primeiro dia do evento.",
-    imageUrl: "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&q=80&w=400",
-    publishedAt: new Date('2025-06-10'),
-    category: "Inscrições",
-    categoryColor: "bg-trucker-green"
-  },
-  {
-    id: "2",
-    title: "Shows confirmados para os dois dias de festa",
-    summary: "Lineup completo foi divulgado com artistas sertanejos e bandas locais que vão animar a festa dos caminhoneiros.",
-    imageUrl: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?auto=format&fit=crop&q=80&w=400",
-    publishedAt: new Date('2025-06-08'),
-    category: "Programação",
-    categoryColor: "bg-trucker-orange"
-  },
-  {
-    id: "3",
-    title: "Rota da procissão de São Cristóvão definida",
-    summary: "O percurso tradicional será mantido, passando pelos principais pontos da cidade com paradas estratégicas para bênçãos.",
-    imageUrl: "https://images.unsplash.com/photo-1485833077593-4278bba3f11f?auto=format&fit=crop&q=80&w=400",
-    publishedAt: new Date('2025-06-05'),
-    category: "Religioso",
-    categoryColor: "bg-trucker-blue"
-  },
-  {
-    id: "4",
-    title: "Expectativa de público recorde em 2025",
-    summary: "Organização espera receber mais de 10 mil visitantes nos dois dias de festa, superando números dos anos anteriores.",
-    imageUrl: "https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=400",
-    publishedAt: new Date('2025-06-03'),
-    category: "Evento",
-    categoryColor: "bg-trucker-red"
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.1, duration: 0.3 }}
+      className="flex-shrink-0 w-80"
+    >
+      <Card className="overflow-hidden bg-card shadow-md border-border/50 cursor-pointer hover:shadow-lg transition-shadow">
+        <div className="relative">
+          <img 
+            src={news.imageUrl}
+            alt={news.title}
+            className="w-full h-32 object-cover"
+            loading={index === 0 ? "eager" : "lazy"}
+            fetchPriority={index === 0 ? "high" : "low"}
+            width={320}
+            height={128}
+          />
+          <Badge className={`absolute top-2 left-2 ${news.categoryColor} text-white text-xs`}>
+            {news.category}
+          </Badge>
+        </div>
+        
+        <div className="p-3">
+          <h3 className="text-sm font-bold text-foreground mb-2 line-clamp-2 leading-tight">
+            {news.title}
+          </h3>
+          <p className="text-xs text-muted-foreground mb-3 line-clamp-3 leading-relaxed">
+            {news.summary}
+          </p>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">
+              {news.publishedAt.toLocaleDateString('pt-BR')}
+            </span>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="text-xs text-trucker-blue font-medium hover:text-trucker-blue/80"
+              onClick={() => navigateTo(ROUTES.NEWS)}
+            >
+              {APP_TEXTS.ACTION_READ_MORE}
+            </motion.button>
+          </div>
+        </div>
+      </Card>
+    </motion.div>
+  );
+});
+
+export const NewsCarousel = React.memo(() => {
+  const { latestNews, loading } = useNews();
+  const { navigateTo } = useNavigation();
+
+  if (loading) {
+    return (
+      <div className="mb-6">
+        <div className="flex items-center justify-between px-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 bg-muted rounded-lg animate-pulse" />
+            <div className="w-32 h-4 bg-muted rounded animate-pulse" />
+          </div>
+          <div className="w-16 h-6 bg-muted rounded animate-pulse" />
+        </div>
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="flex-shrink-0 w-80">
+              <div className="bg-muted rounded-lg h-48 animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
-];
 
-export function NewsCarousel() {
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between px-4 mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 bg-trucker-green rounded-lg flex items-center justify-center">
-            <Newspaper className="w-4 h-4 text-trucker-green-foreground" />
+          <div className={`w-6 h-6 bg-${THEME_COLORS.TRUCKER_GREEN} rounded-lg flex items-center justify-center`}>
+            <Newspaper className={`w-4 h-4 text-${THEME_COLORS.TRUCKER_GREEN_FOREGROUND}`} />
           </div>
-          <h2 className="text-lg font-bold text-foreground">Últimas Notícias</h2>
+          <h2 className="text-lg font-bold text-foreground">{APP_TEXTS.SECTION_NEWS}</h2>
         </div>
         <Button 
           variant="ghost" 
           size="sm" 
-          className="text-trucker-blue hover:text-trucker-blue/80"
-          onClick={() => window.location.href = '/noticias'}
+          className={`text-${THEME_COLORS.TRUCKER_BLUE} hover:text-${THEME_COLORS.TRUCKER_BLUE}/80`}
+          onClick={() => navigateTo(ROUTES.NEWS)}
         >
-          Ver todas
+          {APP_TEXTS.ACTION_SEE_ALL}
         </Button>
       </div>
 
       <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-4">
-        {mockNews.map((news, index) => (
-          <motion.div
-            key={news.id}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1, duration: 0.3 }}
-            className="flex-shrink-0 w-80"
-          >
-            <Card className="overflow-hidden bg-card shadow-md border-border/50 cursor-pointer hover:shadow-lg transition-shadow">
-              <div className="relative">
-                <img 
-                  src={news.imageUrl}
-                  alt={news.title}
-                  className="w-full h-32 object-cover"
-                  loading={index === 0 ? "eager" : "lazy"}
-                  fetchPriority={index === 0 ? "high" : "low"}
-                  width={320}
-                  height={128}
-                />
-                <Badge className={`absolute top-2 left-2 ${news.categoryColor} text-white text-xs`}>
-                  {news.category}
-                </Badge>
-              </div>
-              
-              <div className="p-3">
-                <h3 className="text-sm font-bold text-foreground mb-2 line-clamp-2 leading-tight">
-                  {news.title}
-                </h3>
-                <p className="text-xs text-muted-foreground mb-3 line-clamp-3 leading-relaxed">
-                  {news.summary}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
-                    {news.publishedAt.toLocaleDateString('pt-BR')}
-                  </span>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="text-xs text-trucker-blue font-medium hover:text-trucker-blue/80"
-                    onClick={() => window.location.href = '/noticias'}
-                  >
-                    Ler mais
-                  </motion.button>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
+        {latestNews.map((news, index) => (
+          <NewsCard key={news.id} news={news} index={index} />
         ))}
       </div>
 
       {/* Scroll indicator dots */}
       <div className="flex justify-center gap-2 mt-4">
-        {mockNews.map((_, index) => (
+        {latestNews.map((_, index) => (
           <div
             key={index}
             className={`w-2 h-2 rounded-full transition-colors ${
-              index === 0 ? 'bg-trucker-blue' : 'bg-muted'
+              index === 0 ? `bg-${THEME_COLORS.TRUCKER_BLUE}` : 'bg-muted'
             }`}
           />
         ))}
       </div>
     </div>
   );
-}
+});
