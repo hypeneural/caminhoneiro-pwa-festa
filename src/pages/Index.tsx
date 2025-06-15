@@ -9,9 +9,29 @@ import { QuickAccess } from "@/components/mobile/QuickAccess";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
 import { PWAPrompt } from "@/components/PWAPrompt";
+import { usePrefetch } from "@/hooks/usePrefetch";
+import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
+import { useMemoryManager } from "@/hooks/useMemoryManager";
+import { useEffect } from "react";
 
 const Index = () => {
-  return (
+  const { recordVisit, prefetchPredicted } = usePrefetch();
+  const { metrics, isViolatingBudget, measureRender } = usePerformanceMonitor('IndexPage');
+  const { stats } = useMemoryManager();
+
+  // Record page visit and prefetch predicted routes
+  useEffect(() => {
+    recordVisit('/');
+    
+    // Prefetch likely next routes after a delay
+    const timer = setTimeout(() => {
+      prefetchPredicted();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [recordVisit, prefetchPredicted]);
+
+  return measureRender(() => (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <Header />
@@ -81,8 +101,17 @@ const Index = () => {
       
       {/* PWA Features */}
       <PWAPrompt />
+
+      {/* Performance Debug Panel (dev only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-24 right-4 bg-black/80 text-white text-xs p-2 rounded max-w-xs">
+          <div>FPS: {metrics.currentFPS?.toFixed(1) || 'N/A'}</div>
+          <div>Memory: {((stats.usedHeapSize || 0) / 1024 / 1024).toFixed(1)}MB</div>
+          {isViolatingBudget && <div className="text-red-400">⚠️ Budget Violation</div>}
+        </div>
+      )}
     </div>
-  );
+  ));
 };
 
 export default Index;

@@ -9,6 +9,9 @@ import { CarouselSkeleton } from "@/components/ui/skeleton";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { TouchFeedback } from "@/components/ui/touch-feedback";
 import { AccessibleButton } from "@/components/ui/accessible-button";
+import { VirtualCarousel } from "@/components/ui/virtual-carousel";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { useNews } from "@/hooks/useNews";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ROUTES, THEME_COLORS, APP_TEXTS } from "@/constants";
@@ -79,6 +82,11 @@ const NewsCard = React.memo(({ news, index }: { news: any; index: number }) => {
 export const NewsCarousel = React.memo(() => {
   const { latestNews, loading } = useNews();
   const { navigateTo } = useNavigation();
+  const { ref: intersectionRef, isIntersecting } = useIntersectionObserver({
+    threshold: 0.1,
+    rootMargin: '100px'
+  });
+  const { measureRender } = usePerformanceMonitor('NewsCarousel');
 
   if (loading) {
     return (
@@ -95,9 +103,15 @@ export const NewsCarousel = React.memo(() => {
     );
   }
 
+  const renderNewsItem = React.useCallback((news: any, index: number, isVisible: boolean) => {
+    return measureRender(() => (
+      <NewsCard key={news.id} news={news} index={index} />
+    ));
+  }, [measureRender]);
+
   return (
     <ErrorBoundary fallback={CarouselErrorFallback}>
-      <section className="mb-6" aria-labelledby="news-section">
+      <section ref={intersectionRef} className="mb-6" aria-labelledby="news-section">
         <div className="flex items-center justify-between px-4 mb-4">
           <div className="flex items-center gap-3">
             <div className={`w-6 h-6 bg-${THEME_COLORS.TRUCKER_GREEN} rounded-lg flex items-center justify-center`}>
@@ -118,33 +132,18 @@ export const NewsCarousel = React.memo(() => {
           </AccessibleButton>
         </div>
 
-        <div 
-          className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-4"
-          role="region"
-          aria-label="Carousel de notícias"
-        >
-          {latestNews.map((news, index) => (
-            <NewsCard key={news.id} news={news} index={index} />
-          ))}
-        </div>
-
-        {/* Scroll indicator dots */}
-        <div 
-          className="flex justify-center gap-2 mt-4"
-          role="tablist"
-          aria-label="Indicadores de progresso do carousel"
-        >
-          {latestNews.map((_, index) => (
-            <div
-              key={index}
-              role="tab"
-              aria-label={`Notícia ${index + 1} de ${latestNews.length}`}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                index === 0 ? `bg-${THEME_COLORS.TRUCKER_BLUE}` : 'bg-muted'
-              }`}
-            />
-          ))}
-        </div>
+        {isIntersecting && (
+          <VirtualCarousel
+            items={latestNews}
+            renderItem={renderNewsItem}
+            itemWidth={320}
+            gap={16}
+            className="px-4"
+            overscan={2}
+            autoPlay={false}
+            showIndicators={true}
+          />
+        )}
       </section>
     </ErrorBoundary>
   );

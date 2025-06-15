@@ -9,6 +9,9 @@ import { CarouselSkeleton } from "@/components/ui/skeleton";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { TouchFeedback } from "@/components/ui/touch-feedback";
 import { AccessibleButton } from "@/components/ui/accessible-button";
+import { VirtualCarousel } from "@/components/ui/virtual-carousel";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { usePhotos } from "@/hooks/usePhotos";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ROUTES, THEME_COLORS, APP_TEXTS } from "@/constants";
@@ -95,6 +98,11 @@ const PhotoCard = React.memo(({ photo, index }: { photo: any; index: number }) =
 export const PhotoCarousel = React.memo(() => {
   const { latestPhotos, loading } = usePhotos();
   const { navigateTo } = useNavigation();
+  const { ref: intersectionRef, isIntersecting } = useIntersectionObserver({
+    threshold: 0.1,
+    rootMargin: '100px'
+  });
+  const { measureRender } = usePerformanceMonitor('PhotoCarousel');
 
   if (loading) {
     return (
@@ -111,9 +119,15 @@ export const PhotoCarousel = React.memo(() => {
     );
   }
 
+  const renderPhotoItem = React.useCallback((photo: any, index: number, isVisible: boolean) => {
+    return measureRender(() => (
+      <PhotoCard key={photo.id} photo={photo} index={index} />
+    ));
+  }, [measureRender]);
+
   return (
     <ErrorBoundary fallback={CarouselErrorFallback}>
-      <section className="mb-6" aria-labelledby="photos-section">
+      <section ref={intersectionRef} className="mb-6" aria-labelledby="photos-section">
         <div className="flex items-center justify-between px-4 mb-4">
           <div className="flex items-center gap-3">
             <div className="w-6 h-6 bg-purple-600 rounded-lg flex items-center justify-center">
@@ -134,43 +148,19 @@ export const PhotoCarousel = React.memo(() => {
           </AccessibleButton>
         </div>
 
-        <div 
-          className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-4"
-          role="region"
-          aria-label="Carousel de fotos"
-        >
-          {latestPhotos.map((photo, index) => (
-            <PhotoCard key={photo.id} photo={photo} index={index} />
-          ))}
-        </div>
-
-        {/* Auto-play controls */}
-        <div className="flex justify-center items-center gap-4 mt-4">
-          <div 
-            className="flex gap-2"
-            role="tablist"
-            aria-label="Indicadores de progresso do carousel"
-          >
-            {latestPhotos.map((_, index) => (
-              <div
-                key={index}
-                role="tab"
-                aria-label={`Foto ${index + 1} de ${latestPhotos.length}`}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === 0 ? 'bg-purple-600' : 'bg-muted'
-                }`}
-              />
-            ))}
-          </div>
-          <AccessibleButton
-            variant="ghost"
-            size="sm"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors h-auto p-1"
-            aria-label="Pausar reprodução automática"
-          >
-            ⏸️ Pausar
-          </AccessibleButton>
-        </div>
+        {isIntersecting && (
+          <VirtualCarousel
+            items={latestPhotos}
+            renderItem={renderPhotoItem}
+            itemWidth={256}
+            gap={16}
+            className="px-4"
+            overscan={2}
+            autoPlay={true}
+            autoPlayInterval={4000}
+            showIndicators={true}
+          />
+        )}
       </section>
     </ErrorBoundary>
   );
