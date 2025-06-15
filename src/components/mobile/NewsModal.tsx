@@ -84,12 +84,12 @@ export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsMo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[90vh] p-0 overflow-hidden">
+      <DialogContent className="max-w-4xl max-h-[95vh] p-0 overflow-hidden flex flex-col">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="h-full flex flex-col"
+          className="h-full flex flex-col min-h-0"
         >
           {/* Header */}
           <div className="relative">
@@ -162,8 +162,8 @@ export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsMo
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-6">
+          <div className="flex-1 overflow-y-auto min-h-0" style={{ scrollbarWidth: 'thin' }}>
+            <div className="p-6 pb-8">
               {/* Title */}
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
