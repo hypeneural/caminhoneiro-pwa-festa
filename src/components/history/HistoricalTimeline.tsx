@@ -1,0 +1,230 @@
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { Calendar, ChevronDown, ChevronUp, Users, Award, AlertTriangle, Sparkles, Flag } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { historicalMilestones } from "@/data/historyData";
+import { HistoricalMilestone } from "@/types/history";
+
+const significanceIcons = {
+  foundation: Flag,
+  growth: Users,
+  recognition: Award,
+  controversy: AlertTriangle,
+  future: Sparkles
+};
+
+const significanceColors = {
+  foundation: "text-trucker-blue",
+  growth: "text-trucker-green",
+  recognition: "text-trucker-yellow",
+  controversy: "text-red-500",
+  future: "text-purple-500"
+};
+
+interface TimelineItemProps {
+  milestone: HistoricalMilestone;
+  index: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+}
+
+const TimelineItem = ({ milestone, index, isExpanded, onToggle }: TimelineItemProps) => {
+  const IconComponent = significanceIcons[milestone.significance];
+  const iconColor = significanceColors[milestone.significance];
+  const isEven = index % 2 === 0;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: isEven ? -50 : 50 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      className="relative"
+    >
+      {/* Timeline Line */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-border" />
+      
+      {/* Timeline Dot */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 top-8 z-10">
+        <div className="w-12 h-12 bg-background border-4 border-trucker-blue rounded-full flex items-center justify-center">
+          <IconComponent className={`w-6 h-6 ${iconColor}`} />
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className={`grid grid-cols-2 gap-8 mb-16 ${isEven ? '' : 'text-right'}`}>
+        <div className={isEven ? 'pr-8' : 'order-2 pl-8'}>
+          <Card className="group hover:shadow-lg transition-shadow duration-300">
+            <CardContent className="p-6">
+              {/* Year Badge */}
+              <Badge className="mb-3 bg-trucker-blue text-trucker-blue-foreground">
+                {milestone.year}
+              </Badge>
+
+              {/* Title */}
+              <h3 className="text-xl font-bold mb-2 text-foreground">
+                {milestone.title}
+              </h3>
+
+              {/* Description */}
+              <p className="text-muted-foreground mb-4">
+                {milestone.description}
+              </p>
+
+              {/* Participants */}
+              {milestone.participantsEstimate && (
+                <div className="flex items-center gap-2 mb-4">
+                  <Users className="w-4 h-4 text-trucker-green" />
+                  <span className="text-sm font-medium text-trucker-green">
+                    {milestone.participantsEstimate}
+                  </span>
+                </div>
+              )}
+
+              {/* Expand Button */}
+              <Button
+                onClick={onToggle}
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp className="w-4 h-4 mr-2" />
+                    Menos detalhes
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4 mr-2" />
+                    Ver mais detalhes
+                  </>
+                )}
+              </Button>
+
+              {/* Expanded Content */}
+              {isExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-4 pt-4 border-t space-y-4"
+                >
+                  {milestone.longDescription && (
+                    <p className="text-sm text-muted-foreground">
+                      {milestone.longDescription}
+                    </p>
+                  )}
+
+                  {milestone.keyFigures && milestone.keyFigures.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">Figuras Importantes:</h4>
+                      <div className="space-y-2">
+                        {milestone.keyFigures.map((figure, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            {figure.photo && (
+                              <img
+                                src={figure.photo}
+                                alt={figure.name}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            )}
+                            <div>
+                              <p className="text-sm font-medium">{figure.name}</p>
+                              <p className="text-xs text-muted-foreground">{figure.role}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {milestone.context && (
+                    <div>
+                      <h4 className="text-sm font-semibold mb-1">Contexto:</h4>
+                      <p className="text-sm text-muted-foreground">{milestone.context}</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Image */}
+        <div className={`${isEven ? 'order-2 pl-8' : 'pr-8'} flex items-center`}>
+          {milestone.images && milestone.images[0] && (
+            <div className="relative overflow-hidden rounded-lg group">
+              <img
+                src={milestone.images[0].url}
+                alt={milestone.images[0].caption}
+                className={`w-full h-48 object-cover transition-all duration-300 group-hover:scale-105 ${
+                  milestone.images[0].isHistorical ? 'sepia' : ''
+                }`}
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+              <div className="absolute bottom-2 left-2 right-2">
+                <p className="text-white text-xs bg-black/60 px-2 py-1 rounded">
+                  {milestone.images[0].caption}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export const HistoricalTimeline = () => {
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (id: string) => {
+    const newExpanded = new Set(expandedItems);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedItems(newExpanded);
+  };
+
+  return (
+    <section className="py-16 px-4 bg-muted/30">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Calendar className="w-8 h-8 text-trucker-blue" />
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+              Linha do Tempo da Nossa História
+            </h2>
+          </div>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Acompanhe a evolução da Festa do Caminhoneiro através dos anos, 
+            desde seus primórdios até os desafios e conquistas atuais.
+          </p>
+        </motion.div>
+
+        {/* Timeline */}
+        <div className="relative">
+          {historicalMilestones.map((milestone, index) => (
+            <TimelineItem
+              key={milestone.id}
+              milestone={milestone}
+              index={index}
+              isExpanded={expandedItems.has(milestone.id)}
+              onToggle={() => toggleExpanded(milestone.id)}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
