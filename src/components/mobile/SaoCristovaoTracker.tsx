@@ -18,12 +18,12 @@ export const SaoCristovaoTracker = () => {
   const { data, isLoading, isError, refetch, isFetching } = useTraccarData();
 
   // Estado de carregamento inicial
-  if (isLoading) {
+  if (isLoading && !data) {
     return <TrackerSkeleton />;
   }
 
-  // Estado de erro
-  if (isError) {
+  // Estado de erro apenas se não houver dados
+  if (isError && !data) {
     return <TrackerError onRetry={refetch} isRetrying={isFetching} />;
   }
 
@@ -40,6 +40,9 @@ export const SaoCristovaoTracker = () => {
   const batteryColor = getBatteryColor(batteryLevel);
   const lastUpdate = formatLastUpdate(data.fixTime);
   const isLive = isRecentUpdate(data.fixTime);
+  
+  // Mostrar indicador de erro de conexão se houver erro mas dados em cache
+  const hasConnectionError = isError && data;
 
   return (
     <div className="px-4 py-6">
@@ -59,14 +62,14 @@ export const SaoCristovaoTracker = () => {
             <div className="flex items-center gap-2">
               <Badge 
                 variant="destructive" 
-                className={`${isLive ? 'animate-pulse bg-trucker-red' : 'bg-muted'} text-xs font-bold`}
+                className={`${(isLive && !hasConnectionError) ? 'animate-pulse bg-trucker-red' : 'bg-muted'} text-xs font-bold`}
               >
-                {isLive ? 'AO VIVO' : 'OFFLINE'}
+                {hasConnectionError ? 'DADOS OFFLINE' : (isLive ? 'AO VIVO' : 'OFFLINE')}
               </Badge>
               <motion.div
-                animate={{ scale: isLive ? [1, 1.2, 1] : 1 }}
-                transition={{ duration: 2, repeat: isLive ? Infinity : 0 }}
-                className={`w-2 h-2 rounded-full ${isLive ? 'bg-trucker-red' : 'bg-muted'}`}
+                animate={{ scale: (isLive && !hasConnectionError) ? [1, 1.2, 1] : 1 }}
+                transition={{ duration: 2, repeat: (isLive && !hasConnectionError) ? Infinity : 0 }}
+                className={`w-2 h-2 rounded-full ${(isLive && !hasConnectionError) ? 'bg-trucker-red' : 'bg-muted'}`}
               />
             </div>
             <span className="text-xs text-muted-foreground">
