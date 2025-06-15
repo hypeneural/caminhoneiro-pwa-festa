@@ -128,51 +128,64 @@ export const useStories = () => {
     const currentCollection = collections.find(c => c.id === playerState.currentCollection);
     if (!currentCollection) return;
 
-    if (direction === 'next') {
-      if (playerState.currentStoryIndex < currentCollection.stories.length - 1) {
-        setPlayerState(prev => ({
-          ...prev,
-          currentStoryIndex: prev.currentStoryIndex + 1,
-          progress: 0
-        }));
-      } else {
-        // Move to next collection
-        const currentCollectionIndex = collections.findIndex(c => c.id === playerState.currentCollection);
-        if (currentCollectionIndex < collections.length - 1) {
-          const nextCollection = collections[currentCollectionIndex + 1];
-          setPlayerState(prev => ({
+    setPlayerState(prev => {
+      if (direction === 'next') {
+        if (prev.currentStoryIndex < currentCollection.stories.length - 1) {
+          // Stay within current collection
+          return {
             ...prev,
-            currentCollection: nextCollection.id,
-            currentStoryIndex: 0,
+            currentStoryIndex: prev.currentStoryIndex + 1,
             progress: 0
-          }));
+          };
         } else {
-          // End of all stories
-          closeStoryPlayer();
+          // Move to next collection only if it exists
+          const currentCollectionIndex = collections.findIndex(c => c.id === prev.currentCollection);
+          if (currentCollectionIndex < collections.length - 1) {
+            const nextCollection = collections[currentCollectionIndex + 1];
+            return {
+              ...prev,
+              currentCollection: nextCollection.id,
+              currentStoryIndex: 0,
+              progress: 0
+            };
+          } else {
+            // Close player at the end
+            return {
+              ...prev,
+              currentCollection: null,
+              currentStoryIndex: 0,
+              isPlaying: false,
+              progress: 0
+            };
+          }
         }
-      }
-    } else {
-      if (playerState.currentStoryIndex > 0) {
-        setPlayerState(prev => ({
-          ...prev,
-          currentStoryIndex: prev.currentStoryIndex - 1,
-          progress: 0
-        }));
       } else {
-        // Move to previous collection
-        const currentCollectionIndex = collections.findIndex(c => c.id === playerState.currentCollection);
-        if (currentCollectionIndex > 0) {
-          const prevCollection = collections[currentCollectionIndex - 1];
-          setPlayerState(prev => ({
+        // Previous navigation
+        if (prev.currentStoryIndex > 0) {
+          // Stay within current collection
+          return {
             ...prev,
-            currentCollection: prevCollection.id,
-            currentStoryIndex: prevCollection.stories.length - 1,
+            currentStoryIndex: prev.currentStoryIndex - 1,
             progress: 0
-          }));
+          };
+        } else {
+          // Move to previous collection only if it exists
+          const currentCollectionIndex = collections.findIndex(c => c.id === prev.currentCollection);
+          if (currentCollectionIndex > 0) {
+            const prevCollection = collections[currentCollectionIndex - 1];
+            return {
+              ...prev,
+              currentCollection: prevCollection.id,
+              currentStoryIndex: prevCollection.stories.length - 1,
+              progress: 0
+            };
+          }
+          // Stay at current story if no previous collection
+          return prev;
         }
       }
-    }
-  }, [playerState.currentCollection, playerState.currentStoryIndex, collections, closeStoryPlayer]);
+    });
+  }, [playerState.currentCollection, collections]);
 
   const togglePlayPause = useCallback(() => {
     setPlayerState(prev => ({

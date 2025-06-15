@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Share, Volume2, VolumeX } from 'lucide-react';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { X, Share, Volume2, VolumeX, Heart } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { OptimizedImage } from '@/components/ui/optimized-image';
@@ -42,6 +42,10 @@ export function StoryViewer({
   const [showControls, setShowControls] = useState(true);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [isLongPress, setIsLongPress] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragY, setDragY] = useState(0);
+  const [lastTap, setLastTap] = useState(0);
+  const [isDimmed, setIsDimmed] = useState(false);
 
   // Auto-hide controls
   useEffect(() => {
@@ -150,23 +154,67 @@ export function StoryViewer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onNavigate, onClose, onToggleMute]);
 
+  // Handle swipe down to close
+  const handleDragStart = useCallback(() => {
+    setIsDragging(true);
+  }, []);
+
+  const handleDrag = useCallback((event: any, info: PanInfo) => {
+    if (info.offset.y > 0) {
+      setDragY(info.offset.y);
+      const opacity = Math.max(0.3, 1 - info.offset.y / 300);
+      setIsDimmed(opacity < 0.8);
+    }
+  }, []);
+
+  const handleDragEnd = useCallback((event: any, info: PanInfo) => {
+    setIsDragging(false);
+    setDragY(0);
+    setIsDimmed(false);
+    
+    if (info.offset.y > 150) {
+      onClose();
+    }
+  }, [onClose]);
+
+  // Enhanced touch handlers with haptic feedback
   const handleTouchStart = useCallback((area: 'left' | 'center' | 'right') => {
+    if (navigator.vibrate) navigator.vibrate(10);
+    
     if (area === 'center') {
       const timer = setTimeout(() => {
         setIsLongPress(true);
+        setIsDimmed(true);
         onTogglePlayPause();
-      }, 500);
+        if (navigator.vibrate) navigator.vibrate(50);
+      }, 300);
       setLongPressTimer(timer);
     }
   }, [onTogglePlayPause]);
 
-  const handleTouchEnd = useCallback((area: 'left' | 'center' | 'right') => {
+  const handleTouchEnd = useCallback((area: 'left' | 'center' | 'right', event?: React.TouchEvent) => {
     if (longPressTimer) {
       clearTimeout(longPressTimer);
       setLongPressTimer(null);
     }
 
-    if (!isLongPress) {
+    if (!isLongPress && !isDragging) {
+      // Handle double tap for like
+      if (area === 'center' && event) {
+        const currentTime = new Date().getTime();
+        const tapDelay = currentTime - lastTap;
+        
+        if (tapDelay < 300 && tapDelay > 0) {
+          // Double tap detected
+          if (navigator.vibrate) navigator.vibrate([30, 30, 30]);
+          // Add like animation here if needed
+          return;
+        }
+        
+        setLastTap(currentTime);
+      }
+      
+      // Single tap navigation
       if (area === 'left') {
         onNavigate('prev');
       } else if (area === 'right') {
@@ -175,8 +223,9 @@ export function StoryViewer({
     }
 
     setIsLongPress(false);
+    setIsDimmed(false);
     setShowControls(true);
-  }, [longPressTimer, isLongPress, onNavigate]);
+  }, [longPressTimer, isLongPress, isDragging, lastTap, onNavigate]);
 
   const handleShare = useCallback(async () => {
     if (!currentStory) return;
@@ -216,7 +265,21 @@ export function StoryViewer({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black border-0">
-        <div className="relative w-full h-full flex flex-col">
+        <motion.div 
+          className="relative w-full h-full flex flex-col"
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 300 }}
+          dragElastic={0.1}
+          onDragStart={handleDragStart}
+          onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
+          animate={{ 
+            y: dragY,
+            opacity: isDimmed ? 0.6 : 1,
+            scale: isDragging ? 0.95 : 1
+          }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        >
           {/* Progress bars */}
           <div className="absolute top-0 left-0 right-0 z-50 flex gap-1 p-4">
             {currentCollection.stories.map((_, index) => (
@@ -238,7 +301,14 @@ export function StoryViewer({
           </div>
 
           {/* Content */}
-          <div className="relative flex-1 flex items-center justify-center">
+          <motion.div 
+            className="relative flex-1 flex items-center justify-center"
+            animate={{
+              filter: isDimmed ? 'brightness(0.4)' : 'brightness(1)',
+              scale: isLongPress ? 0.98 : 1
+            }}
+            transition={{ duration: 0.2 }}
+          >
             {currentStory.type === 'video' ? (
               <video
                 ref={videoRef}
@@ -257,28 +327,31 @@ export function StoryViewer({
               />
             )}
 
-            {/* Touch areas */}
-            <button
-              className="absolute left-0 top-0 w-1/3 h-full z-30 cursor-pointer"
+            {/* Enhanced Touch areas with better feedback */}
+            <motion.button
+              className="absolute left-0 top-0 w-1/3 h-full z-30 cursor-pointer active:bg-white/5"
               onTouchStart={() => handleTouchStart('left')}
-              onTouchEnd={() => handleTouchEnd('left')}
+              onTouchEnd={(e) => handleTouchEnd('left', e)}
               onClick={() => onNavigate('prev')}
+              whileTap={{ scale: 0.98 }}
               aria-label="Story anterior"
             />
-            <button
-              className="absolute left-1/3 top-0 w-1/3 h-full z-30 cursor-pointer"
+            <motion.button
+              className="absolute left-1/3 top-0 w-1/3 h-full z-30 cursor-pointer active:bg-white/5"
               onTouchStart={() => handleTouchStart('center')}
-              onTouchEnd={() => handleTouchEnd('center')}
+              onTouchEnd={(e) => handleTouchEnd('center', e)}
+              whileTap={{ scale: 0.98 }}
               aria-label="Pausar/Reproduzir"
             />
-            <button
-              className="absolute right-0 top-0 w-1/3 h-full z-30 cursor-pointer"
+            <motion.button
+              className="absolute right-0 top-0 w-1/3 h-full z-30 cursor-pointer active:bg-white/5"
               onTouchStart={() => handleTouchStart('right')}
-              onTouchEnd={() => handleTouchEnd('right')}
+              onTouchEnd={(e) => handleTouchEnd('right', e)}
               onClick={() => onNavigate('next')}
+              whileTap={{ scale: 0.98 }}
               aria-label="Próximo story"
             />
-          </div>
+          </motion.div>
 
           {/* Top controls */}
           <AnimatePresence>
@@ -388,7 +461,7 @@ export function StoryViewer({
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
