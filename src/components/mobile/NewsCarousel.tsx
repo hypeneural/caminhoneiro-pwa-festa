@@ -9,8 +9,7 @@ import { CarouselSkeleton } from "@/components/ui/skeleton";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { TouchFeedback } from "@/components/ui/touch-feedback";
 import { AccessibleButton } from "@/components/ui/accessible-button";
-import { VirtualCarousel } from "@/components/ui/virtual-carousel";
-import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { SimpleCarousel } from "@/components/ui/simple-carousel";
 import { useNews } from "@/hooks/useNews";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ROUTES, THEME_COLORS, APP_TEXTS } from "@/constants";
@@ -81,18 +80,14 @@ const NewsCard = React.memo(({ news, index }: { news: any; index: number }) => {
 export const NewsCarousel = React.memo(() => {
   const { latestNews, loading } = useNews();
   const { navigateTo } = useNavigation();
-  const { ref: intersectionRef, isIntersecting } = useIntersectionObserver({
-    threshold: 0.1,
-    rootMargin: '100px'
-  });
   
-  const renderNewsItem = React.useCallback((news: any, index: number, isVisible: boolean) => {
-    return <NewsCard key={news.id} news={news} index={index} />;
+  const renderNewsItem = React.useCallback((news: any, index: number) => {
+    return <NewsCard news={news} index={index} />;
   }, []);
 
   return (
     <ErrorBoundary fallback={CarouselErrorFallback}>
-      <section ref={intersectionRef} className="mb-6" aria-labelledby="news-section">
+      <section className="mb-6" aria-labelledby="news-section">
         {loading ? (
           <div aria-label="Carregando notícias">
             <div className="flex items-center justify-between px-4 mb-4">
@@ -126,18 +121,12 @@ export const NewsCarousel = React.memo(() => {
               </AccessibleButton>
             </div>
 
-            {isIntersecting && (
-              <VirtualCarousel
-                items={latestNews}
-                renderItem={renderNewsItem}
-                itemWidth={320}
-                gap={16}
-                className="px-4"
-                overscan={2}
-                autoPlay={false}
-                showIndicators={true}
-              />
-            )}
+            <SimpleCarousel
+              items={latestNews}
+              renderItem={renderNewsItem}
+              itemWidth="w-80"
+              className="px-4"
+            />
           </>
         )}
       </section>

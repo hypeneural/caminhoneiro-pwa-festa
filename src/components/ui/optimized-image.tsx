@@ -31,19 +31,8 @@ export function OptimizedImage({
     setIsLoaded(true);
   };
 
-  // Convert Unsplash URL to WebP if supported
+  // Simple src optimization
   const getOptimizedSrc = (originalSrc: string) => {
-    if (originalSrc.includes('unsplash.com')) {
-      // Check if browser supports WebP
-      const canvas = document.createElement('canvas');
-      const supportsWebP = canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
-      
-      if (supportsWebP) {
-        const url = new URL(originalSrc);
-        url.searchParams.set('fm', 'webp');
-        return url.toString();
-      }
-    }
     return originalSrc;
   };
 

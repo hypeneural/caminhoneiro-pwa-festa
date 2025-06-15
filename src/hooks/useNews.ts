@@ -26,7 +26,7 @@ export function useNews() {
     
     try {
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       let filteredNews = [...mockNews];
       

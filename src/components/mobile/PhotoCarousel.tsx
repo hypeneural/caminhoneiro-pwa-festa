@@ -9,8 +9,7 @@ import { CarouselSkeleton } from "@/components/ui/skeleton";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { TouchFeedback } from "@/components/ui/touch-feedback";
 import { AccessibleButton } from "@/components/ui/accessible-button";
-import { VirtualCarousel } from "@/components/ui/virtual-carousel";
-import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { SimpleCarousel } from "@/components/ui/simple-carousel";
 import { usePhotos } from "@/hooks/usePhotos";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ROUTES, THEME_COLORS, APP_TEXTS } from "@/constants";
@@ -97,18 +96,14 @@ const PhotoCard = React.memo(({ photo, index }: { photo: any; index: number }) =
 export const PhotoCarousel = React.memo(() => {
   const { latestPhotos, loading } = usePhotos();
   const { navigateTo } = useNavigation();
-  const { ref: intersectionRef, isIntersecting } = useIntersectionObserver({
-    threshold: 0.1,
-    rootMargin: '100px'
-  });
   
-  const renderPhotoItem = React.useCallback((photo: any, index: number, isVisible: boolean) => {
-    return <PhotoCard key={photo.id} photo={photo} index={index} />;
+  const renderPhotoItem = React.useCallback((photo: any, index: number) => {
+    return <PhotoCard photo={photo} index={index} />;
   }, []);
 
   return (
     <ErrorBoundary fallback={CarouselErrorFallback}>
-      <section ref={intersectionRef} className="mb-6" aria-labelledby="photos-section">
+      <section className="mb-6" aria-labelledby="photos-section">
         {loading ? (
           <div aria-label="Carregando fotos">
             <div className="flex items-center justify-between px-4 mb-4">
@@ -142,19 +137,12 @@ export const PhotoCarousel = React.memo(() => {
               </AccessibleButton>
             </div>
 
-            {isIntersecting && (
-              <VirtualCarousel
-                items={latestPhotos}
-                renderItem={renderPhotoItem}
-                itemWidth={256}
-                gap={16}
-                className="px-4"
-                overscan={2}
-                autoPlay={true}
-                autoPlayInterval={4000}
-                showIndicators={true}
-              />
-            )}
+            <SimpleCarousel
+              items={latestPhotos}
+              renderItem={renderPhotoItem}
+              itemWidth="w-64"
+              className="px-4"
+            />
           </>
         )}
       </section>

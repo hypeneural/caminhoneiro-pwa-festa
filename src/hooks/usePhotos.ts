@@ -24,7 +24,7 @@ export function usePhotos() {
     
     try {
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       let filteredPhotos = [...mockPhotos];
       
