@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, X, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { Download, X, WifiOff, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { usePWA } from '@/hooks/usePWA';
@@ -17,6 +17,7 @@ export const PWAPrompt = () => {
   const { toast } = useToast();
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [showOfflineBanner, setShowOfflineBanner] = useState(false);
 
   useEffect(() => {
     if (isInstallable && !dismissed) {
@@ -31,11 +32,14 @@ export const PWAPrompt = () => {
 
   useEffect(() => {
     if (isOffline) {
+      setShowOfflineBanner(true);
       toast({
         title: "Modo Offline",
         description: "Você está navegando offline. Algumas funcionalidades podem estar limitadas.",
         variant: "destructive",
       });
+    } else {
+      setShowOfflineBanner(false);
     }
   }, [isOffline, toast]);
 
@@ -79,26 +83,25 @@ export const PWAPrompt = () => {
 
   return (
     <>
-      {/* Status de Conectividade */}
-      <div className="fixed top-16 right-4 z-50">
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2"
-        >
-          {isOffline ? (
-            <div className="flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm">
+      {/* Status de Conectividade - Apenas quando Offline */}
+      {showOfflineBanner && (
+        <div className="fixed top-16 right-4 z-50">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="flex items-center gap-2"
+          >
+            <div 
+              className="flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-destructive/90 transition-colors"
+              onClick={() => setShowOfflineBanner(false)}
+            >
               <WifiOff className="h-4 w-4" />
               Offline
             </div>
-          ) : (
-            <div className="flex items-center gap-2 bg-success text-success-foreground px-3 py-1 rounded-full text-sm">
-              <Wifi className="h-4 w-4" />
-              Online
-            </div>
-          )}
-        </motion.div>
-      </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Prompt de Instalação */}
       <AnimatePresence>
