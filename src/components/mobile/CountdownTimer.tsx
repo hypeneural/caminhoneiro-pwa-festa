@@ -186,7 +186,7 @@ export function CountdownTimer() {
         </motion.div>
         
         <div>
-          <h2 className="text-lg font-bold text-foreground">Festa em</h2>
+          <h2 className="text-lg font-bold text-foreground">Festa começa em</h2>
           <motion.div 
             className="flex items-center gap-1"
             animate={{ opacity: [0.7, 1, 0.7] }}

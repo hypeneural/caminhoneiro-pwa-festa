@@ -18,11 +18,20 @@ const Index = () => {
       
       {/* Main content with proper spacing for fixed elements */}
       <main className="pt-16 pb-20">
-        {/* Stories Section */}
+        {/* Countdown Timer - First Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+        >
+          <CountdownTimer />
+        </motion.div>
+
+        {/* Stories Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
         >
           <Stories />
         </motion.div>
@@ -31,18 +40,9 @@ const Index = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <SaoCristovaoTracker />
-        </motion.div>
-
-        {/* Countdown Timer */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <CountdownTimer />
+          <SaoCristovaoTracker />
         </motion.div>
 
         {/* News Carousel */}
@@ -78,7 +78,6 @@ const Index = () => {
 
       {/* Fixed Navigation Elements */}
       <BottomNavigation />
-      <FloatingActionButton />
       
       {/* PWA Features */}
       <PWAPrompt />
