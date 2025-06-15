@@ -18,22 +18,22 @@ const Index = () => {
       
       {/* Main content with proper spacing for fixed elements */}
       <main className="pt-16 pb-20">
-        {/* Countdown Timer - First Section */}
+        {/* Stories Section - First */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <CountdownTimer />
+          <Stories />
         </motion.div>
 
-        {/* Stories Section */}
+        {/* Countdown Timer - Second */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Stories />
+          <CountdownTimer />
         </motion.div>
 
         {/* São Cristóvão Tracker */}
