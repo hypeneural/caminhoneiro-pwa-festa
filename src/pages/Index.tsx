@@ -8,6 +8,7 @@ import { PhotoCarousel } from "@/components/mobile/PhotoCarousel";
 import { QuickAccess } from "@/components/mobile/QuickAccess";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
+import { PWAPrompt } from "@/components/PWAPrompt";
 
 const Index = () => {
   return (
@@ -78,6 +79,9 @@ const Index = () => {
       {/* Fixed Navigation Elements */}
       <BottomNavigation />
       <FloatingActionButton />
+      
+      {/* PWA Features */}
+      <PWAPrompt />
     </div>
   );
 };
