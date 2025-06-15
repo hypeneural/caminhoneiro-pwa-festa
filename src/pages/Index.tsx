@@ -15,32 +15,49 @@ import { useMemoryManager } from "@/hooks/useMemoryManager";
 import { useEffect } from "react";
 
 const Index = () => {
-  const { recordVisit, prefetchPredicted } = usePrefetch();
-  const { metrics, isViolatingBudget, measureRender } = usePerformanceMonitor('IndexPage');
-  const { stats } = useMemoryManager();
+  // Safely initialize hooks with error boundaries
+  let prefetchHook = null;
+  let performanceHook = null;
+  let memoryHook = null;
+
+  try {
+    prefetchHook = usePrefetch();
+  } catch (error) {
+    console.warn('Prefetch hook failed to initialize:', error);
+  }
+
+  try {
+    performanceHook = usePerformanceMonitor('IndexPage');
+  } catch (error) {
+    console.warn('Performance monitor failed to initialize:', error);
+  }
+
+  try {
+    memoryHook = useMemoryManager();
+  } catch (error) {
+    console.warn('Memory manager failed to initialize:', error);
+  }
+
+  const { recordVisit, prefetchPredicted } = prefetchHook || { recordVisit: () => {}, prefetchPredicted: () => {} };
+  const { metrics, isViolatingBudget } = performanceHook || { metrics: null, isViolatingBudget: false };
+  const { stats } = memoryHook || { stats: null };
 
   // Record page visit and prefetch predicted routes
   useEffect(() => {
-    recordVisit('/');
-    
-    // Prefetch likely next routes after a delay
-    const timer = setTimeout(() => {
-      prefetchPredicted();
-    }, 2000);
+    try {
+      recordVisit('/');
+      
+      // Prefetch likely next routes after a delay
+      const timer = setTimeout(() => {
+        prefetchPredicted();
+      }, 2000);
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    } catch (error) {
+      console.warn('Page visit recording failed:', error);
+    }
   }, [recordVisit, prefetchPredicted]);
 
-  // Measure render performance
-  useEffect(() => {
-    try {
-      measureRender(() => {
-        // Performance measurement logic here
-      });
-    } catch (error) {
-      console.warn('Performance measurement failed:', error);
-    }
-  }, [measureRender]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,7 +134,7 @@ const Index = () => {
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed bottom-24 right-4 bg-black/80 text-white text-xs p-2 rounded max-w-xs">
           <div>FPS: {metrics?.currentFPS?.toFixed(1) || 'N/A'}</div>
-          <div>Memory: {((stats?.usedHeapSize || 0) / 1024 / 1024).toFixed(1)}MB</div>
+          <div>Memory: {stats ? ((stats.usedHeapSize || 0) / 1024 / 1024).toFixed(1) : 'N/A'}MB</div>
           {isViolatingBudget && <div className="text-red-400">⚠️ Budget Violation</div>}
         </div>
       )}
