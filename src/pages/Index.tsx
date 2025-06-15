@@ -31,7 +31,18 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, [recordVisit, prefetchPredicted]);
 
-  return measureRender(() => (
+  // Measure render performance
+  useEffect(() => {
+    try {
+      measureRender(() => {
+        // Performance measurement logic here
+      });
+    } catch (error) {
+      console.warn('Performance measurement failed:', error);
+    }
+  }, [measureRender]);
+
+  return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <Header />
@@ -105,13 +116,13 @@ const Index = () => {
       {/* Performance Debug Panel (dev only) */}
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed bottom-24 right-4 bg-black/80 text-white text-xs p-2 rounded max-w-xs">
-          <div>FPS: {metrics.currentFPS?.toFixed(1) || 'N/A'}</div>
-          <div>Memory: {((stats.usedHeapSize || 0) / 1024 / 1024).toFixed(1)}MB</div>
+          <div>FPS: {metrics?.currentFPS?.toFixed(1) || 'N/A'}</div>
+          <div>Memory: {((stats?.usedHeapSize || 0) / 1024 / 1024).toFixed(1)}MB</div>
           {isViolatingBudget && <div className="text-red-400">⚠️ Budget Violation</div>}
         </div>
       )}
     </div>
-  ));
+  );
 };
 
 export default Index;

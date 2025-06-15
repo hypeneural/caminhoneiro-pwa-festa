@@ -261,7 +261,7 @@ class MemoryManager {
 }
 
 export function useMemoryManager() {
-  const manager = useRef(MemoryManager.getInstance());
+  const manager = useRef<MemoryManager | null>(null);
   const [state, setState] = useState({
     stats: {
       totalHeapSize: 0,
@@ -274,9 +274,23 @@ export function useMemoryManager() {
     pools: new Map(),
   });
 
+  // Initialize manager safely
+  useEffect(() => {
+    try {
+      manager.current = MemoryManager.getInstance();
+    } catch (error) {
+      console.warn('Memory manager initialization failed:', error);
+    }
+  }, []);
+
   const updateStats = useCallback(() => {
-    const stats = manager.current.getMemoryStats();
-    setState(prevState => ({ ...prevState, stats }));
+    try {
+      if (!manager.current) return;
+      const stats = manager.current.getMemoryStats();
+      setState(prevState => ({ ...prevState, stats }));
+    } catch (error) {
+      console.warn('Failed to update memory stats:', error);
+    }
   }, []);
 
   const createPool = useCallback(<T>(
@@ -285,19 +299,42 @@ export function useMemoryManager() {
     reset: (item: T) => void,
     maxSize?: number
   ) => {
-    return manager.current.createPool(name, factory, reset, maxSize);
+    try {
+      if (!manager.current) return null;
+      return manager.current.createPool(name, factory, reset, maxSize);
+    } catch (error) {
+      console.warn('Failed to create memory pool:', error);
+      return null;
+    }
   }, []);
 
   const acquire = useCallback(<T>(poolName: string): T | null => {
-    return manager.current.acquire<T>(poolName);
+    try {
+      if (!manager.current) return null;
+      return manager.current.acquire<T>(poolName);
+    } catch (error) {
+      console.warn('Failed to acquire from memory pool:', error);
+      return null;
+    }
   }, []);
 
   const release = useCallback(<T>(poolName: string, item: T) => {
-    manager.current.release(poolName, item);
+    try {
+      if (!manager.current) return;
+      manager.current.release(poolName, item);
+    } catch (error) {
+      console.warn('Failed to release to memory pool:', error);
+    }
   }, []);
 
   const addCleanupCallback = useCallback((callback: () => void) => {
-    return manager.current.addCleanupCallback(callback);
+    try {
+      if (!manager.current) return () => {};
+      return manager.current.addCleanupCallback(callback);
+    } catch (error) {
+      console.warn('Failed to add cleanup callback:', error);
+      return () => {};
+    }
   }, []);
 
   // Update stats periodically

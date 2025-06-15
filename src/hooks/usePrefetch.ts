@@ -202,35 +202,60 @@ class SmartPrefetcher {
 }
 
 export function usePrefetch() {
-  const prefetcher = useRef(SmartPrefetcher.getInstance());
+  const prefetcher = useRef<SmartPrefetcher | null>(null);
   const [state, setState] = useState<PrefetchState>({
     currentRoute: '',
     visitStartTime: Date.now(),
   });
 
-  const recordVisit = useCallback((route: string) => {
-    if (state.currentRoute && state.currentRoute !== route) {
-      const timeSpent = Date.now() - state.visitStartTime;
-      prefetcher.current.recordVisit(state.currentRoute, timeSpent);
+  // Initialize prefetcher safely
+  useEffect(() => {
+    try {
+      prefetcher.current = SmartPrefetcher.getInstance();
+    } catch (error) {
+      console.warn('Prefetcher initialization failed:', error);
     }
-    
-    setState({
-      currentRoute: route,
-      visitStartTime: Date.now(),
-    });
+  }, []);
+
+  const recordVisit = useCallback((route: string) => {
+    try {
+      if (!prefetcher.current) return;
+      
+      if (state.currentRoute && state.currentRoute !== route) {
+        const timeSpent = Date.now() - state.visitStartTime;
+        prefetcher.current.recordVisit(state.currentRoute, timeSpent);
+      }
+      
+      setState({
+        currentRoute: route,
+        visitStartTime: Date.now(),
+      });
+    } catch (error) {
+      console.warn('Failed to record visit:', error);
+    }
   }, [state.currentRoute, state.visitStartTime]);
 
   const prefetchRoute = useCallback((route: string, options?: PrefetchOptions) => {
-    return prefetcher.current.prefetchRoute(route, options);
+    try {
+      if (!prefetcher.current) return Promise.resolve();
+      return prefetcher.current.prefetchRoute(route, options);
+    } catch (error) {
+      console.warn('Failed to prefetch route:', error);
+      return Promise.resolve();
+    }
   }, []);
 
   const prefetchPredicted = useCallback(() => {
-    if (!state.currentRoute) return;
-    
-    const predicted = prefetcher.current.predictNextRoutes(state.currentRoute);
-    predicted.forEach(route => {
-      prefetcher.current.prefetchRoute(route, { priority: 'low', delay: 1000 });
-    });
+    try {
+      if (!state.currentRoute || !prefetcher.current) return;
+      
+      const predicted = prefetcher.current.predictNextRoutes(state.currentRoute);
+      predicted.forEach(route => {
+        prefetcher.current?.prefetchRoute(route, { priority: 'low', delay: 1000 });
+      });
+    } catch (error) {
+      console.warn('Failed to prefetch predicted routes:', error);
+    }
   }, [state.currentRoute]);
 
   // Auto-prefetch predicted routes

@@ -253,7 +253,7 @@ class PerformanceTracker {
 }
 
 export function usePerformanceMonitor(componentName?: string) {
-  const tracker = useRef(PerformanceTracker.getInstance());
+  const tracker = useRef<PerformanceTracker | null>(null);
   const [state, setState] = useState({
     metrics: {} as PerformanceMetrics,
     budget: DEFAULT_BUDGET,
@@ -261,29 +261,61 @@ export function usePerformanceMonitor(componentName?: string) {
     violations: [] as string[],
   });
 
+  // Initialize tracker safely
+  useEffect(() => {
+    try {
+      tracker.current = PerformanceTracker.getInstance();
+    } catch (error) {
+      console.warn('Performance tracker initialization failed:', error);
+    }
+  }, []);
+
   const updateMetrics = useCallback(() => {
-    const metrics = tracker.current.getMetrics();
-    const budgetCheck = tracker.current.checkBudget();
-    
-    setState(prevState => ({
-      ...prevState,
-      metrics,
-      isViolatingBudget: !budgetCheck.passed,
-      violations: budgetCheck.violations,
-    }));
+    try {
+      if (!tracker.current) return;
+      
+      const metrics = tracker.current.getMetrics();
+      const budgetCheck = tracker.current.checkBudget();
+      
+      setState(prevState => ({
+        ...prevState,
+        metrics,
+        isViolatingBudget: !budgetCheck.passed,
+        violations: budgetCheck.violations,
+      }));
+    } catch (error) {
+      console.warn('Failed to update performance metrics:', error);
+    }
   }, []);
 
   const measureRender = useCallback((renderFn: () => void) => {
-    return tracker.current.measureRenderTime(componentName || 'Unknown', renderFn);
+    try {
+      if (!tracker.current) return 0;
+      return tracker.current.measureRenderTime(componentName || 'Unknown', renderFn);
+    } catch (error) {
+      console.warn('Render measurement failed:', error);
+      return 0;
+    }
   }, [componentName]);
 
   const measureInteraction = useCallback((callback: () => void) => {
-    return tracker.current.measureInteractionDelay(callback);
+    try {
+      if (!tracker.current) return Promise.resolve(0);
+      return tracker.current.measureInteractionDelay(callback);
+    } catch (error) {
+      console.warn('Interaction measurement failed:', error);
+      return Promise.resolve(0);
+    }
   }, []);
 
   const setBudget = useCallback((budget: Partial<PerformanceBudget>) => {
-    tracker.current.setBudget(budget);
-    setState(prevState => ({ ...prevState, budget: { ...prevState.budget, ...budget } }));
+    try {
+      if (!tracker.current) return;
+      tracker.current.setBudget(budget);
+      setState(prevState => ({ ...prevState, budget: { ...prevState.budget, ...budget } }));
+    } catch (error) {
+      console.warn('Failed to set performance budget:', error);
+    }
   }, []);
 
   // Update metrics periodically
