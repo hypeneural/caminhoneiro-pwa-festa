@@ -24,8 +24,12 @@ export function TouchFeedback({
     setIsPressed(true);
     
     // Haptic feedback for supported devices
-    if (haptic && 'vibrate' in navigator) {
-      navigator.vibrate(10);
+    if (haptic && 'vibrate' in navigator && navigator.vibrate) {
+      try {
+        navigator.vibrate(10);
+      } catch (error) {
+        // Ignore vibration errors
+      }
     }
   }, [disabled, haptic]);
 

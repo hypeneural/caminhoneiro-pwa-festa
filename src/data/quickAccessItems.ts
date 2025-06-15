@@ -1,5 +1,5 @@
 import { QuickAccessItem } from '@/types/quickAccess';
-import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText } from "lucide-react";
+import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText, Shield, Users, Heart } from "lucide-react";
 
 export const quickAccessItems: QuickAccessItem[] = [
   // Primeira Linha
@@ -10,7 +10,6 @@ export const quickAccessItems: QuickAccessItem[] = [
     color: "text-purple-600",
     bgColor: "bg-purple-50 dark:bg-purple-900/20",
     route: "/galeria",
-    badge: { count: 5, type: 'new' },
     category: "media",
     priority: 1,
     description: "Veja as melhores fotos do evento",
@@ -35,7 +34,6 @@ export const quickAccessItems: QuickAccessItem[] = [
     color: "text-trucker-green",
     bgColor: "bg-green-50 dark:bg-green-900/20",
     route: "/programacao",
-    badge: { count: 2, type: 'update' },
     category: "schedule",
     priority: 3,
     description: "Confira a programação completa",
@@ -44,15 +42,15 @@ export const quickAccessItems: QuickAccessItem[] = [
   
   // Segunda Linha
   {
-    id: "rota",
-    title: "Rota da Procissão",
-    icon: Route,
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
-    route: "/rota-completa",
-    category: "navigation",
+    id: "sao-cristovao",
+    title: "São Cristóvão",
+    icon: Shield,
+    color: "text-trucker-yellow",
+    bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
+    route: "/sao-cristovao",
+    category: "info",
     priority: 4,
-    description: "Veja o percurso da procissão",
+    description: "Conheça o padroeiro dos motoristas",
     isActive: true
   },
   {
@@ -112,7 +110,6 @@ export const quickAccessItems: QuickAccessItem[] = [
     color: "text-blue-600",
     bgColor: "bg-blue-50 dark:bg-blue-900/20",
     route: "/noticias",
-    badge: { count: 3, type: 'new' },
     category: "info",
     priority: 9,
     description: "Últimas notícias do evento",
@@ -121,34 +118,33 @@ export const quickAccessItems: QuickAccessItem[] = [
   
   // Quarta Linha
   {
+    id: "rota",
+    title: "Rota da Procissão",
+    icon: Route,
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
+    route: "/rota-completa",
+    category: "navigation",
+    priority: 10,
+    description: "Veja o percurso da procissão",
+    isActive: true
+  },
+  {
     id: "faq",
     title: "Dúvidas",
-    icon: BookText,
+    icon: Heart,
     color: "text-green-600",
     bgColor: "bg-green-50 dark:bg-green-900/20",
     route: "/faq",
     category: "info",
-    priority: 10,
-    description: "Perguntas frequentes",
-    isActive: true
-  },
-  {
-    id: "transmissao",
-    title: "Transmissão",
-    icon: BookText,
-    color: "text-red-600",
-    bgColor: "bg-red-50 dark:bg-red-900/20",
-    route: "/cameras",
-    badge: { count: 1, type: 'update' },
-    category: "media",
     priority: 11,
-    description: "Transmissão ao vivo",
+    description: "Perguntas frequentes",
     isActive: true
   },
   {
     id: "historia",
     title: "História",
-    icon: BookText,
+    icon: Users,
     color: "text-amber-700",
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
     route: "/historia",

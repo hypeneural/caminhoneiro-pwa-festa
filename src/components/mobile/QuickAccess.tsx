@@ -7,11 +7,13 @@ import { ErrorBoundary, CarouselErrorFallback } from "@/components/ui/error-boun
 import { GridSkeleton } from "@/components/ui/skeleton";
 import { TouchFeedback, RippleEffect } from "@/components/ui/touch-feedback";
 import { useQuickAccess } from "@/hooks/useQuickAccess";
+import { useDynamicBadges } from "@/hooks/useDynamicBadges";
 import { THEME_COLORS, APP_TEXTS } from "@/constants";
 import { Camera, Star, Heart, Zap, Clock } from "lucide-react";
 
 const QuickAccessCard = React.memo(({ item, index }: { item: any; index: number }) => {
   const { trackUsage, isFavorite, toggleFavorite } = useQuickAccess();
+  const { getBadgeForItem } = useDynamicBadges();
   const [isPressed, setIsPressed] = useState(false);
 
   const handleClick = useCallback(() => {
@@ -51,6 +53,8 @@ const QuickAccessCard = React.memo(({ item, index }: { item: any; index: number 
 
   const isLiveItem = item.id === 'mapa' || item.id === 'cameras';
   const favorite = isFavorite(item.id);
+  const dynamicBadge = getBadgeForItem(item.id);
+  const displayBadge = dynamicBadge || item.badge;
 
   return (
     <motion.div
@@ -116,19 +120,20 @@ const QuickAccessCard = React.memo(({ item, index }: { item: any; index: number 
               )}
 
               {/* Badge with Enhanced Design */}
-              {item.badge && (
+              {displayBadge && (
                 <motion.div
                   className={`
                     absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 text-xs font-bold 
                     rounded-full flex items-center justify-center shadow-lg
-                    ${getBadgeVariant(item.badge.type)}
+                    ${displayBadge.color || getBadgeVariant(displayBadge.type)}
+                    ${displayBadge.pulse ? 'animate-pulse' : ''}
                   `}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: index * 0.1 + 0.3, type: "spring" }}
-                  aria-label={`${item.badge.count} ${item.badge.type}`}
+                  aria-label={`${displayBadge.count} ${displayBadge.type}`}
                 >
-                  {item.badge.count}
+                  {displayBadge.count}
                 </motion.div>
               )}
               

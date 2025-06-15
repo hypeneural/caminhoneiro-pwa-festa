@@ -1,11 +1,21 @@
 import { motion } from "framer-motion";
-import { Menu, Settings, Info, Phone, Share2, Download, Bell } from "lucide-react";
+import { Menu, Settings, Info, Phone, Share2, Download, Bell, Shield } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Header } from "@/components/mobile/Header";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 
 const More = () => {
   const menuItems = [
+    {
+      icon: Shield,
+      title: "São Cristóvão",
+      description: "Conheça o padroeiro dos motoristas",
+      route: "/sao-cristovao",
+      color: "text-trucker-yellow"
+    },
     {
       icon: Bell,
       title: "Notificações",
@@ -30,18 +40,21 @@ const More = () => {
       icon: Info,
       title: "Sobre a Festa",
       description: "História e informações do evento",
+      route: "/about",
       color: "text-trucker-yellow"
     },
     {
       icon: Phone,
       title: "Contato",
       description: "Fale com a organização",
+      route: "/contact",
       color: "text-trucker-orange"
     },
     {
       icon: Settings,
       title: "Configurações",
       description: "Preferências do aplicativo",
+      route: "/settings",
       color: "text-muted-foreground"
     },
   ];
@@ -49,18 +62,7 @@ const More = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="fixed top-0 left-0 right-0 z-50 h-16 bg-background border-b border-border/50 px-4 flex items-center justify-between shadow-sm"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-trucker-blue rounded-lg flex items-center justify-center">
-            <Menu className="w-5 h-5 text-trucker-blue-foreground" />
-          </div>
-          <h1 className="text-lg font-bold text-foreground">Mais</h1>
-        </div>
-      </motion.header>
+      <Header />
 
       {/* Main content */}
       <main className="pt-16 pb-20 px-4">
@@ -97,31 +99,57 @@ const More = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 + index * 0.1 }}
               >
-                <Card className="p-4 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 bg-muted rounded-lg flex items-center justify-center`}>
-                      <item.icon className={`w-5 h-5 ${item.color}`} />
-                    </div>
-                    
-                    <div className="flex-1">
-                      <h3 className="font-medium text-card-foreground">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
+{item.route ? (
+                  <Link to={item.route}>
+                    <Card className="p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 bg-muted rounded-lg flex items-center justify-center`}>
+                          <item.icon className={`w-5 h-5 ${item.color}`} />
+                        </div>
+                        
+                        <div className="flex-1">
+                          <h3 className="font-medium text-card-foreground">
+                            {item.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {item.description}
+                          </p>
+                        </div>
 
-                    {item.hasSwitch ? (
-                      <Switch />
-                    ) : (
-                      <Button variant="ghost" size="sm">
-                        <span className="sr-only">Abrir {item.title}</span>
-                        →
-                      </Button>
-                    )}
-                  </div>
-                </Card>
+                        <Button variant="ghost" size="sm">
+                          <span className="sr-only">Abrir {item.title}</span>
+                          →
+                        </Button>
+                      </div>
+                    </Card>
+                  </Link>
+                ) : (
+                  <Card className="p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 bg-muted rounded-lg flex items-center justify-center`}>
+                        <item.icon className={`w-5 h-5 ${item.color}`} />
+                      </div>
+                      
+                      <div className="flex-1">
+                        <h3 className="font-medium text-card-foreground">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {item.description}
+                        </p>
+                      </div>
+
+                      {item.hasSwitch ? (
+                        <Switch />
+                      ) : (
+                        <Button variant="ghost" size="sm">
+                          <span className="sr-only">Abrir {item.title}</span>
+                          →
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
+                )}
               </motion.div>
             ))}
           </div>
@@ -142,6 +170,9 @@ const More = () => {
           </motion.div>
         </motion.div>
       </main>
+
+      {/* Bottom Navigation */}
+      <BottomNavigation />
     </div>
   );
 };
