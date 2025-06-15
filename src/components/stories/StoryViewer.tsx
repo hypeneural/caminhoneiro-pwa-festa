@@ -100,13 +100,23 @@ export function StoryViewer({
 
     const video = videoRef.current;
     
-    if (isPlaying) {
-      video.play();
-    } else {
-      video.pause();
-    }
+    const handlePlay = async () => {
+      try {
+        if (isPlaying) {
+          await video.play();
+        } else {
+          video.pause();
+        }
+      } catch (error) {
+        // Ignore AbortError which is common when rapidly changing videos
+        if (error instanceof DOMException && error.name !== 'AbortError') {
+          console.error('Video play error:', error);
+        }
+      }
+    };
 
     video.muted = isMuted;
+    handlePlay();
   }, [isPlaying, isMuted, currentStory]);
 
   // Keyboard controls
