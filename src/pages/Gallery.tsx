@@ -1,69 +1,93 @@
 import { motion } from "framer-motion";
-import { Camera, Grid3x3, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Camera } from "lucide-react";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
+import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
+import { SearchBar } from "@/components/gallery/SearchBar";
+import { CategoryFilters } from "@/components/gallery/CategoryFilters";
+import { PhotoGrid } from "@/components/gallery/PhotoGrid";
+import { PhotoLightbox } from "@/components/gallery/PhotoLightbox";
+import { useGallery } from "@/hooks/useGallery";
 
 const Gallery = () => {
+  const {
+    filteredPhotos,
+    loading,
+    selectedPhoto,
+    lightboxOpen,
+    filters,
+    favorites,
+    updateFilters,
+    clearFilters,
+    openLightbox,
+    closeLightbox,
+    navigatePhoto,
+    toggleFavorite,
+    isFiltersActive
+  } = useGallery();
+
+  const currentIndex = selectedPhoto 
+    ? filteredPhotos.findIndex(photo => photo.id === selectedPhoto.id) 
+    : 0;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="fixed top-0 left-0 right-0 z-50 h-16 bg-background border-b border-border/50 px-4 flex items-center justify-between shadow-sm"
+        className="fixed top-0 left-0 right-0 z-50 h-16 bg-background/95 backdrop-blur-sm border-b border-border/50 px-4 flex items-center shadow-sm"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-trucker-blue rounded-lg flex items-center justify-center">
             <Camera className="w-5 h-5 text-trucker-blue-foreground" />
           </div>
-          <h1 className="text-lg font-bold text-foreground">Galeria</h1>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            <Filter className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Grid3x3 className="w-4 h-4" />
-          </Button>
+          <div>
+            <h1 className="text-lg font-bold text-foreground">Galeria</h1>
+            <p className="text-xs text-muted-foreground">
+              {filteredPhotos.length} foto{filteredPhotos.length !== 1 ? 's' : ''}
+            </p>
+          </div>
         </div>
       </motion.header>
 
-      {/* Main content */}
-      <main className="pt-16 pb-20 px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="py-4"
-        >
-          <div className="flex items-center gap-2 mb-6">
-            <Badge variant="secondary" className="bg-trucker-blue/10 text-trucker-blue">
-              2024
-            </Badge>
-            <Badge variant="secondary" className="bg-trucker-red/10 text-trucker-red">
-              Festa do Caminhoneiro
-            </Badge>
-          </div>
+      {/* Search and Filters */}
+      <div className="pt-16 sticky top-16 z-40 bg-background">
+        <SearchBar
+          filters={filters}
+          onFiltersChange={updateFilters}
+          onClearFilters={clearFilters}
+          isFiltersActive={isFiltersActive}
+        />
+        <CategoryFilters
+          filters={filters}
+          onFiltersChange={updateFilters}
+        />
+      </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {Array.from({ length: 20 }).map((_, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                className="aspect-square bg-muted rounded-lg overflow-hidden"
-              >
-                <div className="w-full h-full bg-gradient-to-br from-trucker-blue/20 to-trucker-red/20 flex items-center justify-center">
-                  <Camera className="w-8 h-8 text-muted-foreground" />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+      {/* Main content */}
+      <main className="pb-20">
+        <PhotoGrid
+          photos={filteredPhotos}
+          loading={loading}
+          onPhotoClick={openLightbox}
+          favorites={favorites}
+        />
       </main>
+
+      {/* Lightbox */}
+      <PhotoLightbox
+        photo={selectedPhoto}
+        isOpen={lightboxOpen}
+        onClose={closeLightbox}
+        onNavigate={navigatePhoto}
+        onToggleFavorite={toggleFavorite}
+        favorites={favorites}
+        totalPhotos={filteredPhotos.length}
+        currentIndex={currentIndex}
+      />
+
+      {/* FAB */}
+      <FloatingActionButton />
 
       <BottomNavigation />
     </div>
