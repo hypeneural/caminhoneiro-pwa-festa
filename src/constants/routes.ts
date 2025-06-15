@@ -14,7 +14,8 @@ export const ROUTES = {
   ABOUT: '/about',
   CONTACT: '/contact',
   SETTINGS: '/settings',
-  MORE: '/mais'
+  MORE: '/mais',
+  FAQ: '/faq'
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
