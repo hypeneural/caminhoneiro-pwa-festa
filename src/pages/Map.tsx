@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import ProcissaoMap from "@/components/map/ProcissaoMap";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 
 const Map = () => {
   return (
@@ -33,8 +34,10 @@ const Map = () => {
 
       {/* Main content */}
       <main className="pt-16 pb-20">
-        {/* Map Container */}
-        <ProcissaoMap />
+        {/* Map Container with Error Boundary */}
+        <MapErrorBoundary>
+          <ProcissaoMap />
+        </MapErrorBoundary>
 
         {/* Location Details */}
         <motion.div

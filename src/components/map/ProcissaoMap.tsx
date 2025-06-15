@@ -10,6 +10,16 @@ import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import type { GeoJsonObject } from 'geojson';
 
+// Debug logging helper
+const debugLog = (message: string, data?: any) => {
+  console.log(`[ProcissaoMap] ${message}`, data || '');
+};
+
+// Error logging helper
+const errorLog = (message: string, error?: any) => {
+  console.error(`[ProcissaoMap ERROR] ${message}`, error || '');
+};
+
 interface GeoJSONData extends GeoJsonObject {
   features: any[];
 }
@@ -54,6 +64,8 @@ const MapBounds: React.FC<MapBoundsProps> = ({ routeData, pointData }) => {
 };
 
 const ProcissaoMap: React.FC = () => {
+  debugLog('Component initializing');
+  
   const [routeData, setRouteData] = useState<GeoJSONData | null>(null);
   const [pointData, setPointData] = useState<GeoJSONData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,6 +76,8 @@ const ProcissaoMap: React.FC = () => {
   const { toast } = useToast();
   const toastRef = useRef(toast);
   toastRef.current = toast;
+
+  debugLog('State initialized', { loading, error, isOffline });
 
   // Monitor online/offline status
   useEffect(() => {
@@ -81,40 +95,60 @@ const ProcissaoMap: React.FC = () => {
 
   // Stable fetch function without toast dependency
   const fetchGeoJSON = useCallback(async (url: string): Promise<GeoJSONData | null> => {
+    debugLog(`Fetching GeoJSON from: ${url}`);
+    
     try {
       // Try cache first
       const cacheKey = `geojson_${url}`;
       const cached = localStorage.getItem(cacheKey);
       
       if (cached && isOffline) {
+        debugLog('Using cached data (offline mode)');
         return JSON.parse(cached);
       }
 
+      debugLog('Making network request...');
       const response = await fetch(url);
+      
       if (!response.ok) {
+        errorLog(`HTTP error! status: ${response.status}`);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
+      debugLog('GeoJSON data received', { features: data?.features?.length || 0 });
+      
+      // Validate GeoJSON structure
+      if (!data || !data.features || !Array.isArray(data.features)) {
+        errorLog('Invalid GeoJSON structure', data);
+        throw new Error('Invalid GeoJSON structure');
+      }
       
       // Cache the data
       localStorage.setItem(cacheKey, JSON.stringify(data));
       localStorage.setItem(`${cacheKey}_timestamp`, Date.now().toString());
+      debugLog('Data cached successfully');
       
       return data;
     } catch (err) {
-      console.error(`Error fetching ${url}:`, err);
+      errorLog(`Error fetching ${url}`, err);
       
       // Try to return cached data if available
       const cacheKey = `geojson_${url}`;
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
-        toastRef.current({
-          title: "Mapa offline",
-          description: "Exibindo dados em cache",
-          variant: "default"
-        });
-        return JSON.parse(cached);
+        debugLog('Falling back to cached data');
+        try {
+          const cachedData = JSON.parse(cached);
+          toastRef.current({
+            title: "Mapa offline",
+            description: "Exibindo dados em cache",
+            variant: "default"
+          });
+          return cachedData;
+        } catch (parseErr) {
+          errorLog('Error parsing cached data', parseErr);
+        }
       }
       
       throw err;
@@ -123,31 +157,45 @@ const ProcissaoMap: React.FC = () => {
 
   // Load GeoJSON data only once
   useEffect(() => {
+    debugLog('useEffect: Starting data load');
     let mounted = true;
     
     const loadData = async () => {
-      if (!mounted) return;
+      if (!mounted) {
+        debugLog('Component unmounted, skipping load');
+        return;
+      }
       
+      debugLog('Setting loading state');
       setLoading(true);
       setError(null);
 
       try {
+        debugLog('Starting parallel fetch of route and point data');
         const [route, point] = await Promise.all([
           fetchGeoJSON('https://hypeneural.com/caminhao/geojson.php?f=1'),
           fetchGeoJSON('https://hypeneural.com/caminhao/geojson.php?f=2')
         ]);
 
         if (mounted) {
+          debugLog('Data fetched successfully, updating state', {
+            routeFeatures: route?.features?.length || 0,
+            pointFeatures: point?.features?.length || 0
+          });
           setRouteData(route);
           setPointData(point);
+        } else {
+          debugLog('Component unmounted during fetch, discarding data');
         }
       } catch (err) {
+        errorLog('Error in loadData', err);
         if (mounted) {
           setError('Erro ao carregar dados do mapa');
-          console.error('Error loading map data:', err);
+          errorLog('Setting error state', err);
         }
       } finally {
         if (mounted) {
+          debugLog('Setting loading to false');
           setLoading(false);
         }
       }
@@ -156,6 +204,7 @@ const ProcissaoMap: React.FC = () => {
     loadData();
     
     return () => {
+      debugLog('useEffect cleanup');
       mounted = false;
     };
   }, []); // Remove fetchGeoJSON dependency to avoid infinite loop
