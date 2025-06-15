@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useAdvancedState } from './useAdvancedState';
 
 interface PerformanceMetrics {
   // Core Web Vitals
@@ -255,7 +254,7 @@ class PerformanceTracker {
 
 export function usePerformanceMonitor(componentName?: string) {
   const tracker = useRef(PerformanceTracker.getInstance());
-  const { state, setState } = useAdvancedState({
+  const [state, setState] = useState({
     metrics: {} as PerformanceMetrics,
     budget: DEFAULT_BUDGET,
     isViolatingBudget: false,

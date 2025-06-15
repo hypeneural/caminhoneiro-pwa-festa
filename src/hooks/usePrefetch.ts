@@ -1,5 +1,9 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { useAdvancedState } from './useAdvancedState';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+interface PrefetchState {
+  currentRoute: string;
+  visitStartTime: number;
+}
 
 interface PrefetchOptions {
   priority?: 'low' | 'high';
@@ -199,7 +203,7 @@ class SmartPrefetcher {
 
 export function usePrefetch() {
   const prefetcher = useRef(SmartPrefetcher.getInstance());
-  const { state, setState } = useAdvancedState({
+  const [state, setState] = useState<PrefetchState>({
     currentRoute: '',
     visitStartTime: Date.now(),
   });

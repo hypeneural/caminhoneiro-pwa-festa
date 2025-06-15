@@ -1,5 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { useAdvancedState } from './useAdvancedState';
+import { useEffect, useRef, useCallback, useState } from 'react';
 
 interface MemoryPool<T> {
   available: T[];
@@ -263,7 +262,7 @@ class MemoryManager {
 
 export function useMemoryManager() {
   const manager = useRef(MemoryManager.getInstance());
-  const { state, setState } = useAdvancedState({
+  const [state, setState] = useState({
     stats: {
       totalHeapSize: 0,
       usedHeapSize: 0,
