@@ -13,7 +13,7 @@ import { usePhotos } from "@/hooks/usePhotos";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ROUTES, THEME_COLORS, APP_TEXTS } from "@/constants";
 
-const PhotoCard = React.memo(({ photo, index, scrollX }: { photo: any; index: number; scrollX: any }) => {
+const PhotoCard = React.memo(({ photo, index, scrollX, userInteracted }: { photo: any; index: number; scrollX: any; userInteracted: boolean }) => {
   const { toggleFavorite, isFavorite } = usePhotos();
   const { navigateTo } = useNavigation();
   const [isPressed, setIsPressed] = useState(false);
@@ -21,40 +21,43 @@ const PhotoCard = React.memo(({ photo, index, scrollX }: { photo: any; index: nu
   
   const isPhotoLiked = isFavorite(photo.id);
   
+  // Responsive card width based on screen size
+  const cardWidth = 280; // Base width for mobile
+  
   // Parallax effect based on scroll position
-  const x = useTransform(scrollX, [index * 320 - 200, index * 320 + 200], [-50, 50]);
-  const scale = useTransform(scrollX, [index * 320 - 100, index * 320, index * 320 + 100], [0.95, 1, 0.95]);
+  const x = useTransform(scrollX, [index * cardWidth - 150, index * cardWidth + 150], [-30, 30]);
+  const scale = useTransform(scrollX, [index * cardWidth - 100, index * cardWidth, index * cardWidth + 100], [0.95, 1, 0.95]);
 
   const handleLikeClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     toggleFavorite(photo.id);
     
-    // Haptic feedback for like
-    if ('vibrate' in navigator) {
+    // Haptic feedback only after user interaction
+    if (userInteracted && 'vibrate' in navigator) {
       navigator.vibrate(15);
     }
-  }, [photo.id, toggleFavorite]);
+  }, [photo.id, toggleFavorite, userInteracted]);
 
   const handleDoubleTap = useCallback(() => {
     if (!isPhotoLiked) {
       toggleFavorite(photo.id);
-      // Stronger haptic for double tap
-      if ('vibrate' in navigator) {
+      // Stronger haptic for double tap (only after user interaction)
+      if (userInteracted && 'vibrate' in navigator) {
         navigator.vibrate([30, 10, 30]);
       }
     }
-  }, [photo.id, toggleFavorite, isPhotoLiked]);
+  }, [photo.id, toggleFavorite, isPhotoLiked, userInteracted]);
 
   const handleLongPress = useCallback(() => {
     setShowPreview(true);
-    // Long press haptic
-    if ('vibrate' in navigator) {
+    // Long press haptic (only after user interaction)
+    if (userInteracted && 'vibrate' in navigator) {
       navigator.vibrate(50);
     }
     
     // Auto close preview after 2s
     setTimeout(() => setShowPreview(false), 2000);
-  }, []);
+  }, [userInteracted]);
 
   const handleShare = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -69,13 +72,13 @@ const PhotoCard = React.memo(({ photo, index, scrollX }: { photo: any; index: nu
 
   return (
     <motion.div
-      className="flex-shrink-0 w-80 px-2"
+      className="flex-shrink-0 w-72 sm:w-80 px-2"
       style={{ x, scale }}
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
-        delay: index * 0.15,
-        duration: 0.6,
+        delay: index * 0.1,
+        duration: 0.5,
         ease: [0.22, 1, 0.36, 1]
       }}
     >
@@ -257,60 +260,109 @@ const PhotoCard = React.memo(({ photo, index, scrollX }: { photo: any; index: nu
   );
 });
 
-// Auto-scrolling infinite carousel component
-const InfiniteCarousel = React.memo(({ photos }: { photos: any[] }) => {
+// Mobile-optimized carousel with smart touch handling
+const MobileCarousel = React.memo(({ photos }: { photos: any[] }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollX = useMotionValue(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Auto-scroll effect
+  // Mark user interaction for haptic feedback
+  const handleUserInteraction = useCallback(() => {
+    if (!userInteracted) {
+      setUserInteracted(true);
+    }
+  }, [userInteracted]);
+
+  // Smart auto-scroll with better mobile performance
   useEffect(() => {
-    if (!containerRef.current || isPaused) return;
+    if (!containerRef.current || isPaused || userInteracted) return;
 
     const container = containerRef.current;
-    const totalWidth = photos.length * 320; // 320px per item (280px + 40px margin)
+    const cardWidth = 300; // Mobile-optimized width
+    const totalWidth = photos.length * cardWidth;
     let animationId: number;
 
     const animate = () => {
       const currentScroll = container.scrollLeft;
       
-      // Reset to beginning when reaching end
-      if (currentScroll >= totalWidth / 2) {
+      // Slower, smoother movement for mobile
+      if (currentScroll >= totalWidth - cardWidth) {
         container.scrollLeft = 0;
       } else {
-        container.scrollLeft += 0.5; // Slow continuous movement
+        container.scrollLeft += 0.3;
       }
       
       scrollX.set(container.scrollLeft);
+      
+      // Update current index for indicators
+      const newIndex = Math.round(container.scrollLeft / cardWidth);
+      if (newIndex !== currentIndex) {
+        setCurrentIndex(newIndex % photos.length);
+      }
+      
       animationId = requestAnimationFrame(animate);
     };
 
     animationId = requestAnimationFrame(animate);
     
     return () => cancelAnimationFrame(animationId);
-  }, [photos.length, isPaused, scrollX]);
+  }, [photos.length, isPaused, userInteracted, scrollX, currentIndex]);
 
-  // Duplicate photos for infinite effect
+  // Create infinite loop with optimized duplicates
   const infinitePhotos = [...photos, ...photos];
 
   return (
-    <div 
-      ref={containerRef}
-      className="flex overflow-x-hidden gap-4 scroll-smooth"
-      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setIsPaused(false)}
-    >
-      {infinitePhotos.map((photo, index) => (
-        <PhotoCard 
-          key={`${photo.id}-${index}`}
-          photo={photo} 
-          index={index}
-          scrollX={scrollX}
-        />
-      ))}
+    <div className="relative">
+      <div 
+        ref={containerRef}
+        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        style={{ 
+          scrollbarWidth: 'none', 
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}
+        onTouchStart={() => {
+          setIsPaused(true);
+          handleUserInteraction();
+        }}
+        onTouchEnd={() => setIsPaused(false)}
+        onMouseDown={() => {
+          setIsPaused(true);
+          handleUserInteraction();
+        }}
+        onMouseUp={() => setIsPaused(false)}
+      >
+        {infinitePhotos.map((photo, index) => (
+          <div key={`${photo.id}-${index}`} className="snap-center">
+            <PhotoCard 
+              photo={photo} 
+              index={index}
+              scrollX={scrollX}
+              userInteracted={userInteracted}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Progress indicators - only show if not auto-scrolling */}
+      {userInteracted && (
+        <div className="flex justify-center gap-1 mt-4">
+          {photos.map((_, index) => (
+            <motion.div
+              key={index}
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                index === currentIndex ? 'bg-primary scale-125' : 'bg-muted'
+              }`}
+              animate={{ 
+                scale: index === currentIndex ? 1.25 : 1,
+                opacity: index === currentIndex ? 1 : 0.5
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 });
@@ -423,35 +475,28 @@ export const PhotoCarousel = React.memo(() => {
           </motion.div>
         </motion.div>
 
-        {/* Infinite Carousel */}
+        {/* Mobile Carousel */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <InfiniteCarousel photos={latestPhotos} />
+          <MobileCarousel photos={latestPhotos} />
         </motion.div>
 
-        {/* Bottom stats */}
+        {/* Simplified Bottom stats */}
         <motion.div 
           className="flex justify-center mt-6 px-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.8 }}
         >
-          <div className="flex items-center gap-6 px-6 py-3 bg-background/60 backdrop-blur-md rounded-full border border-border/30 shadow-lg">
+          <div className="flex items-center gap-3 px-6 py-3 bg-background/60 backdrop-blur-md rounded-full border border-border/30 shadow-lg">
             <div className="flex items-center gap-2">
-              <motion.div 
-                className="w-2 h-2 bg-green-500 rounded-full"
-                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <span className="text-xs font-medium text-green-600">Ao vivo</span>
-            </div>
-            <div className="w-px h-4 bg-border" />
-            <div className="flex items-center gap-2">
-              <Heart className="w-3 h-3 text-red-500" />
-              <span className="text-xs text-muted-foreground">{latestPhotos.length} fotos</span>
+              <Camera className="w-3 h-3 text-primary" />
+              <span className="text-xs font-medium text-muted-foreground">
+                {latestPhotos.length} fotos na galeria
+              </span>
             </div>
           </div>
         </motion.div>
