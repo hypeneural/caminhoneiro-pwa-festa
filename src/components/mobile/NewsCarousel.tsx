@@ -11,7 +11,6 @@ import { TouchFeedback } from "@/components/ui/touch-feedback";
 import { AccessibleButton } from "@/components/ui/accessible-button";
 import { VirtualCarousel } from "@/components/ui/virtual-carousel";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
-import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { useNews } from "@/hooks/useNews";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ROUTES, THEME_COLORS, APP_TEXTS } from "@/constants";
@@ -86,7 +85,7 @@ export const NewsCarousel = React.memo(() => {
     threshold: 0.1,
     rootMargin: '100px'
   });
-  const { measureRender } = usePerformanceMonitor('NewsCarousel');
+  
 
   if (loading) {
     return (
