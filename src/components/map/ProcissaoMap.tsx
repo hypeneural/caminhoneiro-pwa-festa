@@ -1,14 +1,9 @@
-import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
-import { LatLngBounds, DivIcon, LatLng, Marker } from 'leaflet';
-import * as L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Share2, MapPin, Navigation } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
-import type { GeoJsonObject } from 'geojson';
 
 // Debug logging helper
 const debugLog = (message: string, data?: any) => {
@@ -20,48 +15,23 @@ const errorLog = (message: string, error?: any) => {
   console.error(`[ProcissaoMap ERROR] ${message}`, error || '');
 };
 
-interface GeoJSONData extends GeoJsonObject {
+console.log('[ProcissaoMap] Component file loaded');
+
+interface GeoJSONData {
+  type: string;
   features: any[];
 }
 
-interface MapBoundsProps {
-  routeData: GeoJSONData | null;
-  pointData: GeoJSONData | null;
+interface MapLibraries {
+  MapContainer: any;
+  TileLayer: any;
+  GeoJSON: any;
+  useMap: any;
+  LatLngBounds: any;
+  DivIcon: any;
+  LatLng: any;
+  L: any;
 }
-
-// Component to handle map bounds
-const MapBounds: React.FC<MapBoundsProps> = ({ routeData, pointData }) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!routeData || !pointData) return;
-
-    const bounds = new LatLngBounds([]);
-    
-    // Add route coordinates to bounds
-    routeData.features.forEach(feature => {
-      if (feature.geometry.type === 'LineString') {
-        feature.geometry.coordinates.forEach((coord: number[]) => {
-          bounds.extend(new LatLng(coord[1], coord[0]));
-        });
-      }
-    });
-
-    // Add point coordinates to bounds
-    pointData.features.forEach(feature => {
-      if (feature.geometry.type === 'Point') {
-        const coord = feature.geometry.coordinates;
-        bounds.extend(new LatLng(coord[1], coord[0]));
-      }
-    });
-
-    if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [20, 20] });
-    }
-  }, [map, routeData, pointData]);
-
-  return null;
-};
 
 const ProcissaoMap: React.FC = () => {
   debugLog('Component initializing');
@@ -71,13 +41,63 @@ const ProcissaoMap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [mapLibraries, setMapLibraries] = useState<MapLibraries | null>(null);
+  const [mapLoading, setMapLoading] = useState(true);
   
   // Stable references to avoid re-renders
   const { toast } = useToast();
   const toastRef = useRef(toast);
   toastRef.current = toast;
 
-  debugLog('State initialized', { loading, error, isOffline });
+  debugLog('State initialized', { loading, error, isOffline, mapLoading });
+
+  // Load map libraries
+  useEffect(() => {
+    const loadMapLibraries = async () => {
+      try {
+        debugLog('Loading map libraries...');
+        
+        // Import CSS first
+        try {
+          debugLog('Importing leaflet CSS...');
+          await import('leaflet/dist/leaflet.css');
+          debugLog('Leaflet CSS imported successfully');
+        } catch (cssError) {
+          debugLog('CSS import error (non-critical)', cssError);
+        }
+
+        debugLog('Importing react-leaflet...');
+        const reactLeaflet = await import('react-leaflet');
+        
+        debugLog('Importing leaflet...');
+        const leaflet = await import('leaflet');
+        
+        debugLog('All libraries imported, setting up...');
+        
+        const libraries: MapLibraries = {
+          MapContainer: reactLeaflet.MapContainer,
+          TileLayer: reactLeaflet.TileLayer,
+          GeoJSON: reactLeaflet.GeoJSON,
+          useMap: reactLeaflet.useMap,
+          LatLngBounds: leaflet.LatLngBounds,
+          DivIcon: leaflet.DivIcon,
+          LatLng: leaflet.LatLng,
+          L: leaflet.default || leaflet,
+        };
+        
+        debugLog('Libraries setup complete');
+        setMapLibraries(libraries);
+        setMapLoading(false);
+        
+      } catch (err) {
+        errorLog('Failed to load map libraries', err);
+        setError('Erro ao carregar componentes do mapa');
+        setMapLoading(false);
+      }
+    };
+
+    loadMapLibraries();
+  }, []);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -157,6 +177,11 @@ const ProcissaoMap: React.FC = () => {
 
   // Load GeoJSON data only once
   useEffect(() => {
+    if (mapLoading || !mapLibraries) {
+      debugLog('Waiting for map libraries to load...');
+      return;
+    }
+
     debugLog('useEffect: Starting data load');
     let mounted = true;
     
@@ -207,7 +232,7 @@ const ProcissaoMap: React.FC = () => {
       debugLog('useEffect cleanup');
       mounted = false;
     };
-  }, []); // Remove fetchGeoJSON dependency to avoid infinite loop
+  }, [mapLoading, mapLibraries, fetchGeoJSON]);
 
   // Share functionality
   const handleShare = useCallback(async () => {
@@ -245,8 +270,76 @@ const ProcissaoMap: React.FC = () => {
     }
   }, [routeData, toast]);
 
-  // Memoized icon functions to avoid recreating on every render
-  const createTruckIcon = useMemo(() => () => new DivIcon({
+  if (mapLoading) {
+    debugLog('Rendering: Map libraries loading');
+    return (
+      <div className="w-full h-[50vh] rounded-lg overflow-hidden">
+        <Skeleton className="w-full h-full" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <p className="text-sm text-muted-foreground">Carregando mapa...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!mapLibraries) {
+    debugLog('Rendering: Map libraries failed to load');
+    return (
+      <div className="w-full h-[50vh] rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+        <div className="text-center">
+          <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Erro ao carregar mapa</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-2"
+            onClick={() => window.location.reload()}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    debugLog('Rendering: Data loading');
+    return (
+      <div className="w-full h-[50vh] rounded-lg overflow-hidden">
+        <Skeleton className="w-full h-full" />
+      </div>
+    );
+  }
+
+  if (error && !routeData && !pointData) {
+    debugLog('Rendering: Error state');
+    return (
+      <div className="w-full h-[50vh] rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+        <div className="text-center">
+          <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">{error}</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-2"
+            onClick={() => window.location.reload()}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  debugLog('Rendering: Map with data', { 
+    routeFeatures: routeData?.features?.length || 0,
+    pointFeatures: pointData?.features?.length || 0
+  });
+
+  const { MapContainer, TileLayer, GeoJSON, LatLngBounds, DivIcon, LatLng, L } = mapLibraries;
+
+  // Create icons
+  const createTruckIcon = () => new DivIcon({
     html: `
       <div style="
         font-size: 24px;
@@ -257,9 +350,9 @@ const ProcissaoMap: React.FC = () => {
     className: 'custom-truck-marker',
     iconSize: [32, 32],
     iconAnchor: [16, 16]
-  }), []);
+  });
 
-  const createChurchIcon = useMemo(() => () => new DivIcon({
+  const createChurchIcon = () => new DivIcon({
     html: `
       <div style="
         font-size: 20px;
@@ -279,34 +372,7 @@ const ProcissaoMap: React.FC = () => {
     className: 'custom-church-marker',
     iconSize: [32, 32],
     iconAnchor: [16, 16]
-  }), []);
-
-  if (loading) {
-    return (
-      <div className="w-full h-[50vh] rounded-lg overflow-hidden">
-        <Skeleton className="w-full h-full" />
-      </div>
-    );
-  }
-
-  if (error && !routeData && !pointData) {
-    return (
-      <div className="w-full h-[50vh] rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-        <div className="text-center">
-          <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">{error}</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="mt-2"
-            onClick={() => window.location.reload()}
-          >
-            Tentar novamente
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  });
 
   return (
     <motion.div
@@ -376,9 +442,6 @@ const ProcissaoMap: React.FC = () => {
               }}
             />
           )}
-          
-          {/* Auto-fit bounds */}
-          <MapBounds routeData={routeData} pointData={pointData} />
         </MapContainer>
 
         {/* Map controls overlay */}
