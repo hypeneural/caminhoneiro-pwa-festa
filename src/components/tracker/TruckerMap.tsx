@@ -72,7 +72,7 @@ const AutoBounds: React.FC<{ truckPosition: LatLngExpression }> = ({ truckPositi
   return null;
 };
 
-export const TruckerMap: React.FC<TruckerMapProps> = ({ data }) => {
+const TruckerMap: React.FC<TruckerMapProps> = ({ data }) => {
   console.log('🗺️ Renderizando TruckerMap com dados:', data);
   
   // Verificações de segurança
@@ -144,3 +144,5 @@ export const TruckerMap: React.FC<TruckerMapProps> = ({ data }) => {
     </div>
   );
 };
+
+export default TruckerMap;

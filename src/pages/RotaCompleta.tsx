@@ -4,7 +4,7 @@ import { ArrowLeft, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useTraccarData } from '@/hooks/useTraccarData';
-import { TruckerMap } from '@/components/tracker/TruckerMap';
+import TruckerMap from '@/components/tracker/TruckerMap';
 
 const RotaCompleta = () => {
   const navigate = useNavigate();

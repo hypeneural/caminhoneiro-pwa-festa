@@ -20,7 +20,7 @@ import {
 } from "@/utils/trackerUtils";
 
 // Lazy load do componente do mapa
-const TruckerMap = lazy(() => import("@/components/tracker/TruckerMap").then(module => ({ default: module.TruckerMap })));
+const TruckerMap = lazy(() => import("@/components/tracker/TruckerMap"));
 
 export const SaoCristovaoTracker = () => {
   const navigate = useNavigate();
