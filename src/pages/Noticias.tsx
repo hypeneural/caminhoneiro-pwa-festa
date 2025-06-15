@@ -11,20 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 
-interface NewsItem {
-  id: number;
-  title: string;
-  summary: string;
-  content: string;
-  imageUrl: string;
-  category: string;
-  publishedAt: string;
-  author: string;
-  featured?: boolean;
-  views: string;
-  readTime: string;
-  trending?: boolean;
-}
+import { NewsItem } from "@/types/news";
 
 // Lazy Loading Image Component
 const LazyImage = ({ src, alt, className, ...props }: { src: string; alt: string; className?: string; [key: string]: any }) => {
@@ -77,8 +64,7 @@ const LazyImage = ({ src, alt, className, ...props }: { src: string; alt: string
 
 // News Card Component for better performance
 const NewsCard = ({ news, onClick, featured = false }: { news: NewsItem; onClick: () => void; featured?: boolean }) => {
-  const formatDate = useCallback((dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = useCallback((date: Date) => {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -243,103 +229,94 @@ const Noticias = () => {
 
   // Simulated larger dataset for infinity scroll
   const generateAllNews = useCallback((): NewsItem[] => {
-    const baseNews = [
+    const baseNews: NewsItem[] = [
       {
-        id: 1,
+        id: "1",
         title: "Festa do Caminhoneiro 2025: Programação Completa Divulgada",
         summary: "Confira todos os shows e atrações que vão agitar os dois dias de festa em Tijucas/SC com grandes nomes do sertanejo nacional",
-        content: "",
+        content: "A Festa do Caminhoneiro 2025 promete ser inesquecível...",
         imageUrl: "/placeholder.svg",
-        category: "evento",
-        publishedAt: "2024-12-15T10:00:00Z",
+        publishedAt: new Date('2024-12-15T10:00:00Z'),
+        category: "Evento",
+        categoryColor: "bg-trucker-red",
         author: "Redação FC",
-        featured: true,
-        views: "2.1K",
+        slug: "festa-caminhoneiro-2025-programacao",
+        views: 2100,
+        likes: 456,
+        shares: 89,
+        comments: 23,
         readTime: "3 min",
+        tags: ["festa2025", "programacao", "shows"],
+        featured: true,
         trending: true
       },
       {
-        id: 2,
+        id: "2",
         title: "Gusttavo Lima Confirma Presença na Festa 2025",
         summary: "Embaixador estrela mais uma edição do maior evento caminhoneiro do Sul brasileiro",
-        content: "",
+        content: "O cantor Gusttavo Lima confirmou sua presença...",
         imageUrl: "/placeholder.svg",
-        category: "shows",
-        publishedAt: "2024-12-14T15:30:00Z",
+        publishedAt: new Date('2024-12-14T15:30:00Z'),
+        category: "Shows",
+        categoryColor: "bg-trucker-orange",
         author: "Maria Silva",
-        views: "1.8K",
+        slug: "gusttavo-lima-confirma-presenca",
+        views: 1800,
+        likes: 234,
+        shares: 67,
+        comments: 45,
         readTime: "2 min",
+        tags: ["gusttavo-lima", "shows", "confirmacao"],
+        featured: false,
         trending: true
       },
       {
-        id: 3,
+        id: "3",
         title: "Inscrições Abertas para Concurso de Decoração",
         summary: "Caminhoneiros podem participar da disputa pela melhor decoração de caminhão",
-        content: "",
+        content: "As inscrições para o tradicional concurso...",
         imageUrl: "/placeholder.svg",
-        category: "evento",
-        publishedAt: "2024-12-13T09:15:00Z",
+        publishedAt: new Date('2024-12-13T09:15:00Z'),
+        category: "Evento",
+        categoryColor: "bg-trucker-green",
         author: "João Santos",
-        views: "950",
-        readTime: "4 min"
-      },
-      {
-        id: 4,
-        title: "Movimento Caminhoneiro Ganha Força Nacional",
-        summary: "Categoria se mobiliza por melhores condições de trabalho e reconhecimento",
-        content: "",
-        imageUrl: "/placeholder.svg",
-        category: "caminhoneiros",
-        publishedAt: "2024-12-12T14:20:00Z",
-        author: "Ana Costa",
-        views: "1.2K",
-        readTime: "5 min"
-      },
-      {
-        id: 5,
-        title: "Estrutura da Festa: Investimento Recorde",
-        summary: "Organização investe R$ 2 milhões em infraestrutura para receber 30 mil pessoas",
-        content: "",
-        imageUrl: "/placeholder.svg",
-        category: "bastidores",
-        publishedAt: "2024-12-11T11:45:00Z",
-        author: "Carlos Mendes",
-        views: "1.5K",
-        readTime: "6 min"
-      },
-      {
-        id: 6,
-        title: "Zé Neto & Cristiano: 'Honra Estar na Festa'",
-        summary: "Dupla sertaneja fala sobre a importância do evento para a categoria",
-        content: "",
-        imageUrl: "/placeholder.svg",
-        category: "shows",
-        publishedAt: "2024-12-10T16:00:00Z",
-        author: "Redação FC",
-        views: "2.3K",
-        readTime: "4 min"
+        slug: "inscricoes-concurso-decoracao",
+        views: 950,
+        likes: 123,
+        shares: 34,
+        comments: 12,
+        readTime: "4 min",
+        tags: ["concurso", "decoracao", "inscricoes"],
+        featured: false
       }
     ];
 
     // Generate more news for infinity scroll demonstration
     const additionalNews = [];
-    for (let i = 7; i <= 50; i++) {
-      const categories = ["evento", "shows", "caminhoneiros", "bastidores"];
+    for (let i = 4; i <= 50; i++) {
+      const categories = ["Evento", "Shows", "Caminhoneiros", "Bastidores"];
       const authors = ["Redação FC", "Maria Silva", "João Santos", "Ana Costa", "Carlos Mendes"];
       const randomCategory = categories[Math.floor(Math.random() * categories.length)];
       const randomAuthor = authors[Math.floor(Math.random() * authors.length)];
       
       additionalNews.push({
-        id: i,
-        title: `Notícia ${i}: ${randomCategory === 'evento' ? 'Evento Especial' : randomCategory === 'shows' ? 'Show Confirmado' : randomCategory === 'caminhoneiros' ? 'Categoria em Foco' : 'Bastidores'}`,
+        id: i.toString(),
+        title: `Notícia ${i}: ${randomCategory === 'Evento' ? 'Evento Especial' : randomCategory === 'Shows' ? 'Show Confirmado' : randomCategory === 'Caminhoneiros' ? 'Categoria em Foco' : 'Bastidores'}`,
         summary: `Esta é uma notícia de demonstração sobre ${randomCategory} para mostrar o infinity scroll funcionando perfeitamente no app.`,
-        content: "",
+        content: `Conteúdo completo da notícia ${i}...`,
         imageUrl: "/placeholder.svg",
+        publishedAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
         category: randomCategory,
-        publishedAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+        categoryColor: "bg-trucker-blue",
         author: randomAuthor,
-        views: `${Math.floor(Math.random() * 5000)}`,
+        slug: `noticia-${i}`,
+        views: Math.floor(Math.random() * 5000),
+        likes: Math.floor(Math.random() * 500),
+        shares: Math.floor(Math.random() * 100),
+        comments: Math.floor(Math.random() * 50),
         readTime: `${Math.floor(Math.random() * 8) + 2} min`,
+        tags: ["demo", randomCategory.toLowerCase()],
+        featured: false,
         trending: Math.random() > 0.8
       });
     }
@@ -438,8 +415,8 @@ const Noticias = () => {
     setSelectedNews(null);
   }, []);
 
-  const handleNavigateNews = useCallback((newsId: number) => {
-    const news = allNews.find(n => n.id === newsId);
+  const handleNavigateNews = useCallback((newsId: string) => {
+    const news = allNews.find(n => n.id.toString() === newsId);
     if (news) {
       setSelectedNews(news);
     }
