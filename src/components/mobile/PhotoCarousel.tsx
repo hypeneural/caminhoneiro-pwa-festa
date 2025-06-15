@@ -60,7 +60,12 @@ export function PhotoCarousel() {
           </div>
           <h2 className="text-lg font-bold text-foreground">Momentos Especiais</h2>
         </div>
-        <Button variant="ghost" size="sm" className="text-trucker-blue hover:text-trucker-blue/80">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-trucker-blue hover:text-trucker-blue/80"
+          onClick={() => window.location.href = '/galeria'}
+        >
           Ver galeria
         </Button>
       </div>

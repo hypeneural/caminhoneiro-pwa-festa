@@ -15,6 +15,10 @@ import Videos from "./pages/Videos";
 import Historia from "./pages/Historia";
 import Noticias from "./pages/Noticias";
 import RotaCompleta from "./pages/RotaCompleta";
+import Cameras from "./pages/Cameras";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { OfflineFallback } from "./components/OfflineFallback";
 import { ErrorBoundary } from "react-error-boundary";
@@ -40,6 +44,11 @@ const App = () => (
               <Route path="/historia" element={<Historia />} />
               <Route path="/noticias" element={<Noticias />} />
               <Route path="/rota-completa" element={<RotaCompleta />} />
+              <Route path="/rota" element={<RotaCompleta />} />
+              <Route path="/cameras" element={<Cameras />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/mais" element={<More />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

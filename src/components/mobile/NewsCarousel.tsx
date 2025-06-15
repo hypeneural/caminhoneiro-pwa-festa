@@ -63,7 +63,12 @@ export function NewsCarousel() {
           </div>
           <h2 className="text-lg font-bold text-foreground">Últimas Notícias</h2>
         </div>
-        <Button variant="ghost" size="sm" className="text-trucker-blue hover:text-trucker-blue/80">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-trucker-blue hover:text-trucker-blue/80"
+          onClick={() => window.location.href = '/noticias'}
+        >
           Ver todas
         </Button>
       </div>
@@ -108,6 +113,7 @@ export function NewsCarousel() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="text-xs text-trucker-blue font-medium hover:text-trucker-blue/80"
+                    onClick={() => window.location.href = '/noticias'}
                   >
                     Ler mais
                   </motion.button>
