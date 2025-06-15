@@ -2,17 +2,15 @@ import { motion } from 'framer-motion';
 import { WifiOff, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useNavigate } from 'react-router-dom';
 
 export const OfflineFallback = () => {
-  const navigate = useNavigate();
-
   const handleRefresh = () => {
     window.location.reload();
   };
 
   const handleGoHome = () => {
-    navigate('/');
+    // Use window.location instead of useNavigate since this might be outside Router context
+    window.location.href = '/';
   };
 
   return (

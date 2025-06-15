@@ -27,11 +27,16 @@ export const SaoCristovaoTracker = () => {
     return <TrackerError onRetry={refetch} isRetrying={isFetching} />;
   }
 
+  // Verificação adicional de segurança para dados
+  if (!data) {
+    return <TrackerError onRetry={refetch} isRetrying={isFetching} />;
+  }
+
   // Processamento dos dados quando disponíveis
-  const speedKmh = convertKnotsToKmh(data.speed);
-  const totalDistanceKm = convertMetersToKm(data.attributes.totalDistance);
-  const batteryLevel = data.attributes.batteryLevel;
-  const status = getMovementStatus(data.attributes.motion, data.speed);
+  const speedKmh = convertKnotsToKmh(data.speed || 0);
+  const totalDistanceKm = convertMetersToKm(data.attributes?.totalDistance || 0);
+  const batteryLevel = data.attributes?.batteryLevel || 0;
+  const status = getMovementStatus(data.attributes?.motion || false, data.speed || 0);
   const batteryColor = getBatteryColor(batteryLevel);
   const lastUpdate = formatLastUpdate(data.fixTime);
   const isLive = isRecentUpdate(data.fixTime);
