@@ -4,6 +4,11 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ErrorBoundary, CarouselErrorFallback } from "@/components/ui/error-boundary";
+import { CarouselSkeleton } from "@/components/ui/skeleton";
+import { OptimizedImage } from "@/components/ui/optimized-image";
+import { TouchFeedback } from "@/components/ui/touch-feedback";
+import { AccessibleButton } from "@/components/ui/accessible-button";
 import { usePhotos } from "@/hooks/usePhotos";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ROUTES, THEME_COLORS, APP_TEXTS } from "@/constants";
@@ -20,44 +25,56 @@ const PhotoCard = React.memo(({ photo, index }: { photo: any; index: number }) =
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.1, duration: 0.3 }}
+      transition={{ 
+        delay: index * 0.1, 
+        duration: 0.3,
+        ease: [0.25, 0.46, 0.45, 0.94] // Optimized easing for mobile
+      }}
       className="flex-shrink-0 w-64"
     >
-      <Card className="overflow-hidden bg-card shadow-md border-border/50 cursor-pointer hover:shadow-lg transition-all group">
-        <div className="relative aspect-square">
-          <img 
-            src={photo.imageUrl}
-            alt={photo.category}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-            width={256}
-            height={256}
-          />
+      <TouchFeedback>
+        <Card 
+          className="overflow-hidden bg-card shadow-md border-border/50 cursor-pointer hover:shadow-lg transition-all group"
+          role="article"
+          aria-label={`Foto: ${photo.category}`}
+        >
+          <div className="relative aspect-square">
+            <OptimizedImage
+              src={photo.imageUrl}
+              alt={`Foto da categoria ${photo.category}`}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              aspectRatio="square"
+            />
           
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           
-          {/* Category label */}
-          <div className="absolute bottom-3 left-3 right-3">
-            <Badge variant="secondary" className="bg-background/90 text-foreground text-xs mb-2">
-              {photo.category}
-            </Badge>
-          </div>
+            {/* Category label */}
+            <div className="absolute bottom-3 left-3 right-3">
+              <Badge 
+                variant="secondary" 
+                className="bg-background/90 text-foreground text-xs mb-2"
+                aria-label={`Categoria: ${photo.category}`}
+              >
+                {photo.category}
+              </Badge>
+            </div>
 
-          {/* Like button and count */}
-          <div className="absolute top-3 right-3 flex items-center gap-1 bg-background/90 rounded-full px-2 py-1">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className={`text-sm ${isPhotoLiked ? 'text-trucker-red' : 'text-muted-foreground'}`}
-              onClick={handleLikeClick}
-            >
-              ❤️
-            </motion.button>
-            <span className="text-xs font-medium text-foreground">
-              {photo.likes}
-            </span>
-          </div>
+            {/* Like button and count */}
+            <div className="absolute top-3 right-3 flex items-center gap-1 bg-background/90 rounded-full px-2 py-1">
+              <AccessibleButton
+                variant="ghost"
+                size="sm"
+                className={`text-sm h-auto p-1 ${isPhotoLiked ? 'text-trucker-red' : 'text-muted-foreground'}`}
+                onClick={handleLikeClick}
+                aria-label={isPhotoLiked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+              >
+                ❤️
+              </AccessibleButton>
+              <span className="text-xs font-medium text-foreground" aria-label={`${photo.likes} curtidas`}>
+                {photo.likes}
+              </span>
+            </div>
 
           {/* Hover play button */}
           <motion.div
@@ -69,8 +86,9 @@ const PhotoCard = React.memo(({ photo, index }: { photo: any; index: number }) =
               <div className={`w-0 h-0 border-l-[8px] border-l-${THEME_COLORS.TRUCKER_BLUE} border-y-[6px] border-y-transparent ml-1`} />
             </div>
           </motion.div>
-        </div>
-      </Card>
+          </div>
+        </Card>
+      </TouchFeedback>
     </motion.div>
   );
 });
@@ -81,7 +99,7 @@ export const PhotoCarousel = React.memo(() => {
 
   if (loading) {
     return (
-      <div className="mb-6">
+      <div className="mb-6" aria-label="Carregando fotos">
         <div className="flex items-center justify-between px-4 mb-4">
           <div className="flex items-center gap-3">
             <div className="w-6 h-6 bg-muted rounded-lg animate-pulse" />
@@ -89,62 +107,72 @@ export const PhotoCarousel = React.memo(() => {
           </div>
           <div className="w-20 h-6 bg-muted rounded animate-pulse" />
         </div>
-        <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="flex-shrink-0 w-64">
-              <div className="bg-muted rounded-lg aspect-square animate-pulse" />
-            </div>
-          ))}
-        </div>
+        <CarouselSkeleton itemCount={4} itemWidth="w-64" />
       </div>
     );
   }
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between px-4 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 bg-purple-600 rounded-lg flex items-center justify-center">
-            <Camera className="w-4 h-4 text-white" />
+    <ErrorBoundary fallback={CarouselErrorFallback}>
+      <section className="mb-6" aria-labelledby="photos-section">
+        <div className="flex items-center justify-between px-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 bg-purple-600 rounded-lg flex items-center justify-center">
+              <Camera className="w-4 h-4 text-white" aria-hidden="true" />
+            </div>
+            <h2 id="photos-section" className="text-lg font-bold text-foreground">
+              {APP_TEXTS.SECTION_PHOTOS}
+            </h2>
           </div>
-          <h2 className="text-lg font-bold text-foreground">{APP_TEXTS.SECTION_PHOTOS}</h2>
+          <AccessibleButton 
+            variant="ghost" 
+            size="sm" 
+            className={`text-${THEME_COLORS.TRUCKER_BLUE} hover:text-${THEME_COLORS.TRUCKER_BLUE}/80`}
+            onClick={() => navigateTo(ROUTES.GALLERY)}
+            aria-label="Ver galeria completa"
+          >
+            {APP_TEXTS.ACTION_SEE_GALLERY}
+          </AccessibleButton>
         </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className={`text-${THEME_COLORS.TRUCKER_BLUE} hover:text-${THEME_COLORS.TRUCKER_BLUE}/80`}
-          onClick={() => navigateTo(ROUTES.GALLERY)}
+
+        <div 
+          className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-4"
+          role="region"
+          aria-label="Carousel de fotos"
         >
-          {APP_TEXTS.ACTION_SEE_GALLERY}
-        </Button>
-      </div>
-
-      <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-4">
-        {latestPhotos.map((photo, index) => (
-          <PhotoCard key={photo.id} photo={photo} index={index} />
-        ))}
-      </div>
-
-      {/* Auto-play controls */}
-      <div className="flex justify-center items-center gap-4 mt-4">
-        <div className="flex gap-2">
-          {latestPhotos.map((_, index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                index === 0 ? 'bg-purple-600' : 'bg-muted'
-              }`}
-            />
+          {latestPhotos.map((photo, index) => (
+            <PhotoCard key={photo.id} photo={photo} index={index} />
           ))}
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          ⏸️ Pausar
-        </motion.button>
-      </div>
-    </div>
+
+        {/* Auto-play controls */}
+        <div className="flex justify-center items-center gap-4 mt-4">
+          <div 
+            className="flex gap-2"
+            role="tablist"
+            aria-label="Indicadores de progresso do carousel"
+          >
+            {latestPhotos.map((_, index) => (
+              <div
+                key={index}
+                role="tab"
+                aria-label={`Foto ${index + 1} de ${latestPhotos.length}`}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  index === 0 ? 'bg-purple-600' : 'bg-muted'
+                }`}
+              />
+            ))}
+          </div>
+          <AccessibleButton
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors h-auto p-1"
+            aria-label="Pausar reprodução automática"
+          >
+            ⏸️ Pausar
+          </AccessibleButton>
+        </div>
+      </section>
+    </ErrorBoundary>
   );
 });
