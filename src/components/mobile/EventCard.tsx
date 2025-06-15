@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, MapPin, Route, Share2, Calendar, ChevronDown, Camera, ExternalLink } from 'lucide-react';
+import { Clock, MapPin, Route, Share2, Calendar, Camera, ExternalLink, Navigation, Zap } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,23 +32,31 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'religioso': return 'bg-trucker-yellow/10 text-trucker-yellow border-trucker-yellow';
-      case 'procissao': return 'bg-trucker-blue/10 text-trucker-blue border-trucker-blue';
-      case 'entretenimento': return 'bg-trucker-red/10 text-trucker-red border-trucker-red';
-      case 'alimentacao': return 'bg-trucker-green/10 text-trucker-green border-trucker-green';
-      default: return 'bg-trucker-orange/10 text-trucker-orange border-trucker-orange';
+      case 'religioso': return 'bg-trucker-yellow/20 text-trucker-yellow border-trucker-yellow/30 backdrop-blur-sm';
+      case 'procissao': return 'bg-trucker-blue/20 text-trucker-blue border-trucker-blue/30 backdrop-blur-sm';
+      case 'entretenimento': return 'bg-trucker-red/20 text-trucker-red border-trucker-red/30 backdrop-blur-sm';
+      case 'alimentacao': return 'bg-trucker-green/20 text-trucker-green border-trucker-green/30 backdrop-blur-sm';
+      default: return 'bg-trucker-orange/20 text-trucker-orange border-trucker-orange/30 backdrop-blur-sm';
     }
   };
 
-  const getStatusColor = () => {
+  const getGradientColor = () => {
     switch (status) {
-      case 'past': return 'opacity-60';
-      case 'current': return 'ring-2 ring-trucker-green';
-      case 'upcoming': return '';
+      case 'past': 
+        return 'from-muted/50 to-muted/20';
+      case 'current': 
+        return 'from-trucker-green/20 via-trucker-green/10 to-transparent';
+      case 'upcoming': 
+        return 'from-trucker-blue/10 via-primary/5 to-transparent';
     }
   };
 
   const shareEvent = async () => {
+    // Simulate haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+    
     const shareData = {
       title: event.title,
       text: `${event.title} - ${event.time} em ${event.location}`,
@@ -62,16 +70,19 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
         console.log('Erro ao compartilhar:', err);
       }
     } else {
-      // Fallback para copiar link
       navigator.clipboard.writeText(`${event.title} - ${event.time} em ${event.location}`);
       toast({
-        title: "Link copiado!",
+        title: "📋 Link copiado!",
         description: "Informações do evento copiadas para a área de transferência.",
       });
     }
   };
 
   const addToCalendar = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+    
     const eventDate = new Date(`2025-07-${event.date.includes('19') ? '19' : '20'}T${event.time}:00`);
     const startDate = eventDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     const endDate = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -81,36 +92,138 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
     window.open(calendarUrl, '_blank');
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't expand if clicking on buttons
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    
+    if (navigator.vibrate) {
+      navigator.vibrate(30);
+    }
+    
+    setIsExpanded(!isExpanded);
+  };
+
+  const cardVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 20,
+      scale: 0.95,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        delay: index * 0.1,
+        duration: 0.4,
+        type: "spring" as const,
+        stiffness: 100,
+        damping: 12
+      }
+    },
+    hover: {
+      y: -4,
+      scale: 1.02,
+      transition: {
+        type: "spring" as const,
+        stiffness: 400,
+        damping: 25
+      }
+    },
+    tap: {
+      scale: 0.98,
+      transition: {
+        type: "spring" as const,
+        stiffness: 400,
+        damping: 25
+      }
+    }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.1 }}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      custom={index}
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+      whileTap="tap"
+      onClick={handleCardClick}
+      className="cursor-pointer"
     >
-      <Card className={`overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ${getStatusColor()}`}>
-        {/* Timeline connector */}
-        <div className="relative">
-          {index > 0 && (
-            <div className="absolute -top-4 left-8 w-0.5 h-4 bg-border" />
-          )}
-        </div>
+      {/* Timeline connector */}
+      <div className="relative">
+        {index > 0 && (
+          <motion.div 
+            className="absolute -top-6 left-8 w-0.5 h-6 bg-gradient-to-b from-border to-transparent"
+            initial={{ scaleY: 0 }}
+            animate={{ scaleY: 1 }}
+            transition={{ delay: index * 0.1 + 0.2, duration: 0.3 }}
+          />
+        )}
+      </div>
 
-        <div className="p-4">
+      <Card className={`
+        relative overflow-hidden backdrop-blur-md border-0
+        bg-gradient-to-br ${getGradientColor()}
+        shadow-lg hover:shadow-2xl 
+        transition-all duration-500 ease-out
+        ${status === 'current' ? 'ring-2 ring-trucker-green/50 shadow-trucker-green/20' : ''}
+        ${status === 'past' ? 'opacity-75' : ''}
+      `}>
+        {/* Glass overlay effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-transparent pointer-events-none" />
+        
+        {/* Animated gradient border for current event */}
+        {status === 'current' && (
+          <motion.div
+            className="absolute inset-0 rounded-lg"
+            style={{
+              background: 'linear-gradient(45deg, transparent, rgba(34, 197, 94, 0.3), transparent)',
+            }}
+            animate={{
+              backgroundPosition: ['0% 0%', '100% 100%'],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              repeatType: 'reverse',
+            }}
+          />
+        )}
+
+        <div className="relative p-5">
           <div className="flex items-start gap-4">
-            {/* Time Circle */}
-            <div className="flex flex-col items-center min-w-[60px]">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                status === 'current' ? 'bg-trucker-green animate-pulse' :
-                status === 'past' ? 'bg-muted' : 'bg-trucker-blue'
-              }`}>
-                <Clock className={`w-5 h-5 ${
+            {/* Enhanced Time Circle */}
+            <div className="flex flex-col items-center min-w-[70px]">
+              <motion.div 
+                className={`
+                  w-14 h-14 rounded-full flex items-center justify-center relative
+                  ${status === 'current' 
+                    ? 'bg-gradient-to-br from-trucker-green to-trucker-green/80 shadow-lg shadow-trucker-green/30' 
+                    : status === 'past' 
+                    ? 'bg-gradient-to-br from-muted to-muted/60' 
+                    : 'bg-gradient-to-br from-trucker-blue to-trucker-blue/80 shadow-lg shadow-trucker-blue/20'
+                  }
+                `}
+                animate={status === 'current' ? { scale: [1, 1.05, 1] } : {}}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                {status === 'current' && (
+                  <motion.div
+                    className="absolute inset-0 rounded-full bg-trucker-green/20"
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                )}
+                <Clock className={`w-6 h-6 ${
                   status === 'current' ? 'text-trucker-green-foreground' :
                   status === 'past' ? 'text-muted-foreground' : 'text-trucker-blue-foreground'
                 }`} />
-              </div>
-              <span className={`text-sm font-bold mt-1 ${
+              </motion.div>
+              <span className={`text-sm font-bold mt-2 ${
                 status === 'current' ? 'text-trucker-green' :
                 status === 'past' ? 'text-muted-foreground' : 'text-trucker-blue'
               }`}>
@@ -119,50 +232,77 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
             </div>
 
             {/* Content */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-bold text-card-foreground leading-tight pr-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between mb-3">
+                <motion.h3 
+                  className="font-bold text-card-foreground leading-tight pr-2 text-lg"
+                  layout
+                >
                   {event.title}
-                </h3>
-                <div className="flex gap-2">
+                </motion.h3>
+                <div className="flex gap-2 flex-shrink-0">
                   {event.isLive && (
-                    <Badge className="bg-trucker-red text-trucker-red-foreground animate-pulse">
-                      <div className="w-2 h-2 bg-white rounded-full mr-1" />
-                      AO VIVO
-                    </Badge>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    >
+                      <Badge className="bg-gradient-to-r from-trucker-red to-red-600 text-white border-0 shadow-lg">
+                        <motion.div 
+                          className="w-2 h-2 bg-white rounded-full mr-1"
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1, repeat: Infinity }}
+                        />
+                        AO VIVO
+                      </Badge>
+                    </motion.div>
                   )}
                   <Badge 
                     variant="outline" 
-                    className={`text-xs ${getTypeColor(event.type)}`}
+                    className={`text-xs font-medium ${getTypeColor(event.type)}`}
                   >
                     {event.type}
                   </Badge>
                 </div>
               </div>
               
-              <div className="flex items-center gap-1 text-muted-foreground text-sm mb-3">
-                <MapPin className="w-3 h-3" />
-                <span>{event.location}</span>
+              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4">
+                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">{event.location}</span>
               </div>
 
               {/* Status indicator */}
               {status === 'current' && (
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2 h-2 bg-trucker-green rounded-full animate-pulse" />
-                  <span className="text-xs text-trucker-green font-medium">
+                <motion.div 
+                  className="flex items-center gap-2 mb-4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <motion.div 
+                    className="w-2 h-2 bg-trucker-green rounded-full"
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                  <span className="text-sm text-trucker-green font-medium flex items-center gap-1">
+                    <Zap className="w-3 h-3" />
                     Acontecendo agora
                   </span>
-                </div>
+                </motion.div>
               )}
 
-              {/* Action buttons */}
+              {/* Quick Action buttons */}
               <div className="flex gap-2 flex-wrap">
                 {event.hasRoute && (
                   <Button 
                     size="sm" 
                     variant="outline"
-                    onClick={() => navigate('/rota-completa')}
-                    className="text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (navigator.vibrate) navigator.vibrate(50);
+                      navigate('/rota-completa');
+                    }}
+                    className="text-xs bg-background/50 hover:bg-trucker-blue/10 border-trucker-blue/30"
                   >
                     <Route className="w-3 h-3 mr-1" />
                     Ver Rota
@@ -173,8 +313,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
                   <Button 
                     size="sm" 
                     variant="outline"
-                    onClick={() => navigate('/cameras')}
-                    className="text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (navigator.vibrate) navigator.vibrate(50);
+                      navigate('/cameras');
+                    }}
+                    className="text-xs bg-background/50 hover:bg-trucker-red/10 border-trucker-red/30"
                   >
                     <Camera className="w-3 h-3 mr-1" />
                     Câmera
@@ -184,8 +328,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
                 <Button 
                   size="sm" 
                   variant="ghost"
-                  onClick={shareEvent}
-                  className="text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    shareEvent();
+                  }}
+                  className="text-xs hover:bg-background/50"
                 >
                   <Share2 className="w-3 h-3 mr-1" />
                   Compartilhar
@@ -194,20 +341,14 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
                 <Button 
                   size="sm" 
                   variant="ghost"
-                  onClick={addToCalendar}
-                  className="text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCalendar();
+                  }}
+                  className="text-xs hover:bg-background/50"
                 >
                   <Calendar className="w-3 h-3 mr-1" />
-                  Adicionar
-                </Button>
-
-                <Button 
-                  size="sm" 
-                  variant="ghost"
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="text-xs ml-auto"
-                >
-                  <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                  Salvar
                 </Button>
               </div>
 
@@ -218,37 +359,69 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ 
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                      opacity: { duration: 0.2 }
+                    }}
                     className="overflow-hidden"
                   >
-                    <div className="pt-3 mt-3 border-t border-border">
+                    <motion.div 
+                      className="pt-4 mt-4 border-t border-border/30 space-y-4"
+                      initial={{ y: 10 }}
+                      animate={{ y: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
                       {event.address && (
-                        <div className="mb-2">
-                          <p className="text-xs font-medium text-foreground mb-1">Endereço completo:</p>
-                          <p className="text-xs text-muted-foreground">{event.address}</p>
+                        <div className="bg-background/30 backdrop-blur-sm rounded-lg p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1 flex items-center gap-1">
+                            <Navigation className="w-3 h-3" />
+                            Endereço completo:
+                          </p>
+                          <p className="text-sm text-muted-foreground">{event.address}</p>
                         </div>
                       )}
                       
                       {event.description && (
-                        <div className="mb-2">
-                          <p className="text-xs font-medium text-foreground mb-1">Detalhes:</p>
-                          <p className="text-xs text-muted-foreground">{event.description}</p>
+                        <div className="bg-background/30 backdrop-blur-sm rounded-lg p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">📋 Detalhes:</p>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{event.description}</p>
                         </div>
                       )}
 
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(event.address || event.location)}`, '_blank')}
-                        className="text-xs w-full"
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
-                        <ExternalLink className="w-3 h-3 mr-1" />
-                        Abrir no Google Maps
-                      </Button>
-                    </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (navigator.vibrate) navigator.vibrate(50);
+                            window.open(`https://maps.google.com/?q=${encodeURIComponent(event.address || event.location)}`, '_blank');
+                          }}
+                          className="w-full bg-background/50 hover:bg-trucker-blue/10 border-trucker-blue/30"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Abrir no Google Maps
+                        </Button>
+                      </motion.div>
+                    </motion.div>
                   </motion.div>
                 )}
               </AnimatePresence>
+              
+              {/* Tap indicator */}
+              <motion.div 
+                className="text-center mt-3 text-xs text-muted-foreground/60"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                {!isExpanded ? '👆 Toque para ver detalhes' : '👆 Toque para fechar'}
+              </motion.div>
             </div>
           </div>
         </div>
