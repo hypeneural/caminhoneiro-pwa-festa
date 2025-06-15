@@ -125,8 +125,8 @@ const ProcissaoMap: React.FC = () => {
 
       try {
         const [route, point] = await Promise.all([
-          fetchGeoJSON('https://hypeneural.com/caminhao/1.geojson'),
-          fetchGeoJSON('https://hypeneural.com/caminhao/2.geojson')
+          fetchGeoJSON('https://hypeneural.com/caminhao/geojson.php?f=1'),
+          fetchGeoJSON('https://hypeneural.com/caminhao/geojson.php?f=2')
         ]);
 
         setRouteData(route);
