@@ -16,7 +16,8 @@ import {
   HelpCircle,
   Route,
   BookText,
-  Video
+  Video,
+  ChefHat
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -43,6 +44,7 @@ const menuItems = {
     { icon: Camera, label: "Galeria", route: "/galeria", color: "text-trucker-blue" },
     { icon: Map, label: "Mapa em Tempo Real", route: "/mapa", color: "text-trucker-green" },
     { icon: Calendar, label: "Programação", route: "/programacao", color: "text-trucker-yellow" },
+    { icon: ChefHat, label: "Cardápio", route: "/menu", color: "text-trucker-orange" },
   ],
   media: [
     { icon: Radio, label: "Rádio Ao Vivo", route: "/radio", color: "text-trucker-red" },

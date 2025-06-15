@@ -1,5 +1,5 @@
 import { QuickAccessItem } from '@/types/quickAccess';
-import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText, Shield, Users, Heart } from "lucide-react";
+import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText, Shield, Users, Heart, ChefHat } from "lucide-react";
 
 export const quickAccessItems: QuickAccessItem[] = [
   // Primeira Linha
@@ -39,6 +39,18 @@ export const quickAccessItems: QuickAccessItem[] = [
     description: "Confira a programação completa",
     isActive: true
   },
+  {
+    id: "menu",
+    title: "Cardápio",
+    icon: ChefHat,
+    color: "text-trucker-orange",
+    bgColor: "bg-orange-50 dark:bg-orange-900/20",
+    route: "/menu",
+    category: "info",
+    priority: 4,
+    description: "Explore os sabores da festa",
+    isActive: true
+  },
   
   // Segunda Linha
   {
@@ -49,7 +61,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
     route: "/sao-cristovao",
     category: "info",
-    priority: 4,
+    priority: 5,
     description: "Conheça o padroeiro dos motoristas",
     isActive: true
   },
@@ -61,7 +73,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-red-50 dark:bg-red-900/20",
     route: "/radio",
     category: "media",
-    priority: 5,
+    priority: 6,
     description: "Ouça a rádio oficial do evento",
     isActive: true
   },
@@ -73,7 +85,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-orange-50 dark:bg-orange-900/20",
     route: "/videos",
     category: "media",
-    priority: 6,
+    priority: 7,
     description: "Assista aos vídeos do evento",
     isActive: true
   },
@@ -87,7 +99,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-pink-50 dark:bg-pink-900/20",
     route: "/cameras",
     category: "media",
-    priority: 7,
+    priority: 8,
     description: "Transmissão ao vivo das câmeras",
     isActive: true
   },
@@ -99,7 +111,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-cyan-50 dark:bg-cyan-900/20",
     route: "/stories",
     category: "media",
-    priority: 8,
+    priority: 9,
     description: "Veja os stories do evento",
     isActive: true
   },
@@ -111,7 +123,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-blue-50 dark:bg-blue-900/20",
     route: "/noticias",
     category: "info",
-    priority: 9,
+    priority: 10,
     description: "Últimas notícias do evento",
     isActive: true
   },
@@ -125,7 +137,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
     route: "/rota-completa",
     category: "navigation",
-    priority: 10,
+    priority: 11,
     description: "Veja o percurso da procissão",
     isActive: true
   },
@@ -137,7 +149,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-green-50 dark:bg-green-900/20",
     route: "/faq",
     category: "info",
-    priority: 11,
+    priority: 12,
     description: "Perguntas frequentes",
     isActive: true
   },
@@ -149,7 +161,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
     route: "/historia",
     category: "info",
-    priority: 12,
+    priority: 13,
     description: "Conheça a história da festa",
     isActive: true
   }

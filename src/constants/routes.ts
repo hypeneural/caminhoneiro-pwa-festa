@@ -16,7 +16,8 @@ export const ROUTES = {
   SETTINGS: '/settings',
   MORE: '/mais',
   FAQ: '/faq',
-  SAO_CRISTOVAO: '/sao-cristovao'
+  SAO_CRISTOVAO: '/sao-cristovao',
+  MENU: '/menu'
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
