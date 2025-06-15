@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import { LatLngBounds, DivIcon, LatLng, Marker } from 'leaflet';
 import * as L from 'leaflet';
@@ -59,7 +59,11 @@ const ProcissaoMap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  
+  // Stable references to avoid re-renders
   const { toast } = useToast();
+  const toastRef = useRef(toast);
+  toastRef.current = toast;
 
   // Monitor online/offline status
   useEffect(() => {
@@ -75,7 +79,7 @@ const ProcissaoMap: React.FC = () => {
     };
   }, []);
 
-  // Fetch GeoJSON data with caching
+  // Stable fetch function without toast dependency
   const fetchGeoJSON = useCallback(async (url: string): Promise<GeoJSONData | null> => {
     try {
       // Try cache first
@@ -105,7 +109,7 @@ const ProcissaoMap: React.FC = () => {
       const cacheKey = `geojson_${url}`;
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
-        toast({
+        toastRef.current({
           title: "Mapa offline",
           description: "Exibindo dados em cache",
           variant: "default"
@@ -115,11 +119,15 @@ const ProcissaoMap: React.FC = () => {
       
       throw err;
     }
-  }, [isOffline, toast]);
+  }, [isOffline]);
 
-  // Load GeoJSON data
+  // Load GeoJSON data only once
   useEffect(() => {
+    let mounted = true;
+    
     const loadData = async () => {
+      if (!mounted) return;
+      
       setLoading(true);
       setError(null);
 
@@ -129,18 +137,28 @@ const ProcissaoMap: React.FC = () => {
           fetchGeoJSON('https://hypeneural.com/caminhao/geojson.php?f=2')
         ]);
 
-        setRouteData(route);
-        setPointData(point);
+        if (mounted) {
+          setRouteData(route);
+          setPointData(point);
+        }
       } catch (err) {
-        setError('Erro ao carregar dados do mapa');
-        console.error('Error loading map data:', err);
+        if (mounted) {
+          setError('Erro ao carregar dados do mapa');
+          console.error('Error loading map data:', err);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     loadData();
-  }, [fetchGeoJSON]);
+    
+    return () => {
+      mounted = false;
+    };
+  }, []); // Remove fetchGeoJSON dependency to avoid infinite loop
 
   // Share functionality
   const handleShare = useCallback(async () => {
@@ -178,8 +196,8 @@ const ProcissaoMap: React.FC = () => {
     }
   }, [routeData, toast]);
 
-  // Custom truck icon
-  const createTruckIcon = () => new DivIcon({
+  // Memoized icon functions to avoid recreating on every render
+  const createTruckIcon = useMemo(() => () => new DivIcon({
     html: `
       <div style="
         font-size: 24px;
@@ -190,10 +208,9 @@ const ProcissaoMap: React.FC = () => {
     className: 'custom-truck-marker',
     iconSize: [32, 32],
     iconAnchor: [16, 16]
-  });
+  }), []);
 
-  // Custom church icon
-  const createChurchIcon = () => new DivIcon({
+  const createChurchIcon = useMemo(() => () => new DivIcon({
     html: `
       <div style="
         font-size: 20px;
@@ -213,7 +230,7 @@ const ProcissaoMap: React.FC = () => {
     className: 'custom-church-marker',
     iconSize: [32, 32],
     iconAnchor: [16, 16]
-  });
+  }), []);
 
   if (loading) {
     return (
