@@ -2,7 +2,6 @@ import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from './button';
 import { Card } from './card';
-import { useNavigation } from '@/hooks/useNavigation';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -74,7 +73,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 }
 
 export function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
-  const { navigateTo } = useNavigation();
+  const handleGoHome = () => {
+    window.location.href = '/';
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
@@ -111,7 +112,7 @@ export function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) 
             Tentar Novamente
           </Button>
           <Button
-            onClick={() => navigateTo('/')}
+            onClick={handleGoHome}
             className="flex-1"
             aria-label="Voltar ao início"
           >
