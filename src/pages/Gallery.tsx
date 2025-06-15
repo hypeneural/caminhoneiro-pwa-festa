@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { Camera } from "lucide-react";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
-import { SearchBar } from "@/components/gallery/SearchBar";
-import { CategoryFilters } from "@/components/gallery/CategoryFilters";
-import { PhotoGrid } from "@/components/gallery/PhotoGrid";
+import { AdvancedSearchBar } from "@/components/gallery/AdvancedSearchBar";
+import { VirtualPhotoGrid } from "@/components/gallery/VirtualPhotoGrid";
+import { PullToRefresh } from "@/components/gallery/PullToRefresh";
 import { PhotoLightbox } from "@/components/gallery/PhotoLightbox";
 import { useGallery } from "@/hooks/useGallery";
 
@@ -22,7 +22,10 @@ const Gallery = () => {
     closeLightbox,
     navigatePhoto,
     toggleFavorite,
-    isFiltersActive
+    isFiltersActive,
+    loadMorePhotos,
+    refreshPhotos,
+    hasMore
   } = useGallery();
 
   const currentIndex = selectedPhoto 
@@ -50,28 +53,27 @@ const Gallery = () => {
         </div>
       </motion.header>
 
-      {/* Search and Filters */}
-      <div className="pt-16 sticky top-16 z-40 bg-background">
-        <SearchBar
-          filters={filters}
-          onFiltersChange={updateFilters}
-          onClearFilters={clearFilters}
-          isFiltersActive={isFiltersActive}
-        />
-        <CategoryFilters
-          filters={filters}
-          onFiltersChange={updateFilters}
-        />
-      </div>
+      {/* Advanced Search */}
+      <AdvancedSearchBar
+        filters={filters}
+        onFiltersChange={updateFilters}
+        onClearFilters={clearFilters}
+        isFiltersActive={isFiltersActive}
+      />
 
-      {/* Main content */}
-      <main className="pb-20">
-        <PhotoGrid
-          photos={filteredPhotos}
-          loading={loading}
-          onPhotoClick={openLightbox}
-          favorites={favorites}
-        />
+      {/* Main content with Pull to Refresh */}
+      <main className="flex-1 pb-20">
+        <PullToRefresh onRefresh={refreshPhotos}>
+          <VirtualPhotoGrid
+            photos={filteredPhotos}
+            loading={loading}
+            hasMore={hasMore}
+            onPhotoClick={openLightbox}
+            onLoadMore={loadMorePhotos}
+            favorites={favorites}
+            onToggleFavorite={toggleFavorite}
+          />
+        </PullToRefresh>
       </main>
 
       {/* Lightbox */}

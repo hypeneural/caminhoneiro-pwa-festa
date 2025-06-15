@@ -74,6 +74,58 @@ export const useGallery = () => {
     page: 1
   });
 
+  // Load more photos with pagination
+  const loadMorePhotos = useCallback(async () => {
+    if (state.loading || !state.hasMore) return;
+
+    setState(prev => ({ ...prev, loading: true }));
+    
+    try {
+      // Simulate API delay for loading more
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const newPhotos = generateMockPhotos().slice(state.photos.length, state.photos.length + 20);
+      const hasMore = state.photos.length + newPhotos.length < 200; // Max 200 photos for demo
+      
+      setState(prev => ({ 
+        ...prev, 
+        photos: [...prev.photos, ...newPhotos],
+        hasMore,
+        loading: false,
+        page: prev.page + 1
+      }));
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: 'Erro ao carregar mais fotos',
+        loading: false 
+      }));
+    }
+  }, [state.loading, state.hasMore, state.photos.length]);
+
+  // Refresh function for pull-to-refresh
+  const refreshPhotos = useCallback(async () => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const photos = generateMockPhotos().slice(0, 20); // Reset to first 20 photos
+      setState(prev => ({ 
+        ...prev, 
+        photos, 
+        loading: false,
+        hasMore: true,
+        page: 1
+      }));
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: 'Erro ao atualizar fotos',
+        loading: false 
+      }));
+    }
+  }, []);
+
   // Initialize with mock data
   useEffect(() => {
     const loadPhotos = async () => {
@@ -246,6 +298,8 @@ export const useGallery = () => {
     closeLightbox,
     navigatePhoto,
     toggleFavorite,
-    isFiltersActive
+    isFiltersActive,
+    loadMorePhotos,
+    refreshPhotos
   };
 };
