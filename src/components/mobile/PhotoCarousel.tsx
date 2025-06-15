@@ -102,22 +102,6 @@ export const PhotoCarousel = React.memo(() => {
     rootMargin: '100px'
   });
   
-
-  if (loading) {
-    return (
-      <div className="mb-6" aria-label="Carregando fotos">
-        <div className="flex items-center justify-between px-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-muted rounded-lg animate-pulse" />
-            <div className="w-32 h-4 bg-muted rounded animate-pulse" />
-          </div>
-          <div className="w-20 h-6 bg-muted rounded animate-pulse" />
-        </div>
-        <CarouselSkeleton itemCount={4} itemWidth="w-64" />
-      </div>
-    );
-  }
-
   const renderPhotoItem = React.useCallback((photo: any, index: number, isVisible: boolean) => {
     return <PhotoCard key={photo.id} photo={photo} index={index} />;
   }, []);
@@ -125,38 +109,53 @@ export const PhotoCarousel = React.memo(() => {
   return (
     <ErrorBoundary fallback={CarouselErrorFallback}>
       <section ref={intersectionRef} className="mb-6" aria-labelledby="photos-section">
-        <div className="flex items-center justify-between px-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-purple-600 rounded-lg flex items-center justify-center">
-              <Camera className="w-4 h-4 text-white" aria-hidden="true" />
+        {loading ? (
+          <div aria-label="Carregando fotos">
+            <div className="flex items-center justify-between px-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-muted rounded-lg animate-pulse" />
+                <div className="w-32 h-4 bg-muted rounded animate-pulse" />
+              </div>
+              <div className="w-20 h-6 bg-muted rounded animate-pulse" />
             </div>
-            <h2 id="photos-section" className="text-lg font-bold text-foreground">
-              {APP_TEXTS.SECTION_PHOTOS}
-            </h2>
+            <CarouselSkeleton itemCount={4} itemWidth="w-64" />
           </div>
-          <AccessibleButton 
-            variant="ghost" 
-            size="sm" 
-            className={`text-${THEME_COLORS.TRUCKER_BLUE} hover:text-${THEME_COLORS.TRUCKER_BLUE}/80`}
-            onClick={() => navigateTo(ROUTES.GALLERY)}
-            aria-label="Ver galeria completa"
-          >
-            {APP_TEXTS.ACTION_SEE_GALLERY}
-          </AccessibleButton>
-        </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between px-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-purple-600 rounded-lg flex items-center justify-center">
+                  <Camera className="w-4 h-4 text-white" aria-hidden="true" />
+                </div>
+                <h2 id="photos-section" className="text-lg font-bold text-foreground">
+                  {APP_TEXTS.SECTION_PHOTOS}
+                </h2>
+              </div>
+              <AccessibleButton 
+                variant="ghost" 
+                size="sm" 
+                className={`text-${THEME_COLORS.TRUCKER_BLUE} hover:text-${THEME_COLORS.TRUCKER_BLUE}/80`}
+                onClick={() => navigateTo(ROUTES.GALLERY)}
+                aria-label="Ver galeria completa"
+              >
+                {APP_TEXTS.ACTION_SEE_GALLERY}
+              </AccessibleButton>
+            </div>
 
-        {isIntersecting && (
-          <VirtualCarousel
-            items={latestPhotos}
-            renderItem={renderPhotoItem}
-            itemWidth={256}
-            gap={16}
-            className="px-4"
-            overscan={2}
-            autoPlay={true}
-            autoPlayInterval={4000}
-            showIndicators={true}
-          />
+            {isIntersecting && (
+              <VirtualCarousel
+                items={latestPhotos}
+                renderItem={renderPhotoItem}
+                itemWidth={256}
+                gap={16}
+                className="px-4"
+                overscan={2}
+                autoPlay={true}
+                autoPlayInterval={4000}
+                showIndicators={true}
+              />
+            )}
+          </>
         )}
       </section>
     </ErrorBoundary>

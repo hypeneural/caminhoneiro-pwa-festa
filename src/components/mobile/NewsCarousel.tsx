@@ -86,22 +86,6 @@ export const NewsCarousel = React.memo(() => {
     rootMargin: '100px'
   });
   
-
-  if (loading) {
-    return (
-      <div className="mb-6" aria-label="Carregando notícias">
-        <div className="flex items-center justify-between px-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-muted rounded-lg animate-pulse" />
-            <div className="w-32 h-4 bg-muted rounded animate-pulse" />
-          </div>
-          <div className="w-16 h-6 bg-muted rounded animate-pulse" />
-        </div>
-        <CarouselSkeleton itemCount={3} itemWidth="w-80" />
-      </div>
-    );
-  }
-
   const renderNewsItem = React.useCallback((news: any, index: number, isVisible: boolean) => {
     return <NewsCard key={news.id} news={news} index={index} />;
   }, []);
@@ -109,37 +93,52 @@ export const NewsCarousel = React.memo(() => {
   return (
     <ErrorBoundary fallback={CarouselErrorFallback}>
       <section ref={intersectionRef} className="mb-6" aria-labelledby="news-section">
-        <div className="flex items-center justify-between px-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-6 h-6 bg-${THEME_COLORS.TRUCKER_GREEN} rounded-lg flex items-center justify-center`}>
-              <Newspaper className={`w-4 h-4 text-${THEME_COLORS.TRUCKER_GREEN_FOREGROUND}`} aria-hidden="true" />
+        {loading ? (
+          <div aria-label="Carregando notícias">
+            <div className="flex items-center justify-between px-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-muted rounded-lg animate-pulse" />
+                <div className="w-32 h-4 bg-muted rounded animate-pulse" />
+              </div>
+              <div className="w-16 h-6 bg-muted rounded animate-pulse" />
             </div>
-            <h2 id="news-section" className="text-lg font-bold text-foreground">
-              {APP_TEXTS.SECTION_NEWS}
-            </h2>
+            <CarouselSkeleton itemCount={3} itemWidth="w-80" />
           </div>
-          <AccessibleButton 
-            variant="ghost" 
-            size="sm" 
-            className={`text-${THEME_COLORS.TRUCKER_BLUE} hover:text-${THEME_COLORS.TRUCKER_BLUE}/80`}
-            onClick={() => navigateTo(ROUTES.NEWS)}
-            aria-label="Ver todas as notícias"
-          >
-            {APP_TEXTS.ACTION_SEE_ALL}
-          </AccessibleButton>
-        </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between px-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-6 h-6 bg-${THEME_COLORS.TRUCKER_GREEN} rounded-lg flex items-center justify-center`}>
+                  <Newspaper className={`w-4 h-4 text-${THEME_COLORS.TRUCKER_GREEN_FOREGROUND}`} aria-hidden="true" />
+                </div>
+                <h2 id="news-section" className="text-lg font-bold text-foreground">
+                  {APP_TEXTS.SECTION_NEWS}
+                </h2>
+              </div>
+              <AccessibleButton 
+                variant="ghost" 
+                size="sm" 
+                className={`text-${THEME_COLORS.TRUCKER_BLUE} hover:text-${THEME_COLORS.TRUCKER_BLUE}/80`}
+                onClick={() => navigateTo(ROUTES.NEWS)}
+                aria-label="Ver todas as notícias"
+              >
+                {APP_TEXTS.ACTION_SEE_ALL}
+              </AccessibleButton>
+            </div>
 
-        {isIntersecting && (
-          <VirtualCarousel
-            items={latestNews}
-            renderItem={renderNewsItem}
-            itemWidth={320}
-            gap={16}
-            className="px-4"
-            overscan={2}
-            autoPlay={false}
-            showIndicators={true}
-          />
+            {isIntersecting && (
+              <VirtualCarousel
+                items={latestNews}
+                renderItem={renderNewsItem}
+                itemWidth={320}
+                gap={16}
+                className="px-4"
+                overscan={2}
+                autoPlay={false}
+                showIndicators={true}
+              />
+            )}
+          </>
         )}
       </section>
     </ErrorBoundary>

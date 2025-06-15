@@ -149,28 +149,24 @@ export function CountdownTimer() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!isLoaded) {
-    return (
-      <div className="px-4 mb-6">
+  return (
+    <div className="px-4 mb-6">
+      {!isLoaded ? (
         <div className="flex items-center gap-3 mb-4">
           <div className="w-6 h-6 bg-trucker-blue rounded-lg flex items-center justify-center animate-pulse">
             <Clock className="w-4 h-4 text-trucker-blue-foreground" />
           </div>
           <h2 className="text-lg font-bold text-foreground">Carregando...</h2>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="px-4 mb-6">
-      {/* Enhanced Header */}
-      <motion.div 
-        className="flex items-center gap-3 mb-6"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
+      ) : (
+        <>
+          {/* Enhanced Header */}
+          <motion.div 
+            className="flex items-center gap-3 mb-6"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
         <motion.div 
           className="w-6 h-6 bg-gradient-to-br from-trucker-yellow to-trucker-orange rounded-lg flex items-center justify-center shadow-md"
           animate={{ 
@@ -276,6 +272,8 @@ export function CountdownTimer() {
           Preparativos em andamento
         </motion.div>
       </motion.div>
+        </>
+      )}
     </div>
   );
 }

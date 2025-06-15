@@ -28,33 +28,6 @@ export const SaoCristovaoTracker = () => {
   const { data, isLoading, isError, refetch, isFetching } = useTraccarData();
   const { logMapEvent } = useMapRenderer();
 
-  // Estado de carregamento inicial
-  if (isLoading && !data) {
-    return <TrackerSkeleton />;
-  }
-
-  // Estado de erro apenas se não houver dados
-  if (isError && !data) {
-    return <TrackerError onRetry={refetch} isRetrying={isFetching} />;
-  }
-
-  // Verificação adicional de segurança para dados
-  if (!data) {
-    return <TrackerError onRetry={refetch} isRetrying={isFetching} />;
-  }
-
-  // Processamento dos dados quando disponíveis
-  const speedKmh = convertKnotsToKmh(data.speed || 0);
-  const totalDistanceKm = convertMetersToKm(data.attributes?.totalDistance || 0);
-  const batteryLevel = data.attributes?.batteryLevel || 0;
-  const status = getMovementStatus(data.attributes?.motion || false, data.speed || 0);
-  const batteryColor = getBatteryColor(batteryLevel);
-  const lastUpdate = formatLastUpdate(data.fixTime);
-  const isLive = isRecentUpdate(data.fixTime);
-  
-  // Mostrar indicador de erro de conexão se houver erro mas dados em cache
-  const hasConnectionError = isError && data;
-
   return (
     <ErrorBoundary fallback={TrackerErrorFallback}>
       <section className="px-4 py-6" aria-labelledby="tracker-section">
@@ -65,17 +38,36 @@ export const SaoCristovaoTracker = () => {
           </h2>
         </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-          <Card 
-            className="p-4 space-y-4 shadow-lg border-primary/10 bg-gradient-to-br from-card to-card/50"
-            role="region"
-            aria-live="polite"
-            aria-label="Informações de rastreamento em tempo real"
+        {(isLoading && !data) ? (
+          <TrackerSkeleton />
+        ) : (isError && !data) || !data ? (
+          <TrackerError onRetry={refetch} isRetrying={isFetching} />
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
+            {(() => {
+              // Processamento dos dados quando disponíveis
+              const speedKmh = convertKnotsToKmh(data.speed || 0);
+              const totalDistanceKm = convertMetersToKm(data.attributes?.totalDistance || 0);
+              const batteryLevel = data.attributes?.batteryLevel || 0;
+              const status = getMovementStatus(data.attributes?.motion || false, data.speed || 0);
+              const batteryColor = getBatteryColor(batteryLevel);
+              const lastUpdate = formatLastUpdate(data.fixTime);
+              const isLive = isRecentUpdate(data.fixTime);
+              
+              // Mostrar indicador de erro de conexão se houver erro mas dados em cache
+              const hasConnectionError = isError && data;
+
+              return (
+                <Card 
+                  className="p-4 space-y-4 shadow-lg border-primary/10 bg-gradient-to-br from-card to-card/50"
+                  role="region"
+                  aria-live="polite"
+                  aria-label="Informações de rastreamento em tempo real"
+                >
             {/* Header com status AO VIVO */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -209,8 +201,11 @@ export const SaoCristovaoTracker = () => {
                 Ver Rota Completa
               </AccessibleButton>
             </motion.div>
-          </Card>
-        </motion.div>
+                </Card>
+              );
+            })()}
+          </motion.div>
+        )}
       </section>
     </ErrorBoundary>
   );
