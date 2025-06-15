@@ -269,15 +269,15 @@ export function useMemoryManager() {
       heapSizeLimit: 0,
       usage: 0,
       isLowMemory: false,
-      pressureLevel: 'normal' as const,
+      pressureLevel: 'normal' as 'normal' | 'moderate' | 'critical',
     },
     pools: new Map(),
   });
 
   const updateStats = useCallback(() => {
     const stats = manager.current.getMemoryStats();
-    setState({ stats });
-  }, [setState]);
+    setState(prevState => ({ ...prevState, stats }));
+  }, []);
 
   const createPool = useCallback(<T>(
     name: string,
@@ -312,7 +312,7 @@ export function useMemoryManager() {
   useEffect(() => {
     const cleanup = addCleanupCallback(() => {
       // Component-specific cleanup
-      setState({ pools: new Map() });
+      setState(prevState => ({ ...prevState, pools: new Map() }));
     });
 
     return cleanup;

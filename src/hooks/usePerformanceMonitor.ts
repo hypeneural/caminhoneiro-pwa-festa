@@ -265,12 +265,13 @@ export function usePerformanceMonitor(componentName?: string) {
     const metrics = tracker.current.getMetrics();
     const budgetCheck = tracker.current.checkBudget();
     
-    setState({
+    setState(prevState => ({
+      ...prevState,
       metrics,
       isViolatingBudget: !budgetCheck.passed,
       violations: budgetCheck.violations,
-    });
-  }, [setState]);
+    }));
+  }, []);
 
   const measureRender = useCallback((renderFn: () => void) => {
     return tracker.current.measureRenderTime(componentName || 'Unknown', renderFn);
@@ -282,8 +283,8 @@ export function usePerformanceMonitor(componentName?: string) {
 
   const setBudget = useCallback((budget: Partial<PerformanceBudget>) => {
     tracker.current.setBudget(budget);
-    setState({ budget: { ...state.budget, ...budget } });
-  }, [state.budget, setState]);
+    setState(prevState => ({ ...prevState, budget: { ...prevState.budget, ...budget } }));
+  }, []);
 
   // Update metrics periodically
   useEffect(() => {

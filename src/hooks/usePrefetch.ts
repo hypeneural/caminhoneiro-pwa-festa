@@ -150,7 +150,7 @@ class SmartPrefetcher {
 
       // Check CPU constraints (battery)
       if ('getBattery' in navigator) {
-        navigator.getBattery?.().then((battery: any) => {
+        (navigator as any).getBattery?.().then((battery: any) => {
           if (battery.level < 0.2 && !battery.charging) {
             return false;
           }
@@ -218,7 +218,7 @@ export function usePrefetch() {
       currentRoute: route,
       visitStartTime: Date.now(),
     });
-  }, [state.currentRoute, state.visitStartTime, setState]);
+  }, [state.currentRoute, state.visitStartTime]);
 
   const prefetchRoute = useCallback((route: string, options?: PrefetchOptions) => {
     return prefetcher.current.prefetchRoute(route, options);
