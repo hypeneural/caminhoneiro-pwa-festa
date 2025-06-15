@@ -43,7 +43,6 @@ const PhotoCard = React.memo(({ photo, index }: { photo: any; index: number }) =
               src={photo.imageUrl}
               alt={`Foto da categoria ${photo.category}`}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              aspectRatio="square"
             />
           
           {/* Gradient overlay */}

@@ -39,7 +39,6 @@ const NewsCard = React.memo(({ news, index }: { news: any; index: number }) => {
               alt={news.title}
               className="w-full h-32 object-cover"
               priority={index === 0}
-              aspectRatio="video"
             />
             <Badge 
               className={`absolute top-2 left-2 ${news.categoryColor} text-white text-xs`}
