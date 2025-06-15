@@ -25,6 +25,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { OfflineFallback } from "./components/OfflineFallback";
 import { ErrorBoundary } from "react-error-boundary";
+import { DefaultErrorFallback } from "./components/ui/error-boundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -79,7 +80,12 @@ const App = () => {
   <QueryClientProvider client={queryClient}>
     <AppProvider>
       <TooltipProvider>
-        <ErrorBoundary FallbackComponent={OfflineFallback}>
+        <ErrorBoundary 
+          FallbackComponent={DefaultErrorFallback}
+          onError={(error, errorInfo) => {
+            console.error('App Error:', error, errorInfo);
+          }}
+        >
           <Toaster />
           <Sonner />
           <BrowserRouter>

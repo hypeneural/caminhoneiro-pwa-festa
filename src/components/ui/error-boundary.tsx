@@ -73,7 +73,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 }
 
-function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
+export function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
   const { navigateTo } = useNavigation();
 
   return (
