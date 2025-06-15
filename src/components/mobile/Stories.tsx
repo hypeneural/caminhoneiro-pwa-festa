@@ -13,7 +13,7 @@ const stories: Story[] = [
   {
     id: "1",
     title: "Ao Vivo",
-    thumbnail: "https://images.unsplash.com/photo-1469041797191-50ace28483c3?w=400",
+    thumbnail: "https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=80",
     isViewed: false,
     isLive: true,
     category: "publico"
@@ -21,7 +21,7 @@ const stories: Story[] = [
   {
     id: "2",
     title: "Chegada",
-    thumbnail: "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?w=400",
+    thumbnail: "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&q=80&w=80",
     isViewed: false,
     isLive: false,
     category: "chegada"
@@ -29,7 +29,7 @@ const stories: Story[] = [
   {
     id: "3",
     title: "Bênção",
-    thumbnail: "https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400",
+    thumbnail: "https://images.unsplash.com/photo-1485833077593-4278bba3f11f?auto=format&fit=crop&q=80&w=80",
     isViewed: true,
     isLive: false,
     category: "bencao"
@@ -37,7 +37,7 @@ const stories: Story[] = [
   {
     id: "4",
     title: "Shows",
-    thumbnail: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=400",
+    thumbnail: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?auto=format&fit=crop&q=80&w=80",
     isViewed: false,
     isLive: false,
     category: "shows"
@@ -45,7 +45,7 @@ const stories: Story[] = [
   {
     id: "5",
     title: "Bastidores",
-    thumbnail: "https://images.unsplash.com/photo-1487252665478-49b61b47f302?w=400",
+    thumbnail: "https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=80",
     isViewed: true,
     isLive: false,
     category: "bastidores"
@@ -53,7 +53,7 @@ const stories: Story[] = [
   {
     id: "6",
     title: "Procissão",
-    thumbnail: "https://images.unsplash.com/photo-1469041797191-50ace28483c3?w=400",
+    thumbnail: "https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=80",
     isViewed: false,
     isLive: false,
     category: "procissao"
@@ -87,6 +87,9 @@ export function Stories() {
                     src={story.thumbnail}
                     alt={story.title}
                     className="w-full h-full rounded-full object-cover"
+                    loading="lazy"
+                    width={80}
+                    height={80}
                   />
                 </div>
               </div>

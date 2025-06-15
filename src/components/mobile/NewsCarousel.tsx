@@ -19,7 +19,7 @@ const mockNews: NewsItem[] = [
     id: "1",
     title: "Inscrições abertas para a bênção dos caminhões",
     summary: "Caminhoneiros podem se inscrever gratuitamente para participar da tradicional bênção que acontecerá no primeiro dia do evento.",
-    imageUrl: "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?w=400",
+    imageUrl: "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&q=80&w=400",
     publishedAt: new Date('2025-06-10'),
     category: "Inscrições",
     categoryColor: "bg-trucker-green"
@@ -28,7 +28,7 @@ const mockNews: NewsItem[] = [
     id: "2",
     title: "Shows confirmados para os dois dias de festa",
     summary: "Lineup completo foi divulgado com artistas sertanejos e bandas locais que vão animar a festa dos caminhoneiros.",
-    imageUrl: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=400",
+    imageUrl: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?auto=format&fit=crop&q=80&w=400",
     publishedAt: new Date('2025-06-08'),
     category: "Programação",
     categoryColor: "bg-trucker-orange"
@@ -37,7 +37,7 @@ const mockNews: NewsItem[] = [
     id: "3",
     title: "Rota da procissão de São Cristóvão definida",
     summary: "O percurso tradicional será mantido, passando pelos principais pontos da cidade com paradas estratégicas para bênçãos.",
-    imageUrl: "https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=400",
+    imageUrl: "https://images.unsplash.com/photo-1485833077593-4278bba3f11f?auto=format&fit=crop&q=80&w=400",
     publishedAt: new Date('2025-06-05'),
     category: "Religioso",
     categoryColor: "bg-trucker-blue"
@@ -46,7 +46,7 @@ const mockNews: NewsItem[] = [
     id: "4",
     title: "Expectativa de público recorde em 2025",
     summary: "Organização espera receber mais de 10 mil visitantes nos dois dias de festa, superando números dos anos anteriores.",
-    imageUrl: "https://images.unsplash.com/photo-1487252665478-49b61b47f302?w=400",
+    imageUrl: "https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=400",
     publishedAt: new Date('2025-06-03'),
     category: "Evento",
     categoryColor: "bg-trucker-red"
@@ -83,6 +83,10 @@ export function NewsCarousel() {
                   src={news.imageUrl}
                   alt={news.title}
                   className="w-full h-32 object-cover"
+                  loading={index === 0 ? "eager" : "lazy"}
+                  fetchPriority={index === 0 ? "high" : "low"}
+                  width={320}
+                  height={128}
                 />
                 <Badge className={`absolute top-2 left-2 ${news.categoryColor} text-white text-xs`}>
                   {news.category}
