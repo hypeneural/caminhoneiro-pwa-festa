@@ -44,8 +44,11 @@ export function StoryViewer({
   const [isLongPress, setIsLongPress] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragY, setDragY] = useState(0);
+  const [dragX, setDragX] = useState(0);
   const [lastTap, setLastTap] = useState(0);
   const [isDimmed, setIsDimmed] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
   // Auto-hide controls
   useEffect(() => {
@@ -154,28 +157,63 @@ export function StoryViewer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onNavigate, onClose, onToggleMute]);
 
-  // Handle swipe down to close
+  // Handle horizontal and vertical swipe gestures
   const handleDragStart = useCallback(() => {
     setIsDragging(true);
+    setSwipeDirection(null);
   }, []);
 
   const handleDrag = useCallback((event: any, info: PanInfo) => {
-    if (info.offset.y > 0) {
-      setDragY(info.offset.y);
-      const opacity = Math.max(0.3, 1 - info.offset.y / 300);
+    const { offset } = info;
+    
+    // Determine swipe direction based on dominant axis
+    if (Math.abs(offset.x) > Math.abs(offset.y)) {
+      // Horizontal swipe
+      setDragX(offset.x);
+      setSwipeDirection(offset.x > 0 ? 'right' : 'left');
+      
+      // Add visual feedback for horizontal swipe
+      const opacity = Math.max(0.7, 1 - Math.abs(offset.x) / 300);
+      setIsDimmed(opacity < 0.9);
+    } else if (offset.y > 0) {
+      // Vertical swipe down to close
+      setDragY(offset.y);
+      const opacity = Math.max(0.3, 1 - offset.y / 300);
       setIsDimmed(opacity < 0.8);
     }
   }, []);
 
   const handleDragEnd = useCallback((event: any, info: PanInfo) => {
+    const { offset, velocity } = info;
+    const isHorizontal = Math.abs(offset.x) > Math.abs(offset.y);
+    
     setIsDragging(false);
     setDragY(0);
+    setDragX(0);
     setIsDimmed(false);
+    setSwipeDirection(null);
     
-    if (info.offset.y > 150) {
+    if (isHorizontal) {
+      // Horizontal swipe navigation
+      const threshold = 100;
+      const velocityThreshold = 500;
+      
+      if (Math.abs(offset.x) > threshold || Math.abs(velocity.x) > velocityThreshold) {
+        if (navigator.vibrate) navigator.vibrate(20);
+        
+        if (offset.x > 0) {
+          // Swipe right - go to previous story
+          onNavigate('prev');
+        } else {
+          // Swipe left - go to next story
+          onNavigate('next');
+        }
+      }
+    } else if (offset.y > 150) {
+      // Vertical swipe down to close
       onClose();
     }
-  }, [onClose]);
+  }, [onClose, onNavigate]);
 
   // Enhanced touch handlers with haptic feedback
   const handleTouchStart = useCallback((area: 'left' | 'center' | 'right') => {
@@ -267,16 +305,18 @@ export function StoryViewer({
       <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black border-0">
         <motion.div 
           className="relative w-full h-full flex flex-col"
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 300 }}
-          dragElastic={0.1}
+          drag
+          dragConstraints={{ top: 0, bottom: 300, left: -200, right: 200 }}
+          dragElastic={{ top: 0, bottom: 0.2, left: 0.1, right: 0.1 }}
           onDragStart={handleDragStart}
           onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           animate={{ 
             y: dragY,
+            x: dragX,
             opacity: isDimmed ? 0.6 : 1,
-            scale: isDragging ? 0.95 : 1
+            scale: isDragging ? 0.95 : 1,
+            filter: isTransitioning ? 'blur(2px)' : 'blur(0px)'
           }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
         >
@@ -441,6 +481,24 @@ export function StoryViewer({
                   >
                     <Share className="w-5 h-5" />
                   </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Swipe direction indicator */}
+          <AnimatePresence>
+            {swipeDirection && isDragging && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute inset-0 flex items-center justify-center z-45 pointer-events-none"
+              >
+                <div className={`px-6 py-3 rounded-full text-white font-medium ${
+                  swipeDirection === 'left' ? 'bg-trucker-blue/70' : 'bg-trucker-red/70'
+                }`}>
+                  {swipeDirection === 'left' ? '→ Próximo' : '← Anterior'}
                 </div>
               </motion.div>
             )}

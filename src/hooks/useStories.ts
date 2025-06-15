@@ -131,57 +131,40 @@ export const useStories = () => {
     setPlayerState(prev => {
       if (direction === 'next') {
         if (prev.currentStoryIndex < currentCollection.stories.length - 1) {
-          // Stay within current collection
+          // Stay within current collection - navigate to next story
           return {
             ...prev,
             currentStoryIndex: prev.currentStoryIndex + 1,
-            progress: 0
+            progress: 0,
+            isPlaying: true
           };
         } else {
-          // Move to next collection only if it exists
-          const currentCollectionIndex = collections.findIndex(c => c.id === prev.currentCollection);
-          if (currentCollectionIndex < collections.length - 1) {
-            const nextCollection = collections[currentCollectionIndex + 1];
-            return {
-              ...prev,
-              currentCollection: nextCollection.id,
-              currentStoryIndex: 0,
-              progress: 0
-            };
-          } else {
-            // Close player at the end
-            return {
-              ...prev,
-              currentCollection: null,
-              currentStoryIndex: 0,
-              isPlaying: false,
-              progress: 0
-            };
-          }
+          // End of current collection - stay here instead of auto-advancing
+          return {
+            ...prev,
+            currentCollection: null,
+            currentStoryIndex: 0,
+            isPlaying: false,
+            progress: 0
+          };
         }
       } else {
         // Previous navigation
         if (prev.currentStoryIndex > 0) {
-          // Stay within current collection
+          // Stay within current collection - navigate to previous story
           return {
             ...prev,
             currentStoryIndex: prev.currentStoryIndex - 1,
-            progress: 0
+            progress: 0,
+            isPlaying: true
           };
         } else {
-          // Move to previous collection only if it exists
-          const currentCollectionIndex = collections.findIndex(c => c.id === prev.currentCollection);
-          if (currentCollectionIndex > 0) {
-            const prevCollection = collections[currentCollectionIndex - 1];
-            return {
-              ...prev,
-              currentCollection: prevCollection.id,
-              currentStoryIndex: prevCollection.stories.length - 1,
-              progress: 0
-            };
-          }
-          // Stay at current story if no previous collection
-          return prev;
+          // Beginning of collection - stay at first story
+          return {
+            ...prev,
+            progress: 0,
+            isPlaying: true
+          };
         }
       }
     });
