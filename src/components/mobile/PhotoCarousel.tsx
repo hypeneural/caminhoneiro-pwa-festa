@@ -17,16 +17,19 @@ const PhotoCard = React.memo(({ photo, index, scrollX, userInteracted }: { photo
   const { toggleFavorite, isFavorite } = usePhotos();
   const { navigateTo } = useNavigation();
   const [isPressed, setIsPressed] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   
   const isPhotoLiked = isFavorite(photo.id);
   
-  // Responsive card width based on screen size
-  const cardWidth = 280; // Base width for mobile
+  // Responsive card width - smaller for clean mobile design
+  const cardWidth = 256; // Reduced from 280 for better mobile fit
   
   // Parallax effect based on scroll position
-  const x = useTransform(scrollX, [index * cardWidth - 150, index * cardWidth + 150], [-30, 30]);
-  const scale = useTransform(scrollX, [index * cardWidth - 100, index * cardWidth, index * cardWidth + 100], [0.95, 1, 0.95]);
+  const x = useTransform(scrollX, [index * cardWidth - 150, index * cardWidth + 150], [-20, 20]);
+  const scale = useTransform(scrollX, [index * cardWidth - 100, index * cardWidth, index * cardWidth + 100], [0.96, 1, 0.96]);
+
+  const handleCardClick = useCallback(() => {
+    navigateTo('/galeria');
+  }, [navigateTo]);
 
   const handleLikeClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -38,41 +41,9 @@ const PhotoCard = React.memo(({ photo, index, scrollX, userInteracted }: { photo
     }
   }, [photo.id, toggleFavorite, userInteracted]);
 
-  const handleDoubleTap = useCallback(() => {
-    if (!isPhotoLiked) {
-      toggleFavorite(photo.id);
-      // Stronger haptic for double tap (only after user interaction)
-      if (userInteracted && 'vibrate' in navigator) {
-        navigator.vibrate([30, 10, 30]);
-      }
-    }
-  }, [photo.id, toggleFavorite, isPhotoLiked, userInteracted]);
-
-  const handleLongPress = useCallback(() => {
-    setShowPreview(true);
-    // Long press haptic (only after user interaction)
-    if (userInteracted && 'vibrate' in navigator) {
-      navigator.vibrate(50);
-    }
-    
-    // Auto close preview after 2s
-    setTimeout(() => setShowPreview(false), 2000);
-  }, [userInteracted]);
-
-  const handleShare = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (navigator.share) {
-      navigator.share({
-        title: `Foto: ${photo.category}`,
-        text: `Confira esta foto incrível da ${photo.category}!`,
-        url: photo.imageUrl
-      });
-    }
-  }, [photo]);
-
   return (
     <motion.div
-      className="flex-shrink-0 w-72 sm:w-80 px-2"
+      className="flex-shrink-0 w-64 sm:w-72 px-2"
       style={{ x, scale }}
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
@@ -86,6 +57,7 @@ const PhotoCard = React.memo(({ photo, index, scrollX, userInteracted }: { photo
         <motion.div
           className="relative"
           whileTap={{ scale: 0.98 }}
+          onClick={handleCardClick}
           onTouchStart={() => setIsPressed(true)}
           onTouchEnd={() => setIsPressed(false)}
           onTouchCancel={() => setIsPressed(false)}
@@ -95,16 +67,15 @@ const PhotoCard = React.memo(({ photo, index, scrollX, userInteracted }: { photo
               overflow-hidden relative group cursor-pointer
               bg-gradient-to-br from-background/95 to-background/90
               backdrop-blur-md border border-border/20
-              shadow-2xl hover:shadow-3xl transition-all duration-300
-              ${isPressed ? 'shadow-lg' : 'shadow-2xl'}
+              shadow-lg hover:shadow-xl transition-all duration-300
+              ${isPressed ? 'shadow-sm' : 'shadow-lg'}
             `}>
               {/* Main Image with aspect ratio optimized for horizontal photos */}
               <div className="relative aspect-[4/3] overflow-hidden">
                 <motion.div
                   className="absolute inset-0"
                   animate={{ 
-                    scale: isPressed ? 1.05 : 1,
-                    rotateY: showPreview ? 5 : 0
+                    scale: isPressed ? 1.02 : 1
                   }}
                   transition={{ duration: 0.3 }}
                 >
@@ -115,143 +86,64 @@ const PhotoCard = React.memo(({ photo, index, scrollX, userInteracted }: { photo
                   />
                 </motion.div>
 
-                {/* Premium gradient overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-black/10" />
+                {/* Simplified gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
-                {/* Interactive elements */}
-                <div className="absolute inset-0 flex flex-col justify-between p-4">
-                  {/* Top bar with stats */}
-                  <div className="flex justify-between items-start">
-                    <motion.div 
-                      className="flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1.5"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 + 0.3 }}
+                {/* Clean interactive elements */}
+                <div className="absolute inset-0 flex flex-col justify-between p-3">
+                  {/* Top bar - only favorite button */}
+                  <div className="flex justify-end">
+                    <motion.div
+                      whileTap={{ scale: 0.8 }}
+                      animate={{ scale: isPhotoLiked ? [1, 1.2, 1] : 1 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      <Eye className="w-3 h-3 text-white/90" />
-                      <span className="text-xs font-medium text-white/90">{photo.views}</span>
-                    </motion.div>
-
-                    <motion.div 
-                      className="flex items-center gap-1"
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 + 0.4 }}
-                    >
-                      {/* Share button */}
                       <AccessibleButton
                         variant="ghost"
                         size="sm"
-                        className="w-8 h-8 bg-black/40 backdrop-blur-sm rounded-full text-white/90 hover:bg-black/60 transition-all"
-                        onClick={handleShare}
-                        aria-label="Compartilhar foto"
+                        className={`w-8 h-8 backdrop-blur-sm rounded-full transition-all ${
+                          isPhotoLiked 
+                            ? 'bg-red-500/90 text-white hover:bg-red-600/90' 
+                            : 'bg-black/30 text-white/90 hover:bg-black/50'
+                        }`}
+                        onClick={handleLikeClick}
+                        aria-label={isPhotoLiked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                       >
-                        <Share2 className="w-3.5 h-3.5" />
+                        <Heart className={`w-3.5 h-3.5 ${isPhotoLiked ? 'fill-current' : ''}`} />
                       </AccessibleButton>
-
-                      {/* Like button with animation */}
-                      <motion.div
-                        whileTap={{ scale: 0.8 }}
-                        animate={{ scale: isPhotoLiked ? [1, 1.3, 1] : 1 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <AccessibleButton
-                          variant="ghost"
-                          size="sm"
-                          className={`w-8 h-8 backdrop-blur-sm rounded-full transition-all ${
-                            isPhotoLiked 
-                              ? 'bg-red-500/90 text-white hover:bg-red-600/90' 
-                              : 'bg-black/40 text-white/90 hover:bg-black/60'
-                          }`}
-                          onClick={handleLikeClick}
-                          aria-label={isPhotoLiked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                        >
-                          <Heart className={`w-3.5 h-3.5 ${isPhotoLiked ? 'fill-current' : ''}`} />
-                        </AccessibleButton>
-                      </motion.div>
                     </motion.div>
                   </div>
 
-                  {/* Bottom info */}
-                  <div className="space-y-3">
-                    {/* Category and likes */}
-                    <div className="flex items-center justify-between">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 + 0.5 }}
-                      >
-                        <Badge 
-                          className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-xs font-medium px-3 py-1"
-                        >
-                          {photo.category}
-                        </Badge>
-                      </motion.div>
-
-                      <motion.div 
-                        className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full px-2 py-1"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 + 0.6 }}
-                      >
-                        <Heart className="w-3 h-3 text-red-400 fill-current" />
-                        <span className="text-xs font-medium text-white/90">{photo.likes}</span>
-                      </motion.div>
-                    </div>
-
-                    {/* Title or description */}
-                    <motion.h3 
-                      className="text-sm font-semibold text-white leading-tight"
+                  {/* Bottom info - clean and minimal */}
+                  <div className="flex items-center justify-between">
+                    <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 + 0.7 }}
+                      transition={{ delay: index * 0.1 + 0.3 }}
                     >
-                      {photo.title || `Momento especial da ${photo.category}`}
-                    </motion.h3>
+                      <Badge 
+                        className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-xs font-medium px-2 py-1"
+                      >
+                        {photo.category}
+                      </Badge>
+                    </motion.div>
                   </div>
                 </div>
 
                 {/* Featured star for special photos */}
                 {photo.featured && (
                   <motion.div 
-                    className="absolute top-4 left-4"
+                    className="absolute top-3 left-3"
                     initial={{ scale: 0, rotate: -180 }}
                     animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: index * 0.1 + 0.8, type: "spring" }}
+                    transition={{ delay: index * 0.1 + 0.5, type: "spring" }}
                   >
-                    <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg">
-                      <Star className="w-4 h-4 text-white fill-current" />
+                    <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg">
+                      <Star className="w-3 h-3 text-white fill-current" />
                     </div>
                   </motion.div>
                 )}
-
-                {/* Preview overlay */}
-                <AnimatePresence>
-                  {showPreview && (
-                    <motion.div
-                      className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <motion.div
-                        className="text-center text-white"
-                        initial={{ scale: 0.8, y: 20 }}
-                        animate={{ scale: 1, y: 0 }}
-                        exit={{ scale: 0.8, y: 20 }}
-                      >
-                        <Eye className="w-8 h-8 mx-auto mb-2" />
-                        <p className="text-sm font-medium">Visualização rápida</p>
-                        <p className="text-xs opacity-80">Toque para ver na galeria</p>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
-
-              {/* Glassmorphism shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
             </Card>
           </RippleEffect>
         </motion.div>
@@ -346,23 +238,31 @@ const MobileCarousel = React.memo(({ photos }: { photos: any[] }) => {
         ))}
       </div>
 
-      {/* Progress indicators - only show if not auto-scrolling */}
-      {userInteracted && (
-        <div className="flex justify-center gap-1 mt-4">
-          {photos.map((_, index) => (
-            <motion.div
-              key={index}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                index === currentIndex ? 'bg-primary scale-125' : 'bg-muted'
-              }`}
-              animate={{ 
-                scale: index === currentIndex ? 1.25 : 1,
-                opacity: index === currentIndex ? 1 : 0.5
-              }}
-            />
-          ))}
-        </div>
-      )}
+      {/* Functional pagination dots */}
+      <div className="flex justify-center gap-2 mt-4">
+        {photos.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => {
+              if (containerRef.current) {
+                const cardWidth = 300;
+                containerRef.current.scrollTo({
+                  left: index * cardWidth,
+                  behavior: 'smooth'
+                });
+                setCurrentIndex(index);
+                setUserInteracted(true);
+              }
+            }}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              index === currentIndex 
+                ? 'bg-primary scale-125' 
+                : 'bg-muted hover:bg-muted-foreground/70'
+            }`}
+            aria-label={`Ir para foto ${index + 1}`}
+          />
+        ))}
+      </div>
     </div>
   );
 });
