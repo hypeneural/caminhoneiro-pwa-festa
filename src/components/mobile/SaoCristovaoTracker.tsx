@@ -1,4 +1,5 @@
 import React, { Suspense, lazy } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { motion } from "framer-motion";
 import { MapPin, Gauge, Battery, Route, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -86,7 +87,7 @@ export const SaoCristovaoTracker = () => {
             </span>
           </div>
 
-          {/* Mapa real com lazy loading */}
+          {/* Mapa real com lazy loading e fallback */}
           <div ref={ref} className="relative h-32 rounded-lg overflow-hidden">
             {inView ? (
               <Suspense fallback={
@@ -94,7 +95,18 @@ export const SaoCristovaoTracker = () => {
                   <div className="animate-pulse text-2xl">🚛</div>
                 </div>
               }>
-                <TruckerMap data={data} />
+                <ErrorBoundary 
+                  FallbackComponent={({ error, resetErrorBoundary }) => (
+                    <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-2xl mb-2">🗺️</div>
+                        <div className="text-xs text-muted-foreground">Mapa indisponível</div>
+                      </div>
+                    </div>
+                  )}
+                >
+                  <TruckerMap data={data} />
+                </ErrorBoundary>
               </Suspense>
             ) : (
               <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg flex items-center justify-center">
