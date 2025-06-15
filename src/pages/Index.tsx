@@ -8,7 +8,7 @@ import { PhotoCarousel } from "@/components/mobile/PhotoCarousel";
 import { QuickAccess } from "@/components/mobile/QuickAccess";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
-import { PWAPrompt } from "@/components/PWAPrompt";
+import { PWAInstaller } from "@/components/PWAInstaller";
 import { usePrefetch } from "@/hooks/usePrefetch";
 import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { useMemoryManager } from "@/hooks/useMemoryManager";
@@ -101,7 +101,7 @@ const Index = () => {
       <BottomNavigation />
       
       {/* PWA Features */}
-      <PWAPrompt />
+      <PWAInstaller />
 
       {/* Performance Debug Panel (dev only) */}
       {process.env.NODE_ENV === 'development' && (

@@ -28,6 +28,7 @@ import NotFound from "./pages/NotFound";
 import { OfflineFallback } from "./components/OfflineFallback";
 import { ErrorBoundary } from "react-error-boundary";
 import { DefaultErrorFallback } from "./components/ui/error-boundary";
+import { PWAInstaller } from "@/components/PWAInstaller";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -90,6 +91,7 @@ const App = () => {
         >
           <Toaster />
           <Sonner />
+          <PWAInstaller />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
