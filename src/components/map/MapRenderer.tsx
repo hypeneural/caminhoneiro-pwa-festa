@@ -38,15 +38,23 @@ const MapRenderer: React.FC<MapRendererProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
 
-  // Health check para Leaflet
-  const checkLeafletHealth = (): boolean => {
+  // Health check básico do navegador
+  const checkBrowserHealth = (): boolean => {
     try {
-      // Verifica se Leaflet está disponível
-      return typeof window !== 'undefined' && 
-             'L' in window && 
-             window.L && 
-             typeof window.L.map === 'function';
-    } catch {
+      // Verifica capacidades básicas do navegador
+      const canvas = document.createElement('canvas');
+      const canvasSupported = !!canvas.getContext('2d');
+      const webglSupported = !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+      
+      console.log('🔍 MapRenderer: Browser capabilities:', {
+        canvasSupported,
+        webglSupported,
+        hardwareConcurrency: navigator.hardwareConcurrency
+      });
+      
+      return canvasSupported;
+    } catch (error) {
+      console.error('❌ MapRenderer: Erro no browser health check:', error);
       return false;
     }
   };
@@ -275,17 +283,17 @@ const MapRenderer: React.FC<MapRendererProps> = ({
       
       setMapState(prev => ({ ...prev, isLoading: true }));
 
-      // Health check do Leaflet
-      console.log('🏥 MapRenderer: Verificando saúde do Leaflet...');
-      const leafletHealthy = checkLeafletHealth();
-      console.log('🏥 MapRenderer: Leaflet disponível:', leafletHealthy);
+      // Health check do navegador
+      console.log('🏥 MapRenderer: Verificando capacidades do navegador...');
+      const browserHealthy = checkBrowserHealth();
+      console.log('🏥 MapRenderer: Navegador compatível:', browserHealthy);
 
-      // Tenta renderizar na ordem de prioridade
-      if (leafletHealthy) {
-        console.log('✅ MapRenderer: Tentando renderizar com Leaflet');
+      // Sempre tenta renderizar com Leaflet primeiro (importação dinâmica)
+      if (browserHealthy) {
+        console.log('✅ MapRenderer: Tentando renderizar com Leaflet (importação dinâmica)');
         await renderLeafletMap();
       } else {
-        console.log('⚠️ MapRenderer: Leaflet indisponível, usando mapa estático');
+        console.log('⚠️ MapRenderer: Navegador incompatível, usando mapa estático');
         renderStaticMap();
       }
     };
