@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion";
-import { Calendar as CalendarIcon, Clock, RefreshCw, Thermometer, Users, Car } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, RefreshCw, Thermometer, Users, Car, Trophy, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -137,7 +137,8 @@ const Schedule = () => {
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50 shadow-lg"
+        className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50 shadow-lg pt-safe"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         {/* Top section with countdown */}
         {nextEvent && (
@@ -204,7 +205,7 @@ const Schedule = () => {
 
       {/* Main content with Pull to Refresh */}
       <PullToRefresh onRefresh={handleRefresh}>
-        <main className="pt-32 pb-20 px-4 min-h-screen">
+        <main className="pt-40 pb-20 px-4 min-h-screen">
           <motion.div
             key={selectedDay}
             initial={{ opacity: 0, x: selectedDay === 'sunday' ? 20 : -20 }}
@@ -366,6 +367,56 @@ const Schedule = () => {
                 </Card>
               </motion.div>
 
+              {/* Festeiros info card */}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Card className="p-4 bg-gradient-to-br from-yellow-50/80 via-yellow-100/60 to-yellow-50/40 dark:from-yellow-950/80 dark:via-yellow-900/60 dark:to-yellow-950/40 border-yellow-200/50 dark:border-yellow-800/50 backdrop-blur-sm">
+                  <div className="flex items-center gap-4">
+                    <motion.div 
+                      className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg"
+                      whileHover={{ rotate: 15 }}
+                    >
+                      <Trophy className="w-6 h-6 text-white" />
+                    </motion.div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+                        44 Festeiros Participantes
+                      </h3>
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                        Este ano conta com 44 festeiros dedicados organizando o evento
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+
+              {/* Vehicles info card */}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Card className="p-4 bg-gradient-to-br from-purple-50/80 via-purple-100/60 to-purple-50/40 dark:from-purple-950/80 dark:via-purple-900/60 dark:to-purple-950/40 border-purple-200/50 dark:border-purple-800/50 backdrop-blur-sm">
+                  <div className="flex items-center gap-4">
+                    <motion.div 
+                      className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg"
+                      whileHover={{ scale: 1.1 }}
+                    >
+                      <Truck className="w-6 h-6 text-white" />
+                    </motion.div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">
+                        Mais de 500 Veículos na Carreata
+                      </h3>
+                      <p className="text-sm text-purple-700 dark:text-purple-300">
+                        Esperados mais de 500 veículos participando da carreata dominical
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+
               {/* Attendance info */}
               <motion.div
                 whileHover={{ scale: 1.02 }}
@@ -384,7 +435,7 @@ const Schedule = () => {
                         Estimativa de Público
                       </h3>
                       <p className="text-sm text-orange-700 dark:text-orange-300">
-                        {selectedDay === 'saturday' ? '👥 ~500 pessoas esperadas' : '🚛 ~2000 caminhoneiros + famílias'}
+                        {selectedDay === 'saturday' ? 'Cerca de 500 pessoas esperadas' : 'Mais de 2000 caminhoneiros + famílias'}
                       </p>
                     </div>
                   </div>

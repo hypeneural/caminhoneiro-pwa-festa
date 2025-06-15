@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, MapPin, Route, Share2, Calendar, Camera, ExternalLink, Navigation, Zap } from 'lucide-react';
+import { Clock, MapPin, Route, Share2, Calendar, Camera, ExternalLink, Navigation, Zap, Users, Car, Truck, Trophy } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -166,7 +166,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
       </div>
 
       <Card className={`
-        relative overflow-hidden backdrop-blur-md border-0
+        relative overflow-hidden backdrop-blur-md border-0 min-h-[200px]
         bg-gradient-to-br ${getGradientColor()}
         shadow-lg hover:shadow-2xl 
         transition-all duration-500 ease-out
@@ -194,13 +194,13 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
           />
         )}
 
-        <div className="relative p-5">
-          <div className="flex items-start gap-4">
+        <div className="relative p-6 flex flex-col h-full">
+          <div className="flex items-start gap-4 mb-6">
             {/* Enhanced Time Circle */}
-            <div className="flex flex-col items-center min-w-[70px]">
+            <div className="flex flex-col items-center min-w-[80px]">
               <motion.div 
                 className={`
-                  w-14 h-14 rounded-full flex items-center justify-center relative
+                  w-16 h-16 rounded-full flex items-center justify-center relative
                   ${status === 'current' 
                     ? 'bg-gradient-to-br from-trucker-green to-trucker-green/80 shadow-lg shadow-trucker-green/30' 
                     : status === 'past' 
@@ -218,12 +218,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
                     transition={{ duration: 2, repeat: Infinity }}
                   />
                 )}
-                <Clock className={`w-6 h-6 ${
+                <Clock className={`w-7 h-7 ${
                   status === 'current' ? 'text-trucker-green-foreground' :
                   status === 'past' ? 'text-muted-foreground' : 'text-trucker-blue-foreground'
                 }`} />
               </motion.div>
-              <span className={`text-sm font-bold mt-2 ${
+              <span className={`text-base font-bold mt-3 ${
                 status === 'current' ? 'text-trucker-green' :
                 status === 'past' ? 'text-muted-foreground' : 'text-trucker-blue'
               }`}>
@@ -233,9 +233,9 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-4">
                 <motion.h3 
-                  className="font-bold text-card-foreground leading-tight pr-2 text-lg"
+                  className="font-bold text-card-foreground leading-tight pr-2 text-xl"
                   layout
                 >
                   {event.title}
@@ -259,171 +259,186 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
                   )}
                   <Badge 
                     variant="outline" 
-                    className={`text-xs font-medium ${getTypeColor(event.type)}`}
+                    className={`text-sm font-medium ${getTypeColor(event.type)}`}
                   >
                     {event.type}
                   </Badge>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4">
-                <MapPin className="w-4 h-4 flex-shrink-0" />
+              <div className="flex items-center gap-3 text-muted-foreground text-base mb-6">
+                <MapPin className="w-5 h-5 flex-shrink-0" />
                 <span className="truncate">{event.location}</span>
               </div>
 
               {/* Status indicator */}
               {status === 'current' && (
                 <motion.div 
-                  className="flex items-center gap-2 mb-4"
+                  className="flex items-center gap-2 mb-6"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                 >
                   <motion.div 
-                    className="w-2 h-2 bg-trucker-green rounded-full"
+                    className="w-3 h-3 bg-trucker-green rounded-full"
                     animate={{ scale: [1, 1.3, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   />
-                  <span className="text-sm text-trucker-green font-medium flex items-center gap-1">
-                    <Zap className="w-3 h-3" />
+                  <span className="text-base text-trucker-green font-medium flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
                     Acontecendo agora
                   </span>
                 </motion.div>
               )}
+            </div>
+          </div>
 
-              {/* Quick Action buttons */}
-              <div className="flex gap-2 flex-wrap">
+          {/* Action buttons section - moved to bottom and full width */}
+          <div className="mt-auto">
+            <div className="bg-background/30 backdrop-blur-sm rounded-xl p-4 border border-border/20">
+              <div className="grid grid-cols-2 gap-3">
                 {event.hasRoute && (
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (navigator.vibrate) navigator.vibrate(50);
-                      navigate('/rota-completa');
-                    }}
-                    className="text-xs bg-background/50 hover:bg-trucker-blue/10 border-trucker-blue/30"
-                  >
-                    <Route className="w-3 h-3 mr-1" />
-                    Ver Rota
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button 
+                      size="default" 
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (navigator.vibrate) navigator.vibrate(50);
+                        navigate('/rota-completa');
+                      }}
+                      className="w-full h-12 bg-background/50 hover:bg-trucker-blue/10 border-trucker-blue/30 text-sm font-medium"
+                    >
+                      <Route className="w-4 h-4 mr-2" />
+                      Ver Rota
+                    </Button>
+                  </motion.div>
                 )}
                 
                 {event.hasCamera && (
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button 
+                      size="default" 
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (navigator.vibrate) navigator.vibrate(50);
+                        navigate('/cameras');
+                      }}
+                      className="w-full h-12 bg-background/50 hover:bg-trucker-red/10 border-trucker-red/30 text-sm font-medium"
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      Câmera
+                    </Button>
+                  </motion.div>
+                )}
+
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button 
-                    size="sm" 
+                    size="default" 
                     variant="outline"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (navigator.vibrate) navigator.vibrate(50);
-                      navigate('/cameras');
+                      shareEvent();
                     }}
-                    className="text-xs bg-background/50 hover:bg-trucker-red/10 border-trucker-red/30"
+                    className="w-full h-12 bg-background/50 hover:bg-background/70 border-border/30 text-sm font-medium"
                   >
-                    <Camera className="w-3 h-3 mr-1" />
-                    Câmera
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Compartilhar
                   </Button>
-                )}
+                </motion.div>
 
-                <Button 
-                  size="sm" 
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    shareEvent();
-                  }}
-                  className="text-xs hover:bg-background/50"
-                >
-                  <Share2 className="w-3 h-3 mr-1" />
-                  Compartilhar
-                </Button>
-
-                <Button 
-                  size="sm" 
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addToCalendar();
-                  }}
-                  className="text-xs hover:bg-background/50"
-                >
-                  <Calendar className="w-3 h-3 mr-1" />
-                  Salvar
-                </Button>
-              </div>
-
-              {/* Expandable content */}
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ 
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 30,
-                      opacity: { duration: 0.2 }
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button 
+                    size="default" 
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCalendar();
                     }}
-                    className="overflow-hidden"
+                    className="w-full h-12 bg-background/50 hover:bg-background/70 border-border/30 text-sm font-medium"
                   >
-                    <motion.div 
-                      className="pt-4 mt-4 border-t border-border/30 space-y-4"
-                      initial={{ y: 10 }}
-                      animate={{ y: 0 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      {event.address && (
-                        <div className="bg-background/30 backdrop-blur-sm rounded-lg p-3">
-                          <p className="text-xs font-semibold text-foreground mb-1 flex items-center gap-1">
-                            <Navigation className="w-3 h-3" />
-                            Endereço completo:
-                          </p>
-                          <p className="text-sm text-muted-foreground">{event.address}</p>
-                        </div>
-                      )}
-                      
-                      {event.description && (
-                        <div className="bg-background/30 backdrop-blur-sm rounded-lg p-3">
-                          <p className="text-xs font-semibold text-foreground mb-1">📋 Detalhes:</p>
-                          <p className="text-sm text-muted-foreground leading-relaxed">{event.description}</p>
-                        </div>
-                      )}
-
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (navigator.vibrate) navigator.vibrate(50);
-                            window.open(`https://maps.google.com/?q=${encodeURIComponent(event.address || event.location)}`, '_blank');
-                          }}
-                          className="w-full bg-background/50 hover:bg-trucker-blue/10 border-trucker-blue/30"
-                        >
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Abrir no Google Maps
-                        </Button>
-                      </motion.div>
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              
-              {/* Tap indicator */}
-              <motion.div 
-                className="text-center mt-3 text-xs text-muted-foreground/60"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                {!isExpanded ? '👆 Toque para ver detalhes' : '👆 Toque para fechar'}
-              </motion.div>
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Salvar
+                  </Button>
+                </motion.div>
+              </div>
             </div>
           </div>
+
+          {/* Expandable content */}
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  opacity: { duration: 0.2 }
+                }}
+                className="overflow-hidden mt-4"
+              >
+                <motion.div 
+                  className="pt-4 border-t border-border/30 space-y-4"
+                  initial={{ y: 10 }}
+                  animate={{ y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  {event.address && (
+                    <div className="bg-background/30 backdrop-blur-sm rounded-lg p-3">
+                      <p className="text-xs font-semibold text-foreground mb-1 flex items-center gap-1">
+                        <Navigation className="w-3 h-3" />
+                        Endereço completo:
+                      </p>
+                      <p className="text-sm text-muted-foreground">{event.address}</p>
+                    </div>
+                  )}
+                  
+                  {event.description && (
+                    <div className="bg-background/30 backdrop-blur-sm rounded-lg p-3">
+                      <p className="text-xs font-semibold text-foreground mb-1 flex items-center gap-1">
+                        <Navigation className="w-3 h-3" />
+                        Detalhes:
+                      </p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{event.description}</p>
+                    </div>
+                  )}
+
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (navigator.vibrate) navigator.vibrate(50);
+                        window.open(`https://maps.google.com/?q=${encodeURIComponent(event.address || event.location)}`, '_blank');
+                      }}
+                      className="w-full bg-background/50 hover:bg-trucker-blue/10 border-trucker-blue/30"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Abrir no Google Maps
+                    </Button>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {/* Tap indicator */}
+          <motion.div 
+            className="text-center mt-3 text-xs text-muted-foreground/60"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            {!isExpanded ? '👆 Toque para ver detalhes' : '👆 Toque para fechar'}
+          </motion.div>
         </div>
       </Card>
     </motion.div>
