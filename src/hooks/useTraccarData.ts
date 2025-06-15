@@ -12,6 +12,7 @@ export interface TraccarData {
   latitude: number;
   longitude: number;
   speed: number; // em nós
+  course?: number; // direção em graus
   address: string | null;
   protocol: string;
   serverTime: string;

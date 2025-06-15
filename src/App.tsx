@@ -13,6 +13,7 @@ import Radio from "./pages/Radio";
 import Videos from "./pages/Videos";
 import Historia from "./pages/Historia";
 import Noticias from "./pages/Noticias";
+import RotaCompleta from "./pages/RotaCompleta";
 import NotFound from "./pages/NotFound";
 import { OfflineFallback } from "./components/OfflineFallback";
 import { ErrorBoundary } from "react-error-boundary";
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/videos" element={<Videos />} />
               <Route path="/historia" element={<Historia />} />
               <Route path="/noticias" element={<Noticias />} />
+              <Route path="/rota-completa" element={<RotaCompleta />} />
               <Route path="/mais" element={<More />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

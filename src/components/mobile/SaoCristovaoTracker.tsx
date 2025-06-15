@@ -1,7 +1,11 @@
+import React, { Suspense, lazy } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Gauge, Battery, Route } from "lucide-react";
+import { MapPin, Gauge, Battery, Route, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useInView } from "react-intersection-observer";
 import { useTraccarData } from "@/hooks/useTraccarData";
 import { TrackerSkeleton } from "@/components/tracker/TrackerSkeleton";
 import { TrackerError } from "@/components/tracker/TrackerError";
@@ -14,7 +18,12 @@ import {
   isRecentUpdate
 } from "@/utils/trackerUtils";
 
+// Lazy load do componente do mapa
+const TruckerMap = lazy(() => import("@/components/tracker/TruckerMap").then(module => ({ default: module.TruckerMap })));
+
 export const SaoCristovaoTracker = () => {
+  const navigate = useNavigate();
+  const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
   const { data, isLoading, isError, refetch, isFetching } = useTraccarData();
 
   // Estado de carregamento inicial
@@ -77,45 +86,21 @@ export const SaoCristovaoTracker = () => {
             </span>
           </div>
 
-          {/* Mapa temático com caminhão animado */}
-          <div className="relative h-32 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg overflow-hidden">
-            {/* Grade de fundo simulando mapa técnico */}
-            <div 
-              className="absolute inset-0 opacity-20"
-              style={{
-                backgroundImage: `
-                  linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
-                  linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
-                `,
-                backgroundSize: '20px 20px'
-              }}
-            />
-            
-            {/* Caminhão animado */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <motion.div
-                animate={
-                  status.label === 'Em movimento' 
-                    ? { x: [-10, 10, -10] } // Movimento horizontal
-                    : { y: [-2, 2, -2] }    // Movimento vertical sutil
-                }
-                transition={{ 
-                  duration: status.label === 'Em movimento' ? 3 : 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="text-4xl filter drop-shadow-lg"
-              >
-                🚛
-              </motion.div>
-            </div>
-
-            {/* Indicador de velocidade no canto */}
-            <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-lg px-2 py-1">
-              <span className="text-xs font-bold text-foreground">
-                {speedKmh} km/h
-              </span>
-            </div>
+          {/* Mapa real com lazy loading */}
+          <div ref={ref} className="relative h-32 rounded-lg overflow-hidden">
+            {inView ? (
+              <Suspense fallback={
+                <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg flex items-center justify-center">
+                  <div className="animate-pulse text-2xl">🚛</div>
+                </div>
+              }>
+                <TruckerMap data={data} />
+              </Suspense>
+            ) : (
+              <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg flex items-center justify-center">
+                <div className="text-2xl">🗺️</div>
+              </div>
+            )}
           </div>
 
           {/* Painel de telemetria 3x3 */}
@@ -183,6 +168,16 @@ export const SaoCristovaoTracker = () => {
                 )}
               </div>
             </div>
+
+            {/* Botão CTA para rota completa */}
+            <Button 
+              onClick={() => navigate('/rota-completa')}
+              className="w-full bg-trucker-blue hover:bg-trucker-blue/90 text-white"
+              size="lg"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Ver Rota Completa
+            </Button>
           </motion.div>
         </Card>
       </motion.div>
