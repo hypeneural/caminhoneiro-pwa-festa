@@ -73,6 +73,8 @@ const AutoBounds: React.FC<{ truckPosition: LatLngExpression }> = ({ truckPositi
 };
 
 export const TruckerMap: React.FC<TruckerMapProps> = ({ data }) => {
+  console.log('🗺️ Renderizando TruckerMap com dados:', data);
+  
   const truckPosition: LatLngExpression = [data.latitude, data.longitude];
   const truckIcon = createTruckIcon(data.course || 0);
   

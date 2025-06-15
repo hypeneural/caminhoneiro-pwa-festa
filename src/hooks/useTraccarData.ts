@@ -6,25 +6,34 @@ export interface TraccarData {
     batteryLevel: number;
     motion: boolean;
     totalDistance: number;
+    odometer: number;
+    activity: string;
+    distance: number;
   };
   deviceId: number;
   fixTime: string;
   latitude: number;
   longitude: number;
   speed: number; // em nós
-  course?: number; // direção em graus
+  course: number; // direção em graus
   address: string | null;
   protocol: string;
   serverTime: string;
   deviceTime: string;
   valid: boolean;
+  outdated: boolean;
+  altitude: number;
+  accuracy: number;
+  network: any;
+  geofenceIds: any;
 }
 
-interface TraccarResponse {
-  data: TraccarData[];
-}
+// A API retorna diretamente um array
+type TraccarResponse = TraccarData[];
 
 const fetchTraccarData = async (): Promise<TraccarData> => {
+  console.log('🚚 Fazendo requisição para API Traccar...');
+  
   try {
     const response = await fetch('https://hypeneural.com/caminhao/api.php', {
       mode: 'cors',
@@ -35,37 +44,23 @@ const fetchTraccarData = async (): Promise<TraccarData> => {
     });
     
     if (!response.ok) {
-      throw new Error(`Erro na API: ${response.status}`);
+      throw new Error(`Erro na API: ${response.status} - ${response.statusText}`);
     }
     
     const result: TraccarResponse = await response.json();
+    console.log('📡 Dados recebidos da API:', result);
     
-    if (!result.data || result.data.length === 0) {
-      throw new Error('Nenhum dado de rastreamento disponível');
+    if (!Array.isArray(result) || result.length === 0) {
+      throw new Error('API retornou array vazio ou formato inválido');
     }
     
-    return result.data[0]; // Sempre usar o primeiro objeto (mais recente)
+    const traccarData = result[0]; // Primeiro item do array
+    console.log('✅ Dados processados:', traccarData);
+    
+    return traccarData;
   } catch (error) {
-    // Se a API falhar, retornar dados mock para desenvolvimento
-    console.warn('API Traccar indisponível, usando dados mock:', error);
-    return {
-      id: 1,
-      attributes: {
-        batteryLevel: 87,
-        motion: true,
-        totalDistance: 234700, // em metros
-      },
-      deviceId: 1,
-      fixTime: new Date().toISOString(),
-      latitude: -27.2423,
-      longitude: -48.6024,
-      speed: 24.3, // em nós (45 km/h)
-      address: "Rua das Flores, 123 - Centro, Tijucas/SC",
-      protocol: "osmand",
-      serverTime: new Date().toISOString(),
-      deviceTime: new Date().toISOString(),
-      valid: true,
-    };
+    console.error('❌ Erro na API Traccar:', error);
+    throw error; // Não usar mais dados mock automáticos
   }
 };
 
@@ -73,17 +68,18 @@ export const useTraccarData = () => {
   return useQuery({
     queryKey: ['traccar-data'],
     queryFn: fetchTraccarData,
-    refetchInterval: 7000, // 7 segundos para tempo real
-    staleTime: 5000, // 5 segundos para otimização
+    refetchInterval: 10000, // 10 segundos para tempo real
+    staleTime: 8000, // 8 segundos para otimização
     retry: (failureCount, error) => {
-      // Não fazer retry se for erro de CORS ou rede
-      if (error?.message?.includes('Failed to fetch') || error?.message?.includes('CORS')) {
-        return false;
-      }
-      return failureCount < 3;
+      console.log(`🔄 Tentativa ${failureCount} falhou:`, error?.message);
+      // Tentar até 2 vezes
+      return failureCount < 2;
     },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    // Continuar em background mesmo com erro
+    retryDelay: (attemptIndex) => {
+      const delay = Math.min(1000 * 2 ** attemptIndex, 10000);
+      console.log(`⏳ Aguardando ${delay}ms antes da próxima tentativa...`);
+      return delay;
+    },
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });
