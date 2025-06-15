@@ -25,6 +25,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useNativeShare } from "@/hooks/useNativeShare";
+import { NotificationsModal } from "./NotificationsModal";
+import { useState } from "react";
 
 interface MoreMenuSheetProps {
   open: boolean;
@@ -40,7 +42,7 @@ const menuItems = {
   funcionalidades: [
     { icon: Radio, label: "Rádio Ao Vivo", route: "/radio", color: "text-trucker-red" },
     { icon: Sparkles, label: "Stories", route: "/stories", color: "text-trucker-orange" },
-    { icon: Bell, label: "Notificações", hasSwitch: true, color: "text-trucker-blue" },
+    { icon: Bell, label: "Notificações", isNotifications: true, color: "text-trucker-blue" },
     { icon: Download, label: "Download Offline", hasSwitch: true, color: "text-trucker-green" },
   ],
   app: [
@@ -53,6 +55,7 @@ const menuItems = {
 
 export function MoreMenuSheet({ open, onOpenChange }: MoreMenuSheetProps) {
   const { shareApp } = useNativeShare();
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   
   const handleLinkClick = () => {
     onOpenChange(false);
@@ -63,8 +66,14 @@ export function MoreMenuSheet({ open, onOpenChange }: MoreMenuSheetProps) {
     onOpenChange(false);
   };
 
+  const handleNotificationsClick = () => {
+    setIsNotificationsOpen(true);
+    onOpenChange(false);
+  };
+
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <>
+      <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="pb-safe max-h-[85vh]">
         <DrawerHeader className="text-center pb-2">
           <div className="flex items-center justify-between">
@@ -146,6 +155,15 @@ export function MoreMenuSheet({ open, onOpenChange }: MoreMenuSheetProps) {
                   <span className="font-medium text-card-foreground flex-1">{item.label}</span>
                   {item.hasSwitch ? (
                     <Switch />
+                  ) : item.isNotifications ? (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0"
+                      onClick={handleNotificationsClick}
+                    >
+                      →
+                    </Button>
                   ) : item.route ? (
                     <Link to={item.route} onClick={handleLinkClick}>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -218,6 +236,12 @@ export function MoreMenuSheet({ open, onOpenChange }: MoreMenuSheetProps) {
           </motion.div>
         </div>
       </DrawerContent>
-    </Drawer>
+      </Drawer>
+      
+      <NotificationsModal 
+        open={isNotificationsOpen} 
+        onOpenChange={setIsNotificationsOpen} 
+      />
+    </>
   );
 }
