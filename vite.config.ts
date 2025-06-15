@@ -13,169 +13,140 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
-    VitePWA({
+VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: 'auto',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}'],
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        maximumFileSizeToCacheInBytes: 5000000, // 5MB
         runtimeCaching: [
-          // API Cache - Network First com fallback
+          // HTML pages - Network First with offline fallback
+          {
+            urlPattern: ({ request }: any) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages-cache',
+              networkTimeoutSeconds: 3,
+            },
+          },
+          // API Cache - Network First com fallback offline robusto
           {
             urlPattern: /^https:\/\/api\.festadocaminhoneiro\.com\.br\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
-              networkTimeoutSeconds: 10,
+              networkTimeoutSeconds: 5,
               expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 2, // 2 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
               },
             },
           },
-          // Imagens - Cache First
+          // Imagens - Cache First otimizado
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',
               expiration: {
-                maxEntries: 200,
+                maxEntries: 300,
+                maxAgeSeconds: 60 * 60 * 24 * 60, // 60 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          // CSS/JS - Stale While Revalidate para performance
+          {
+            urlPattern: /\.(?:js|css)$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'static-resources',
+              expiration: {
+                maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
             },
           },
-          // Fontes - Cache First
+          // Fontes - Cache First longo
           {
             urlPattern: /\.(?:woff|woff2|ttf|eot)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'fonts-cache',
               expiration: {
-                maxEntries: 10,
+                maxEntries: 20,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
               },
             },
           },
-          // CDN Assets - Stale While Revalidate
-          {
-            urlPattern: /^https:\/\/cdn\./i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'cdn-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
-              },
-            },
-          },
-          // Google Fonts
+          // Google Fonts CSS
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'google-fonts-stylesheets',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
             },
           },
+          // Google Fonts arquivos
           {
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'google-fonts-webfonts',
               expiration: {
-                maxEntries: 30,
+                maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
               },
             },
           },
+          // CDN Assets externos
+          {
+            urlPattern: /^https:\/\/cdn\./i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'cdn-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 14, // 14 days
+              },
+            },
+          },
         ],
-        // Navegação offline
+        // Configuração offline robusta
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
-      },
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
-      manifest: {
-        name: 'Festa do Caminhoneiro - São Cristóvão 2025',
-        short_name: 'Caminhoneiro 2025',
-        description: 'PWA oficial da Festa do Caminhoneiro de Tijucas/SC',
-        theme_color: '#1e3a8a',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'portrait-primary',
-        scope: '/',
-        start_url: '/?utm_source=pwa',
-        lang: 'pt-BR',
-        categories: ['entertainment', 'lifestyle', 'travel'],
-        screenshots: [
-          {
-            src: '/screenshots/mobile-1.png',
-            sizes: '390x844',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Tela inicial do aplicativo'
-          },
-          {
-            src: '/screenshots/desktop-1.png',
-            sizes: '1920x1080',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'Versão desktop'
-          }
+        navigateFallbackDenylist: [
+          /^\/_/,
+          /\/[^/?]+\.[^/]+$/,
+          /^\/api\//,
+          /\/manifest\.json$/,
         ],
-        icons: [
-          {
-            src: 'pwa-64x64.png',
-            sizes: '64x64',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable'
-          }
+        // Pre-cache de rotas críticas
+        additionalManifestEntries: [
+          { url: '/', revision: Date.now().toString() },
+          { url: '/galeria', revision: Date.now().toString() },
+          { url: '/mapa', revision: Date.now().toString() },
+          { url: '/programacao', revision: Date.now().toString() },
+          { url: '/radio', revision: Date.now().toString() },
+          { url: '/videos', revision: Date.now().toString() },
+          { url: '/historia', revision: Date.now().toString() },
+          { url: '/noticias', revision: Date.now().toString() },
+          { url: '/mais', revision: Date.now().toString() },
         ],
-        shortcuts: [
-          {
-            name: 'Acompanhar São Cristóvão',
-            short_name: 'Tracker',
-            description: 'Acompanhe a localização de São Cristóvão em tempo real',
-            url: '/?action=tracker',
-            icons: [{ src: '/shortcuts/tracker.png', sizes: '96x96' }]
-          },
-          {
-            name: 'Programação',
-            short_name: 'Agenda',
-            description: 'Veja a programação completa da festa',
-            url: '/programacao',
-            icons: [{ src: '/shortcuts/schedule.png', sizes: '96x96' }]
-          },
-          {
-            name: 'Galeria',
-            short_name: 'Fotos',
-            description: 'Veja fotos e vídeos da festa',
-            url: '/galeria',
-            icons: [{ src: '/shortcuts/gallery.png', sizes: '96x96' }]
-          }
-        ]
       },
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
+      manifestFilename: 'manifest.json',
       devOptions: {
         enabled: true,
         type: 'module',
