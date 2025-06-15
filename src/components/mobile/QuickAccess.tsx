@@ -10,20 +10,27 @@ import { useQuickAccess } from "@/hooks/useQuickAccess";
 import { useDynamicBadges } from "@/hooks/useDynamicBadges";
 import { THEME_COLORS, APP_TEXTS } from "@/constants";
 import { Camera, Star, Heart, Zap, Clock } from "lucide-react";
+import { ContatoIgrejaModal } from "./ContatoIgrejaModal";
 
-const QuickAccessCard = React.memo(({ item, index }: { item: any; index: number }) => {
+const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { item: any; index: number; onContatoIgrejaClick?: () => void }) => {
   const { trackUsage, isFavorite, toggleFavorite } = useQuickAccess();
   const { getBadgeForItem } = useDynamicBadges();
   const [isPressed, setIsPressed] = useState(false);
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e: React.MouseEvent) => {
     trackUsage(item.id);
     
     // Haptic feedback
     if ('vibrate' in navigator) {
       navigator.vibrate(10);
     }
-  }, [item.id, trackUsage]);
+
+    // Special handling for contato-igreja
+    if (item.id === 'contato-igreja') {
+      e.preventDefault();
+      onContatoIgrejaClick?.();
+    }
+  }, [item.id, trackUsage, onContatoIgrejaClick]);
 
   const handleLongPress = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
@@ -73,118 +80,232 @@ const QuickAccessCard = React.memo(({ item, index }: { item: any; index: number 
       className={`cursor-pointer ${getCardSize(item.priority)}`}
     >
       <TouchFeedback scale={0.96} haptic>
-        <Link 
-          to={item.route} 
-          className="block h-full" 
-          onClick={handleClick}
-          aria-label={`Acessar ${item.title}`}
-        >
-          <RippleEffect rippleColor="rgba(255,255,255,0.2)">
-            <Card 
-              className={`
-                p-4 h-full relative overflow-hidden transition-all duration-300 group
-                bg-gradient-to-br from-background/95 to-background/90
-                backdrop-blur-md border border-border/30
-                hover:border-border/60 hover:shadow-xl hover:shadow-primary/5
-                ${favorite ? 'ring-2 ring-trucker-orange/50 border-trucker-orange/30' : ''}
-                ${isLiveItem ? 'animate-pulse' : ''}
-              `}
-              role="button"
-              tabIndex={0}
-              onTouchStart={() => setIsPressed(true)}
-              onTouchEnd={() => setIsPressed(false)}
-              onTouchCancel={() => setIsPressed(false)}
-            >
-              {/* Background Pattern */}
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-transparent opacity-60" />
-              
-              {/* Live Indicator */}
-              {isLiveItem && (
-                <motion.div 
-                  className="absolute top-2 left-2 w-2 h-2 bg-emerald-500 rounded-full"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-              )}
-
-              {/* Favorite Star */}
-              {favorite && (
-                <motion.div 
-                  className="absolute top-2 right-2"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500 }}
-                >
-                  <Star className="w-4 h-4 text-trucker-orange fill-trucker-orange" />
-                </motion.div>
-              )}
-
-              {/* Badge with Enhanced Design */}
-              {displayBadge && (
-                <motion.div
-                  className={`
-                    absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 text-xs font-bold 
-                    rounded-full flex items-center justify-center shadow-lg
-                    ${displayBadge.color || getBadgeVariant(displayBadge.type)}
-                    ${displayBadge.pulse ? 'animate-pulse' : ''}
-                  `}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: index * 0.1 + 0.3, type: "spring" }}
-                  aria-label={`${displayBadge.count} ${displayBadge.type}`}
-                >
-                  {displayBadge.count}
-                </motion.div>
-              )}
-              
-              <div className="relative z-10 flex flex-col items-center justify-center gap-3 h-full">
-                {/* Icon Container with Enhanced Animation */}
-                <motion.div 
-                  className={`
-                    w-14 h-14 ${item.bgColor} rounded-2xl flex items-center justify-center
-                    shadow-lg group-hover:shadow-xl transition-all duration-300
-                    ring-2 ring-white/10 group-hover:ring-white/20
-                  `}
-                  whileHover={{ rotate: [0, -5, 5, 0] }}
-                  transition={{ duration: 0.3 }}
-                  aria-hidden="true"
-                >
-                  <motion.div
-                    animate={{ 
-                      scale: isPressed ? 0.9 : 1,
-                      rotate: isLiveItem ? [0, 2, -2, 0] : 0
-                    }}
-                    transition={{ 
-                      duration: isLiveItem ? 3 : 0.2, 
-                      repeat: isLiveItem ? Infinity : 0 
-                    }}
-                  >
-                    <item.icon className={`w-7 h-7 ${item.color} drop-shadow-sm`} />
-                  </motion.div>
-                </motion.div>
+        {item.id === 'contato-igreja' ? (
+          <div 
+            className="block h-full cursor-pointer" 
+            onClick={handleClick}
+            aria-label={`Acessar ${item.title}`}
+          >
+            <RippleEffect rippleColor="rgba(255,255,255,0.2)">
+              <Card 
+                className={`
+                  p-4 h-full relative overflow-hidden transition-all duration-300 group
+                  bg-gradient-to-br from-background/95 to-background/90
+                  backdrop-blur-md border border-border/30
+                  hover:border-border/60 hover:shadow-xl hover:shadow-primary/5
+                  ${favorite ? 'ring-2 ring-trucker-orange/50 border-trucker-orange/30' : ''}
+                  ${isLiveItem ? 'animate-pulse' : ''}
+                `}
+                role="button"
+                tabIndex={0}
+                onTouchStart={() => setIsPressed(true)}
+                onTouchEnd={() => setIsPressed(false)}
+                onTouchCancel={() => setIsPressed(false)}
+              >
+                {/* Background Pattern */}
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-transparent opacity-60" />
                 
-                {/* Title with Better Typography */}
-                <span className="text-xs font-semibold text-center text-foreground leading-tight px-1 max-w-full">
-                  {item.title}
-                </span>
-
-                {/* Subtle Activity Indicator */}
+                {/* Live Indicator */}
                 {isLiveItem && (
                   <motion.div 
-                    className="text-[10px] text-emerald-600 font-medium"
-                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    className="absolute top-2 left-2 w-2 h-2 bg-emerald-500 rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
+                  />
+                )}
+
+                {/* Favorite Star */}
+                {favorite && (
+                  <motion.div 
+                    className="absolute top-2 right-2"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500 }}
                   >
-                    AO VIVO
+                    <Star className="w-4 h-4 text-trucker-orange fill-trucker-orange" />
                   </motion.div>
                 )}
-              </div>
 
-              {/* Glassmorphism Effect */}
-              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/5 pointer-events-none" />
-            </Card>
-          </RippleEffect>
-        </Link>
+                {/* Badge with Enhanced Design */}
+                {displayBadge && (
+                  <motion.div
+                    className={`
+                      absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 text-xs font-bold 
+                      rounded-full flex items-center justify-center shadow-lg
+                      ${displayBadge.color || getBadgeVariant(displayBadge.type)}
+                      ${displayBadge.pulse ? 'animate-pulse' : ''}
+                    `}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: index * 0.1 + 0.3, type: "spring" }}
+                    aria-label={`${displayBadge.count} ${displayBadge.type}`}
+                  >
+                    {displayBadge.count}
+                  </motion.div>
+                )}
+                
+                <div className="relative z-10 flex flex-col items-center justify-center gap-3 h-full">
+                  {/* Icon Container with Enhanced Animation */}
+                  <motion.div 
+                    className={`
+                      w-14 h-14 ${item.bgColor} rounded-2xl flex items-center justify-center
+                      shadow-lg group-hover:shadow-xl transition-all duration-300
+                      ring-2 ring-white/10 group-hover:ring-white/20
+                    `}
+                    whileHover={{ rotate: [0, -5, 5, 0] }}
+                    transition={{ duration: 0.3 }}
+                    aria-hidden="true"
+                  >
+                    <motion.div
+                      animate={{ 
+                        scale: isPressed ? 0.9 : 1,
+                        rotate: isLiveItem ? [0, 2, -2, 0] : 0
+                      }}
+                      transition={{ 
+                        duration: isLiveItem ? 3 : 0.2, 
+                        repeat: isLiveItem ? Infinity : 0 
+                      }}
+                    >
+                      <item.icon className={`w-7 h-7 ${item.color} drop-shadow-sm`} />
+                    </motion.div>
+                  </motion.div>
+                  
+                  {/* Title with Better Typography */}
+                  <span className="text-xs font-semibold text-center text-foreground leading-tight px-1 max-w-full">
+                    {item.title}
+                  </span>
+
+                  {/* Subtle Activity Indicator */}
+                  {isLiveItem && (
+                    <motion.div 
+                      className="text-[10px] text-emerald-600 font-medium"
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      AO VIVO
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Glassmorphism Effect */}
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/5 pointer-events-none" />
+              </Card>
+            </RippleEffect>
+          </div>
+        ) : (
+          <Link 
+            to={item.route} 
+            className="block h-full" 
+            onClick={handleClick}
+            aria-label={`Acessar ${item.title}`}
+          >
+            <RippleEffect rippleColor="rgba(255,255,255,0.2)">
+              <Card 
+                className={`
+                  p-4 h-full relative overflow-hidden transition-all duration-300 group
+                  bg-gradient-to-br from-background/95 to-background/90
+                  backdrop-blur-md border border-border/30
+                  hover:border-border/60 hover:shadow-xl hover:shadow-primary/5
+                  ${favorite ? 'ring-2 ring-trucker-orange/50 border-trucker-orange/30' : ''}
+                  ${isLiveItem ? 'animate-pulse' : ''}
+                `}
+                role="button"
+                tabIndex={0}
+                onTouchStart={() => setIsPressed(true)}
+                onTouchEnd={() => setIsPressed(false)}
+                onTouchCancel={() => setIsPressed(false)}
+              >
+                {/* Background Pattern */}
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-transparent opacity-60" />
+                
+                {/* Live Indicator */}
+                {isLiveItem && (
+                  <motion.div 
+                    className="absolute top-2 left-2 w-2 h-2 bg-emerald-500 rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                )}
+
+                {/* Favorite Star */}
+                {favorite && (
+                  <motion.div 
+                    className="absolute top-2 right-2"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500 }}
+                  >
+                    <Star className="w-4 h-4 text-trucker-orange fill-trucker-orange" />
+                  </motion.div>
+                )}
+
+                {/* Badge with Enhanced Design */}
+                {displayBadge && (
+                  <motion.div
+                    className={`
+                      absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 text-xs font-bold 
+                      rounded-full flex items-center justify-center shadow-lg
+                      ${displayBadge.color || getBadgeVariant(displayBadge.type)}
+                      ${displayBadge.pulse ? 'animate-pulse' : ''}
+                    `}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: index * 0.1 + 0.3, type: "spring" }}
+                    aria-label={`${displayBadge.count} ${displayBadge.type}`}
+                  >
+                    {displayBadge.count}
+                  </motion.div>
+                )}
+                
+                <div className="relative z-10 flex flex-col items-center justify-center gap-3 h-full">
+                  {/* Icon Container with Enhanced Animation */}
+                  <motion.div 
+                    className={`
+                      w-14 h-14 ${item.bgColor} rounded-2xl flex items-center justify-center
+                      shadow-lg group-hover:shadow-xl transition-all duration-300
+                      ring-2 ring-white/10 group-hover:ring-white/20
+                    `}
+                    whileHover={{ rotate: [0, -5, 5, 0] }}
+                    transition={{ duration: 0.3 }}
+                    aria-hidden="true"
+                  >
+                    <motion.div
+                      animate={{ 
+                        scale: isPressed ? 0.9 : 1,
+                        rotate: isLiveItem ? [0, 2, -2, 0] : 0
+                      }}
+                      transition={{ 
+                        duration: isLiveItem ? 3 : 0.2, 
+                        repeat: isLiveItem ? Infinity : 0 
+                      }}
+                    >
+                      <item.icon className={`w-7 h-7 ${item.color} drop-shadow-sm`} />
+                    </motion.div>
+                  </motion.div>
+                  
+                  {/* Title with Better Typography */}
+                  <span className="text-xs font-semibold text-center text-foreground leading-tight px-1 max-w-full">
+                    {item.title}
+                  </span>
+
+                  {/* Subtle Activity Indicator */}
+                  {isLiveItem && (
+                    <motion.div 
+                      className="text-[10px] text-emerald-600 font-medium"
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      AO VIVO
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Glassmorphism Effect */}
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/5 pointer-events-none" />
+              </Card>
+            </RippleEffect>
+          </Link>
+        )}
       </TouchFeedback>
     </motion.div>
   );
@@ -249,6 +370,11 @@ const EnhancedLoadingState = React.memo(() => (
 
 export const QuickAccess = React.memo(() => {
   const { items, loading } = useQuickAccess();
+  const [isContatoIgrejaModalOpen, setIsContatoIgrejaModalOpen] = useState(false);
+
+  const handleContatoIgrejaClick = useCallback(() => {
+    setIsContatoIgrejaModalOpen(true);
+  }, []);
 
   if (loading) {
     return <EnhancedLoadingState />;
@@ -273,7 +399,12 @@ export const QuickAccess = React.memo(() => {
         >
           <AnimatePresence mode="wait">
             {items.map((item, index) => (
-              <QuickAccessCard key={item.id} item={item} index={index} />
+              <QuickAccessCard 
+                key={item.id} 
+                item={item} 
+                index={index}
+                onContatoIgrejaClick={handleContatoIgrejaClick}
+              />
             ))}
           </AnimatePresence>
         </motion.div>
@@ -298,6 +429,12 @@ export const QuickAccess = React.memo(() => {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* Contato Igreja Modal */}
+      <ContatoIgrejaModal 
+        open={isContatoIgrejaModalOpen}
+        onOpenChange={setIsContatoIgrejaModalOpen}
+      />
     </ErrorBoundary>
   );
 });

@@ -1,5 +1,5 @@
 import { QuickAccessItem } from '@/types/quickAccess';
-import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText, Shield, Users, Heart, ChefHat } from "lucide-react";
+import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText, Shield, Users, Heart, ChefHat, Phone } from "lucide-react";
 
 export const quickAccessItems: QuickAccessItem[] = [
   // Primeira Linha
@@ -163,6 +163,18 @@ export const quickAccessItems: QuickAccessItem[] = [
     category: "info",
     priority: 13,
     description: "Conheça a história da festa",
+    isActive: true
+  },
+  {
+    id: "contato-igreja",
+    title: "Contato da Igreja",
+    icon: Phone,
+    color: "text-trucker-blue",
+    bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    route: "/contato-igreja",
+    category: "info",
+    priority: 14,
+    description: "Entre em contato com a Paróquia",
     isActive: true
   }
 ];
