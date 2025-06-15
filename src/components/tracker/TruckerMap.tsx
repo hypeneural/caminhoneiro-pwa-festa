@@ -95,18 +95,14 @@ export const TruckerMap: React.FC<TruckerMapProps> = ({ data }) => {
         attributionControl={false}
         style={{ height: '100%', width: '100%' }}
       >
-        {/* Tile layer com visual limpo */}
         <TileLayer
           url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png"
         />
         
-        {/* Marcador do ponto de partida */}
         <Marker position={START_POINT} icon={startIcon} />
         
-        {/* Marcador do caminhão */}
         <Marker position={truckPosition} icon={truckIcon} />
         
-        {/* Rastro do percurso */}
         <Polyline 
           positions={recentTrail}
           pathOptions={{
@@ -116,7 +112,6 @@ export const TruckerMap: React.FC<TruckerMapProps> = ({ data }) => {
           }}
         />
         
-        {/* Auto ajuste dos bounds */}
         <AutoBounds truckPosition={truckPosition} />
       </MapContainer>
       
