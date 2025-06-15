@@ -1,8 +1,42 @@
-# Welcome to your Lovable project
+# PWA Festa do Caminhoneiro - São Cristóvão 2025
+
+Progressive Web App oficial da Festa do Caminhoneiro de Tijucas/SC, que acontecerá nos dias 19 e 20 de julho de 2025. Este PWA simula perfeitamente um aplicativo mobile nativo, oferecendo uma experiência completa para acompanhar a procissão de São Cristóvão, notícias, galeria de fotos e programação do evento.
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/6a4cbc5b-381a-4084-bdeb-fb77b8417e3f
+
+## Funcionalidades Principais
+
+### 📱 Design Mobile-First
+- Interface que simula aplicativo nativo
+- Navegação por bottom tabs
+- Stories estilo Instagram
+- Carrosséis touch-friendly
+- Floating Action Button (FAB)
+- Safe area handling para dispositivos com notch
+
+### 🚛 Tracking de São Cristóvão
+- Localização em tempo real do caminhão
+- Status de movimento (parado/em movimento)
+- Próximas paradas da procissão
+- Indicador "AO VIVO" pulsante
+
+### ⏰ Countdown Timer
+- Contagem regressiva para o evento
+- Layout compacto otimizado para mobile
+- Animações de flip nos números
+
+### 📰 Carrosséis Interativos
+- Carousel de notícias com scroll horizontal
+- Carousel de fotos em destaque
+- Gesture de swipe otimizado
+- Preload de imagens para performance
+
+### 🎯 Menu de Acesso Rápido
+- Grid 3x3 com ícones temáticos
+- Galeria, Mapa, Programação, Rádio, Vídeos, História
+- Feedback tátil e animações de press
 
 ## How can I edit this code?
 
@@ -50,15 +84,30 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## Tecnologias e Arquitetura
 
-This project is built with:
+### Stack Principal
+- **React 18+** com TypeScript para tipagem estática
+- **Vite** como bundler e dev server otimizado
+- **Tailwind CSS** com design system customizado
+- **Shadcn UI** para componentes base consistentes
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Animações e Interações
+- **Framer Motion** para animações nativas mobile
+- **Lucide React** para ícones temáticos
+- **React Router** para navegação SPA
+
+### Otimizações Mobile
+- **Touch gestures** otimizados para carrosséis
+- **Safe area handling** para dispositivos com notch
+- **Lazy loading** agressivo para performance
+- **PWA ready** com manifest e service worker
+
+### Design System
+- **Semantic tokens** para cores temáticas (trucker-blue, trucker-red, etc.)
+- **Mobile-first** responsiveness
+- **Dark/Light mode** support via CSS variables
+- **Component-driven** architecture
 
 ## How can I deploy this project?
 
