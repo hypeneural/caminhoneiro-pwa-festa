@@ -1,40 +1,34 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Share2, Bookmark, Clock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { X, Share2, Bookmark, Clock, Eye, ChevronLeft, ChevronRight, Heart, MessageCircle, ExternalLink, ArrowUp } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { TouchFeedback } from "@/components/ui/touch-feedback";
+import { OptimizedImage } from "@/components/ui/optimized-image";
+import { useNavigation } from "@/hooks/useNavigation";
+import { ROUTES } from "@/constants";
+import { useState, useEffect } from "react";
 
-interface NewsItem {
-  id: number;
-  title: string;
-  summary: string;
-  content: string;
-  imageUrl: string;
-  category: string;
-  publishedAt: string;
-  author: string;
-  views: string;
-  readTime: string;
-  featured?: boolean;
-}
+import { NewsItem } from "@/types/news";
 
 interface NewsModalProps {
   news: NewsItem | null;
   isOpen: boolean;
   onClose: () => void;
   allNews: NewsItem[];
-  onNavigate?: (newsId: number) => void;
+  onNavigate?: (newsId: string) => void;
 }
 
 export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsModalProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const { navigateTo } = useNavigation();
 
   if (!news) return null;
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'long',
@@ -42,6 +36,16 @@ export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsMo
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Agora';
+    if (diffInMinutes < 60) return `${diffInMinutes}m atrás`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h atrás`;
+    return `${Math.floor(diffInMinutes / 1440)}d atrás`;
   };
 
   const handleShare = async () => {
@@ -56,6 +60,21 @@ export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsMo
         console.log('Error sharing:', error);
       }
     }
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.currentTarget;
+    const scrollTop = element.scrollTop;
+    const scrollHeight = element.scrollHeight - element.clientHeight;
+    const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    
+    setScrollProgress(progress);
+    setShowScrollTop(scrollTop > 300);
+  };
+
+  const scrollToTop = () => {
+    const modalContent = document.querySelector('[data-scroll-area]');
+    modalContent?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const currentIndex = allNews.findIndex(n => n.id === news.id);
@@ -74,175 +93,291 @@ export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsMo
     }
   };
 
-  // Simulated content paragraphs for demo
-  const contentParagraphs = [
-    "A Festa do Caminhoneiro 2025 promete ser a maior edição da história, com uma programação completa que vai emocionar todos os participantes. O evento, que acontece em Tijucas/SC, nos dias 19 e 20 de julho, já tem sua programação oficial divulgada.",
-    "Entre as principais atrações confirmadas estão grandes nomes do sertanejo nacional, shows especiais e diversas atividades voltadas para toda a família caminhoneira. A organização investiu pesado para garantir a melhor experiência possível.",
-    "O evento conta com estrutura completa, incluindo área de camping, praça de alimentação com pratos típicos da região, shows pirotécnicos e muito mais. A expectativa é receber mais de 30 mil pessoas durante os dois dias de festa.",
-    "As vendas de ingressos já estão abertas e podem ser adquiridas através do site oficial ou nos pontos de venda autorizados. Valores promocionais estão disponíveis para compras antecipadas."
-  ];
+  const contentParagraphs = news.content ? 
+    news.content.split('\n\n') : 
+    [
+      "A Festa do Caminhoneiro 2025 promete ser a maior edição da história, com uma programação completa que vai emocionar todos os participantes. O evento, que acontece em Tijucas/SC, nos dias 25 e 26 de julho, já tem sua programação oficial divulgada.",
+      "Entre as principais atrações confirmadas estão grandes nomes do sertanejo nacional, shows especiais e diversas atividades voltadas para toda a família caminhoneira. A organização investiu pesado para garantir a melhor experiência possível.",
+      "O evento conta com estrutura completa, incluindo área de camping, praça de alimentação com pratos típicos da região, shows pirotécnicos e muito mais. A expectativa é receber mais de 30 mil pessoas durante os dois dias de festa.",
+      "As vendas de ingressos já estão abertas e podem ser adquiridas através do site oficial ou nos pontos de venda autorizados. Valores promocionais estão disponíveis para compras antecipadas.",
+      "Para mais informações sobre a programação completa, localização e outras novidades, continue acompanhando nossos canais oficiais."
+    ];
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[95vh] p-0 overflow-hidden flex flex-col">
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent 
+        side="bottom" 
+        className="h-[95vh] p-0 overflow-hidden flex flex-col rounded-t-3xl border-t-2 border-border/20"
+      >
+        {/* Progress Bar */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-muted z-50">
+          <motion.div
+            className="h-full bg-gradient-to-r from-trucker-blue to-trucker-green"
+            style={{ width: `${scrollProgress}%` }}
+            initial={{ width: 0 }}
+            animate={{ width: `${scrollProgress}%` }}
+            transition={{ duration: 0.1 }}
+          />
+        </div>
+
+        {/* Handle Bar */}
+        <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mt-3 mb-1" />
+
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 50 }}
+          transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
           className="h-full flex flex-col min-h-0"
         >
-          {/* Header */}
-          <div className="relative">
-            <img
+          {/* Header Image */}
+          <div className="relative h-64 flex-shrink-0">
+            <OptimizedImage
               src={news.imageUrl}
               alt={news.title}
-              className="w-full h-64 object-cover"
+              className="w-full h-full object-cover"
+              priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             
-            {/* Navigation and Actions */}
-            <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
-              <div className="flex gap-2">
-                {hasPrevious && (
+            {/* Floating Actions */}
+            <div className="absolute top-4 right-4 flex gap-2">
+              {hasPrevious && (
+                <TouchFeedback>
                   <Button
                     variant="secondary"
                     size="icon"
                     onClick={handlePrevious}
-                    className="bg-black/50 hover:bg-black/70 border-0"
+                    className="bg-black/30 hover:bg-black/50 border-0 backdrop-blur-sm"
                   >
                     <ChevronLeft className="w-5 h-5 text-white" />
                   </Button>
-                )}
-              </div>
-              
-              <div className="flex gap-2">
-                {hasNext && (
+                </TouchFeedback>
+              )}
+              {hasNext && (
+                <TouchFeedback>
                   <Button
                     variant="secondary"
                     size="icon"
                     onClick={handleNext}
-                    className="bg-black/50 hover:bg-black/70 border-0"
+                    className="bg-black/30 hover:bg-black/50 border-0 backdrop-blur-sm"
                   >
                     <ChevronRight className="w-5 h-5 text-white" />
                   </Button>
-                )}
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  onClick={handleShare}
-                  className="bg-black/50 hover:bg-black/70 border-0"
-                >
-                  <Share2 className="w-5 h-5 text-white" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  onClick={() => setIsBookmarked(!isBookmarked)}
-                  className="bg-black/50 hover:bg-black/70 border-0"
-                >
-                  <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-white' : ''} text-white`} />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  onClick={onClose}
-                  className="bg-black/50 hover:bg-black/70 border-0"
-                >
-                  <X className="w-5 h-5 text-white" />
-                </Button>
-              </div>
+                </TouchFeedback>
+              )}
             </div>
 
-            {/* Category Badge */}
-            <div className="absolute bottom-4 left-4">
-              <Badge className="bg-trucker-red text-white">
+            {/* Category and Breaking Badge */}
+            <div className="absolute top-4 left-4 flex gap-2">
+              <Badge className="bg-trucker-red text-white font-semibold">
                 {news.category}
               </Badge>
+              {news.breaking && (
+                <Badge className="bg-red-500 text-white font-bold animate-pulse">
+                  🚨 BREAKING
+                </Badge>
+              )}
+            </div>
+
+            {/* Title and Meta */}
+            <div className="absolute bottom-4 left-4 right-4">
+              <h1 className="text-white font-bold text-xl mb-2 leading-tight line-clamp-3">
+                {news.title}
+              </h1>
+              <div className="flex items-center justify-between text-white/80 text-sm">
+                <span>{formatTimeAgo(news.publishedAt)}</span>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1">
+                    <Eye className="w-4 h-4" />
+                    {news.views.toLocaleString()}
+                  </span>
+                  {news.readTime && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {news.readTime}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto min-h-0" style={{ scrollbarWidth: 'thin' }}>
-            <div className="p-6 pb-8">
-              {/* Title */}
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-2xl font-bold mb-4 leading-tight"
-              >
-                {news.title}
-              </motion.h1>
-
-              {/* Meta Info */}
+          <div 
+            className="flex-1 overflow-y-auto"
+            onScroll={handleScroll}
+            data-scroll-area
+            style={{ scrollbarWidth: 'thin' }}
+          >
+            <div className="p-6 pb-32">
+              {/* Engagement Bar */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="flex items-center gap-4 text-sm text-muted-foreground mb-6 pb-4 border-b"
+                className="flex items-center justify-between p-4 bg-muted/50 rounded-2xl mb-6 backdrop-blur-sm"
               >
-                <span className="font-medium">{news.author}</span>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {formatDate(news.publishedAt)}
+                <div className="flex items-center gap-6">
+                  <TouchFeedback>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsLiked(!isLiked)}
+                      className="flex items-center gap-2 hover:bg-red-50 hover:text-red-600 transition-colors"
+                    >
+                      <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                      {(news.likes || 0) + (isLiked ? 1 : 0)}
+                    </Button>
+                  </TouchFeedback>
+                  
+                  <TouchFeedback>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-2 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                      {news.comments || 0}
+                    </Button>
+                  </TouchFeedback>
+                  
+                  <TouchFeedback>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleShare}
+                      className="flex items-center gap-2 hover:bg-green-50 hover:text-green-600 transition-colors"
+                    >
+                      <Share2 className="w-5 h-5" />
+                      {news.shares || 0}
+                    </Button>
+                  </TouchFeedback>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" />
-                  {news.views} visualizações
+                
+                <TouchFeedback>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsBookmarked(!isBookmarked)}
+                    className="hover:bg-yellow-50 hover:text-yellow-600 transition-colors"
+                  >
+                    <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-yellow-500 text-yellow-500' : ''}`} />
+                  </Button>
+                </TouchFeedback>
+              </motion.div>
+
+              {/* Author and Date */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-center gap-3 mb-6 p-4 bg-card rounded-2xl border border-border/50"
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-trucker-blue to-trucker-green rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  {news.author.charAt(0)}
                 </div>
-                <span>{news.readTime} de leitura</span>
+                <div>
+                  <p className="font-semibold text-foreground">{news.author}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(news.publishedAt)}</p>
+                </div>
               </motion.div>
 
               {/* Summary */}
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-lg text-muted-foreground mb-6 leading-relaxed"
+                transition={{ delay: 0.4 }}
+                className="mb-6"
               >
-                {news.summary}
-              </motion.p>
+                <p className="text-lg text-muted-foreground leading-relaxed font-medium bg-muted/30 p-4 rounded-2xl border-l-4 border-trucker-blue">
+                  {news.summary}
+                </p>
+              </motion.div>
 
               {/* Content */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.5 }}
                 className="prose prose-lg max-w-none"
               >
                 {contentParagraphs.map((paragraph, index) => (
                   <motion.p
                     key={index}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    className="mb-4 leading-relaxed text-foreground"
+                    transition={{ delay: 0.6 + index * 0.1 }}
+                    className="mb-6 leading-relaxed text-foreground text-base"
                   >
                     {paragraph}
                   </motion.p>
                 ))}
               </motion.div>
 
-              {/* Related Topics */}
+              {/* Tags */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
-                className="mt-8 pt-6 border-t"
+                className="mt-8 p-4 bg-muted/30 rounded-2xl"
               >
-                <h3 className="font-semibold mb-3">Tópicos Relacionados</h3>
+                <h3 className="font-semibold mb-3 text-foreground">Tags Relacionadas</h3>
                 <div className="flex flex-wrap gap-2">
-                  {['Festa 2025', 'Programação', 'Ingressos', 'Sertanejo', 'Tijucas'].map((topic) => (
-                    <Badge key={topic} variant="secondary" className="cursor-pointer hover:bg-trucker-blue hover:text-white transition-colors">
-                      #{topic}
-                    </Badge>
+                  {['festa2025', 'programacao', 'eventos', 'caminhoneiros'].map((tag) => (
+                    <TouchFeedback key={tag}>
+                      <Badge 
+                        variant="secondary" 
+                        className="cursor-pointer hover:bg-trucker-blue hover:text-white transition-colors px-3 py-1"
+                      >
+                        #{tag}
+                      </Badge>
+                    </TouchFeedback>
                   ))}
                 </div>
               </motion.div>
             </div>
           </div>
+
+          {/* Fixed Bottom CTA */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/95 to-transparent backdrop-blur-lg border-t border-border/50">
+            <TouchFeedback>
+              <Button
+                onClick={() => {
+                  onClose();
+                  navigateTo(ROUTES.NEWS);
+                }}
+                className="w-full bg-gradient-to-r from-trucker-blue to-trucker-green hover:from-trucker-blue/90 hover:to-trucker-green/90 text-white font-semibold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg"
+              >
+                <ExternalLink className="w-5 h-5" />
+                Ver Todas as Notícias
+              </Button>
+            </TouchFeedback>
+          </div>
+
+          {/* Scroll to Top Button */}
+          <AnimatePresence>
+            {showScrollTop && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="fixed bottom-24 right-6 z-50"
+              >
+                <TouchFeedback>
+                  <Button
+                    onClick={scrollToTop}
+                    size="icon"
+                    className="bg-trucker-blue hover:bg-trucker-blue/90 text-white rounded-full shadow-lg"
+                  >
+                    <ArrowUp className="w-5 h-5" />
+                  </Button>
+                </TouchFeedback>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

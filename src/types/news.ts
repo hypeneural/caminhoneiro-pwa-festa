@@ -2,6 +2,7 @@ export interface NewsItem {
   id: string;
   title: string;
   summary: string;
+  content?: string;
   imageUrl: string;
   publishedAt: Date;
   category: string;
@@ -10,9 +11,15 @@ export interface NewsItem {
   slug: string;
   views: number;
   likes: number;
+  shares?: number;
+  comments?: number;
+  readTime?: string;
   tags: string[];
   featured: boolean;
-  content?: string;
+  breaking?: boolean;
+  trending?: boolean;
+  hot?: boolean;
+  priority?: 'low' | 'medium' | 'high';
   updatedAt?: Date;
   status?: 'draft' | 'published' | 'archived';
 }
