@@ -3,7 +3,7 @@ import { Camera } from "lucide-react";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
 import { AdvancedSearchBar } from "@/components/gallery/AdvancedSearchBar";
-import { VirtualPhotoGrid } from "@/components/gallery/VirtualPhotoGrid";
+import { NativePhotoGrid } from "@/components/gallery/NativePhotoGrid";
 import { PullToRefresh } from "@/components/gallery/PullToRefresh";
 import { PhotoLightbox } from "@/components/gallery/PhotoLightbox";
 import { useGallery } from "@/hooks/useGallery";
@@ -59,12 +59,13 @@ const Gallery = () => {
         onFiltersChange={updateFilters}
         onClearFilters={clearFilters}
         isFiltersActive={isFiltersActive}
+        photos={filteredPhotos}
       />
 
       {/* Main content with Pull to Refresh */}
       <main className="flex-1 pb-20">
         <PullToRefresh onRefresh={refreshPhotos}>
-          <VirtualPhotoGrid
+          <NativePhotoGrid
             photos={filteredPhotos}
             loading={loading}
             hasMore={hasMore}

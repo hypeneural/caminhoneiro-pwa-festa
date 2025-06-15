@@ -14,6 +14,7 @@ interface AdvancedSearchBarProps {
   onFiltersChange: (filters: Partial<GalleryFilters>) => void;
   onClearFilters: () => void;
   isFiltersActive: boolean;
+  photos: any[];
 }
 
 const timeOfDayOptions = [
@@ -43,7 +44,8 @@ export function AdvancedSearchBar({
   filters, 
   onFiltersChange, 
   onClearFilters, 
-  isFiltersActive 
+  isFiltersActive,
+  photos
 }: AdvancedSearchBarProps) {
   const [searchInput, setSearchInput] = useState(filters.vehiclePlate);
   const [generalSearch, setGeneralSearch] = useState(filters.searchQuery);
