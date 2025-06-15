@@ -106,6 +106,46 @@ export const quickAccessItems: QuickAccessItem[] = [
     isActive: true
   },
   {
+    id: "noticias",
+    title: "Notícias",
+    icon: BookText,
+    color: "text-blue-600",
+    bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    route: "/noticias",
+    badge: { count: 3, type: 'new' },
+    category: "info",
+    priority: 9,
+    description: "Últimas notícias do evento",
+    isActive: true
+  },
+  
+  // Quarta Linha
+  {
+    id: "faq",
+    title: "Dúvidas",
+    icon: BookText,
+    color: "text-green-600",
+    bgColor: "bg-green-50 dark:bg-green-900/20",
+    route: "/faq",
+    category: "info",
+    priority: 10,
+    description: "Perguntas frequentes",
+    isActive: true
+  },
+  {
+    id: "transmissao",
+    title: "Transmissão",
+    icon: BookText,
+    color: "text-red-600",
+    bgColor: "bg-red-50 dark:bg-red-900/20",
+    route: "/cameras",
+    badge: { count: 1, type: 'update' },
+    category: "media",
+    priority: 11,
+    description: "Transmissão ao vivo",
+    isActive: true
+  },
+  {
     id: "historia",
     title: "História",
     icon: BookText,
@@ -113,7 +153,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
     route: "/historia",
     category: "info",
-    priority: 9,
+    priority: 12,
     description: "Conheça a história da festa",
     isActive: true
   }

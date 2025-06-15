@@ -64,12 +64,13 @@ const moreMenuRoutes = [
   "/videos", 
   "/historia",
   "/noticias",
-  "/rota",
+  "/rota-completa",
   "/cameras",
   "/stories",
   "/about",
   "/contact",
-  "/settings"
+  "/settings",
+  "/faq"
 ];
 
 export function BottomNavigation() {
