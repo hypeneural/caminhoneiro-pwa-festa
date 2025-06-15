@@ -15,47 +15,20 @@ import { useMemoryManager } from "@/hooks/useMemoryManager";
 import { useEffect } from "react";
 
 const Index = () => {
-  // Safely initialize hooks with error boundaries
-  let prefetchHook = null;
-  let performanceHook = null;
-  let memoryHook = null;
-
-  try {
-    prefetchHook = usePrefetch();
-  } catch (error) {
-    console.warn('Prefetch hook failed to initialize:', error);
-  }
-
-  try {
-    performanceHook = usePerformanceMonitor('IndexPage');
-  } catch (error) {
-    console.warn('Performance monitor failed to initialize:', error);
-  }
-
-  try {
-    memoryHook = useMemoryManager();
-  } catch (error) {
-    console.warn('Memory manager failed to initialize:', error);
-  }
-
-  const { recordVisit, prefetchPredicted } = prefetchHook || { recordVisit: () => {}, prefetchPredicted: () => {} };
-  const { metrics, isViolatingBudget } = performanceHook || { metrics: null, isViolatingBudget: false };
-  const { stats } = memoryHook || { stats: null };
+  const { recordVisit, prefetchPredicted } = usePrefetch();
+  const { metrics, isViolatingBudget } = usePerformanceMonitor('IndexPage');
+  const { stats } = useMemoryManager();
 
   // Record page visit and prefetch predicted routes
   useEffect(() => {
-    try {
-      recordVisit('/');
-      
-      // Prefetch likely next routes after a delay
-      const timer = setTimeout(() => {
-        prefetchPredicted();
-      }, 2000);
+    recordVisit('/');
+    
+    // Prefetch likely next routes after a delay
+    const timer = setTimeout(() => {
+      prefetchPredicted();
+    }, 2000);
 
-      return () => clearTimeout(timer);
-    } catch (error) {
-      console.warn('Page visit recording failed:', error);
-    }
+    return () => clearTimeout(timer);
   }, [recordVisit, prefetchPredicted]);
 
 
@@ -134,7 +107,7 @@ const Index = () => {
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed bottom-24 right-4 bg-black/80 text-white text-xs p-2 rounded max-w-xs">
           <div>FPS: {metrics?.currentFPS?.toFixed(1) || 'N/A'}</div>
-          <div>Memory: {stats ? ((stats.usedHeapSize || 0) / 1024 / 1024).toFixed(1) : 'N/A'}MB</div>
+          <div>Memory: {((stats?.usedHeapSize || 0) / 1024 / 1024).toFixed(1)}MB</div>
           {isViolatingBudget && <div className="text-red-400">⚠️ Budget Violation</div>}
         </div>
       )}
