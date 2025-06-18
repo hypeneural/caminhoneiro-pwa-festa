@@ -9,23 +9,36 @@ export const convertMetersToKm = (meters: number): number => {
   return Number((meters / 1000).toFixed(1));
 };
 
-export const getMovementStatus = (motion: boolean, speed: number) => {
+interface MovementStatus {
+  label: string;
+  color: string;
+  textColor: string;
+  animate: boolean;
+  animationType: 'move' | 'idle' | 'none';
+  description: string;
+}
+
+export const getMovementStatus = (motion: boolean, speed: number): MovementStatus => {
   const speedKmh = convertKnotsToKmh(speed);
   
   if (motion && speedKmh > 2) {
     return {
-      label: 'Em movimento',
-      icon: '🚛',
-      color: 'bg-trucker-green',
-      textColor: 'text-trucker-green-foreground'
+      label: 'O Caminhão está em movimento',
+      color: 'bg-trucker-green/20',
+      textColor: 'text-trucker-green',
+      animate: true,
+      animationType: 'move',
+      description: `Velocidade atual: ${speedKmh} km/h`
     };
   }
   
   return {
-    label: 'Parado',
-    icon: '⏸️',
-    color: 'bg-trucker-yellow',
-    textColor: 'text-trucker-yellow-foreground'
+    label: 'O Caminhão está parado',
+    color: 'bg-trucker-yellow/20',
+    textColor: 'text-trucker-yellow',
+    animate: false,
+    animationType: 'idle',
+    description: 'Aguardando próximo movimento'
   };
 };
 

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
 interface Event {
@@ -38,13 +38,13 @@ const saturdayEvents: Event[] = [
   {
     id: 1,
     time: "18:00",
-    title: "Missa dos Festeiros",
+    title: "Missa dos Festeiros e Comunidade em Geral",
     location: "Capela Santa Teresinha",
     type: "religioso",
     date: "19/07/2025",
     hasCamera: true,
     hasRoute: false,
-    description: "Celebração especial com benção dos caminhoneiros",
+    description: "Missa especial dedicada aos festeiros e comunidade, seguida de completo serviço de bar e cozinha, galeto com acompanhamentos e música com DJ Jr. Oliver.",
     duration: 90
   }
 ];
@@ -52,6 +52,18 @@ const saturdayEvents: Event[] = [
 const sundayEvents: Event[] = [
   {
     id: 2,
+    time: "07:30",
+    title: "Café da Manhã",
+    location: "Área de Alimentação",
+    type: "alimentacao",
+    date: "20/07/2025",
+    hasCamera: false,
+    hasRoute: false,
+    description: "Venda do café da manhã para os participantes.",
+    duration: 90
+  },
+  {
+    id: 3,
     time: "09:00",
     title: "Procissão Automotiva",
     location: "Capela Santa Teresinha",
@@ -60,44 +72,32 @@ const sundayEvents: Event[] = [
     hasRoute: true,
     hasCamera: true,
     isLive: false,
-    description: "Grande procissão com centenas de caminhões decorados",
+    description: "Saída da Capela Santa Teresinha, com bênção dos veículos e caminhões no retorno, em frente à Capela.",
     duration: 180
   },
   {
-    id: 3,
+    id: 4,
     time: "11:00",
-    title: "Entrega do Kit Festeiro",
+    title: "Entrega do Kit Festeiro e Almoço Festivo",
     location: "Área Central do Evento",
     type: "alimentacao",
     date: "20/07/2025",
     hasCamera: false,
     hasRoute: false,
-    description: "Distribuição dos kits de alimentação para os participantes",
-    duration: 60
-  },
-  {
-    id: 4,
-    time: "12:00",
-    title: "Almoço Festivo",
-    location: "Área de Alimentação",
-    type: "alimentacao",
-    date: "20/07/2025",
-    hasCamera: false,
-    hasRoute: false,
-    description: "Almoço especial com pratos típicos regionais",
+    description: "Entrega do Kit Festeiro e almoço festivo com completo serviço de bar e cozinha.",
     duration: 120
   },
   {
     id: 5,
     time: "15:00",
-    title: "Tarde Dançante com Banda Duetou",
+    title: "Tarde Dançante com Alciney e Sandro",
     location: "Palco Principal",
     type: "entretenimento",
     date: "20/07/2025",
     hasCamera: true,
     hasRoute: false,
-    description: "Show musical com a famosa Banda Duetou",
-    duration: 150
+    description: "Apresentação musical com Alciney e Sandro para animar a tarde.",
+    duration: 180
   }
 ];
 
@@ -107,14 +107,6 @@ export const ProgramPreview = () => {
   const [timeUntil, setTimeUntil] = useState<TimeUntilEvent | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const { toast } = useToast();
-
-  // Real-time clock update
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   // Auto-detect current day
   useEffect(() => {
@@ -234,11 +226,36 @@ export const ProgramPreview = () => {
 
   // Update countdown for next event
   useEffect(() => {
-    if (nextEvent) {
-      const timeData = calculateTimeUntil(nextEvent.date);
-      setTimeUntil(timeData);
+    const updateCountdown = () => {
+      if (nextEvent) {
+        const timeData = calculateTimeUntil(nextEvent.date);
+        if (JSON.stringify(timeData) !== JSON.stringify(timeUntil)) {
+          setTimeUntil(timeData);
+        }
+      }
+    };
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, [nextEvent, calculateTimeUntil, timeUntil]);
+
+  // Real-time clock update
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Get next event
+  useEffect(() => {
+    const result = getNextEvent();
+    if (result) {
+      // Não vamos mais selecionar o evento automaticamente
+      // setSelectedEvent(result.event);
     }
-  }, [nextEvent, calculateTimeUntil]);
+  }, [getNextEvent, currentTime]);
 
   return (
     <>
@@ -446,7 +463,9 @@ export const ProgramPreview = () => {
       <AnimatePresence>
         {selectedEvent && (
           <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-            <DialogContent className="max-w-sm mx-auto bottom-0 top-auto translate-y-0 rounded-t-3xl border-0 p-0 gap-0">
+            <DialogContent 
+              className="max-w-sm mx-auto bottom-0 top-auto translate-y-0 rounded-t-3xl border-0 p-0 gap-0"
+            >
               <motion.div
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
@@ -466,11 +485,12 @@ export const ProgramPreview = () => {
                         className={`${getEventTypeColor(selectedEvent.type)} font-semibold`}
                         variant="secondary"
                       >
-                        {getEventStatus(selectedEvent) === 'current' ? '🔴 AO VIVO' : selectedEvent.type.toUpperCase()}
+                        {selectedEvent.type.charAt(0).toUpperCase() + selectedEvent.type.slice(1)}
                       </Badge>
                       <button
                         onClick={() => setSelectedEvent(null)}
                         className="p-2 hover:bg-muted rounded-full transition-colors"
+                        aria-label="Fechar detalhes do evento"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -478,6 +498,9 @@ export const ProgramPreview = () => {
                     <DialogTitle className="text-xl font-bold leading-tight">
                       {selectedEvent.title}
                     </DialogTitle>
+                    <DialogDescription>
+                      Detalhes do evento {selectedEvent.title}
+                    </DialogDescription>
                   </DialogHeader>
 
                   <div className="space-y-4">

@@ -183,7 +183,7 @@ const PhotoItem = React.memo(({
           animate={{ 
             opacity: 1, 
             scale: 1,
-            borderColor: isSelected ? 'rgb(59, 130, 246)' : 'transparent'
+            borderColor: isSelected ? 'rgba(59, 130, 246, 1)' : 'rgba(0, 0, 0, 0)'
           }}
           transition={{ 
             delay: itemIndex * 0.02,

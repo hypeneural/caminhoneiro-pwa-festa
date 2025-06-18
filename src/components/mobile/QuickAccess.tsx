@@ -397,7 +397,7 @@ export const QuickAccess = React.memo(() => {
           aria-label="Menu de acesso rápido"
           layout
         >
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="sync">
             {items.map((item, index) => (
               <QuickAccessCard 
                 key={item.id} 

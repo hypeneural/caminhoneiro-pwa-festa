@@ -76,8 +76,12 @@ export const useGallery = () => {
 
   // Load more photos with pagination
   const loadMorePhotos = useCallback(async () => {
-    if (state.loading || !state.hasMore) return;
+    if (state.loading || !state.hasMore) {
+      console.log('Load more cancelled:', { loading: state.loading, hasMore: state.hasMore });
+      return;
+    }
 
+    console.log('Loading more photos from page:', state.page);
     setState(prev => ({ ...prev, loading: true }));
     
     try {
@@ -87,6 +91,8 @@ export const useGallery = () => {
       const newPhotos = generateMockPhotos().slice(state.photos.length, state.photos.length + 20);
       const hasMore = state.photos.length + newPhotos.length < 200; // Max 200 photos for demo
       
+      console.log('Loaded new photos:', { count: newPhotos.length, hasMore });
+      
       setState(prev => ({ 
         ...prev, 
         photos: [...prev.photos, ...newPhotos],
@@ -95,21 +101,26 @@ export const useGallery = () => {
         page: prev.page + 1
       }));
     } catch (error) {
+      console.error('Error loading more photos:', error);
       setState(prev => ({ 
         ...prev, 
         error: 'Erro ao carregar mais fotos',
         loading: false 
       }));
     }
-  }, [state.loading, state.hasMore, state.photos.length]);
+  }, [state.loading, state.hasMore, state.photos.length, state.page]);
 
   // Refresh function for pull-to-refresh
   const refreshPhotos = useCallback(async () => {
+    console.log('Refreshing photos');
     setState(prev => ({ ...prev, loading: true, error: null }));
     
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
       const photos = generateMockPhotos().slice(0, 20); // Reset to first 20 photos
+      
+      console.log('Photos refreshed:', { count: photos.length });
+      
       setState(prev => ({ 
         ...prev, 
         photos, 
@@ -118,6 +129,7 @@ export const useGallery = () => {
         page: 1
       }));
     } catch (error) {
+      console.error('Error refreshing photos:', error);
       setState(prev => ({ 
         ...prev, 
         error: 'Erro ao atualizar fotos',
@@ -152,19 +164,61 @@ export const useGallery = () => {
     loadPhotos();
   }, []);
 
-  // Filter and sort photos
-  const filteredPhotos = useMemo(() => {
-    let result = [...state.photos];
+  // Update filters function
+  const updateFilters = useCallback((newFilters: Partial<GalleryFilters>) => {
+    console.log('Updating filters:', newFilters);
+    setState(prev => {
+      const updatedFilters = {
+        ...prev.filters,
+        ...newFilters
+      };
+      console.log('New filter state:', updatedFilters);
+      return {
+        ...prev,
+        filters: updatedFilters
+      };
+    });
+  }, []);
 
-    // Search by vehicle plate
+  // Clear filters function
+  const clearFilters = useCallback(() => {
+    console.log('Clearing all filters');
+    setState(prev => ({
+      ...prev,
+      filters: initialFilters
+    }));
+  }, []);
+
+  // Check if any filter is active
+  const isFiltersActive = useMemo(() => {
+    return (
+      state.filters.category.length > 0 ||
+      !!state.filters.dateRange.start ||
+      !!state.filters.dateRange.end ||
+      state.filters.timeOfDay !== 'all' ||
+      state.filters.sortBy !== 'newest' ||
+      !!state.filters.vehiclePlate ||
+      !!state.filters.searchQuery
+    );
+  }, [state.filters]);
+
+  // Filter and sort photos
+  useEffect(() => {
+    console.log('Applying filters:', state.filters);
+    console.time('filterPhotos');
+    
+    let result = [...state.photos];
+    const filterResults: { [key: string]: number } = {};
+
+    // Apply all filters
     if (state.filters.vehiclePlate) {
       const plateQuery = state.filters.vehiclePlate.toLowerCase();
       result = result.filter(photo => 
         photo.vehiclePlate?.toLowerCase().includes(plateQuery)
       );
+      filterResults.plateFilter = result.length;
     }
 
-    // General search
     if (state.filters.searchQuery) {
       const query = state.filters.searchQuery.toLowerCase();
       result = result.filter(photo =>
@@ -173,16 +227,16 @@ export const useGallery = () => {
         photo.tags.some(tag => tag.toLowerCase().includes(query)) ||
         photo.vehiclePlate?.toLowerCase().includes(query)
       );
+      filterResults.searchFilter = result.length;
     }
 
-    // Category filter
     if (state.filters.category.length > 0) {
       result = result.filter(photo => 
         state.filters.category.includes(photo.category)
       );
+      filterResults.categoryFilter = result.length;
     }
 
-    // Time of day filter
     if (state.filters.timeOfDay !== 'all') {
       result = result.filter(photo => {
         const hour = photo.timestamp.getHours();
@@ -197,45 +251,48 @@ export const useGallery = () => {
             return true;
         }
       });
+      filterResults.timeFilter = result.length;
     }
 
-    // Sort
+    if (state.filters.dateRange.start || state.filters.dateRange.end) {
+      result = result.filter(photo => {
+        const photoDate = photo.timestamp;
+        if (state.filters.dateRange.start && photoDate < state.filters.dateRange.start) {
+          return false;
+        }
+        if (state.filters.dateRange.end && photoDate > state.filters.dateRange.end) {
+          return false;
+        }
+        return true;
+      });
+      filterResults.dateFilter = result.length;
+    }
+
+    // Apply sorting
+    console.time('sortPhotos');
     result.sort((a, b) => {
       switch (state.filters.sortBy) {
-        case 'newest':
-          return b.timestamp.getTime() - a.timestamp.getTime();
         case 'oldest':
           return a.timestamp.getTime() - b.timestamp.getTime();
-        case 'most-viewed':
+        case 'mostViewed':
           return b.views - a.views;
-        case 'most-liked':
+        case 'mostLiked':
           return b.likes - a.likes;
+        case 'newest':
         default:
-          return 0;
+          return b.timestamp.getTime() - a.timestamp.getTime();
       }
     });
+    console.timeEnd('sortPhotos');
 
-    return result;
+    console.log('Filter results:', filterResults);
+    console.timeEnd('filterPhotos');
+
+    setState(prev => ({
+      ...prev,
+      filteredPhotos: result
+    }));
   }, [state.photos, state.filters]);
-
-  // Update filtered photos when filters change
-  useEffect(() => {
-    setState(prev => ({ ...prev, filteredPhotos }));
-  }, [filteredPhotos]);
-
-  const updateFilters = useCallback((newFilters: Partial<GalleryFilters>) => {
-    setState(prev => ({
-      ...prev,
-      filters: { ...prev.filters, ...newFilters }
-    }));
-  }, []);
-
-  const clearFilters = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      filters: initialFilters
-    }));
-  }, []);
 
   const openLightbox = useCallback((photo: Photo) => {
     setState(prev => ({
@@ -281,14 +338,6 @@ export const useGallery = () => {
     setFavorites(newFavorites);
     setState(prev => ({ ...prev, favorites: newFavorites }));
   }, [favorites, setFavorites]);
-
-  const isFiltersActive = useMemo(() => {
-    return state.filters.category.length > 0 ||
-           state.filters.searchQuery !== '' ||
-           state.filters.vehiclePlate !== '' ||
-           state.filters.timeOfDay !== 'all' ||
-           state.filters.sortBy !== 'newest';
-  }, [state.filters]);
 
   return {
     ...state,

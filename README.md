@@ -6,7 +6,7 @@
 [![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 [![Capacitor](https://img.shields.io/badge/Capacitor-119EFF?style=for-the-badge&logo=capacitor&logoColor=white)](https://capacitorjs.com/)
 
-> 🎉 **Progressive Web App da Festa do Divino Espírito Santo** - Uma experiência digital completa para o maior evento dos caminhoneiros de Santa Catarina.
+> 🎉 **Progressive Web App da Festa dos Caminhoneiros de Tijucas/SC** - Uma experiência digital completa para o maior evento da região dos caminhoneiros.
 
 ## 📋 Índice
 
@@ -26,7 +26,7 @@
 
 ## 🎯 Visão Geral
 
-O **Festa do Caminhoneiro PWA** é uma aplicação web progressiva desenvolvida para a tradicional Festa do Divino Espírito Santo de Tijucas/SC. O app oferece uma experiência mobile-first completa, permitindo aos participantes acompanhar a festa em tempo real, acessar informações, galeria de fotos, programação e muito mais.
+O **Festa do Caminhoneiro PWA** é uma aplicação web progressiva desenvolvida para a tradicional Festa de Tijucas/SC. O app oferece uma experiência mobile-first completa, permitindo aos participantes acompanhar a festa em tempo real, acessar informações, galeria de fotos, programação e muito mais.
 
 ### 🌟 Destaques
 
@@ -482,7 +482,7 @@ O projeto implementa um service worker robusto com:
 {
   "name": "Festa do Caminhoneiro",
   "short_name": "Festa Caminhoneiro",
-  "description": "Festa do Divino Espírito Santo - Tijucas/SC",
+  "description": "Festa dos caminhoneiros - Tijucas/SC",
   "theme_color": "#1E40AF",
   "background_color": "#ffffff",
   "display": "standalone",

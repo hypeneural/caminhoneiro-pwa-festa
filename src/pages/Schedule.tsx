@@ -18,12 +18,12 @@ const Schedule = () => {
     {
       id: 1,
       time: "18:00",
-      title: "Missa dos Festeiros",
+      title: "Missa dos Festeiros e Comunidade em Geral",
       location: "Capela Santa Teresinha",
       address: "Rua Santa Teresinha, 123 - Centro, Tijucas - SC",
       type: "religioso",
       date: "19/07/2025",
-      description: "Missa especial dedicada aos festeiros e organizadores do evento.",
+      description: "Missa especial dedicada aos festeiros e comunidade, seguida de completo serviço de bar e cozinha, galeto com acompanhamentos e música com DJ Jr. Oliver.",
       hasCamera: true,
       hasRoute: false
     }
@@ -32,50 +32,50 @@ const Schedule = () => {
   const sundayEvents = [
     {
       id: 2,
+      time: "07:30",
+      title: "Café da Manhã",
+      location: "Área de Alimentação",
+      address: "Praça Central - Centro, Tijucas - SC",
+      type: "alimentacao",
+      date: "20/07/2025",
+      description: "Venda do café da manhã para os participantes.",
+      hasCamera: false,
+      hasRoute: false
+    },
+    {
+      id: 3,
       time: "09:00",
       title: "Procissão Automotiva",
       location: "Capela Santa Teresinha",
       address: "Rua Santa Teresinha, 123 - Centro, Tijucas - SC",
       type: "procissao",
       date: "20/07/2025",
-      description: "Saída da capela com bênção dos veículos e caminhões.",
+      description: "Saída da Capela Santa Teresinha, com bênção dos veículos e caminhões no retorno, em frente à Capela.",
       hasRoute: true,
       hasCamera: true,
       isLive: false
     },
     {
-      id: 3,
+      id: 4,
       time: "11:00",
-      title: "Entrega do Kit Festeiro",
+      title: "Entrega do Kit Festeiro e Almoço Festivo",
       location: "Área Central do Evento",
       address: "Praça Central - Centro, Tijucas - SC",
       type: "alimentacao",
       date: "20/07/2025",
-      description: "Distribuição dos kits festeiros e início do almoço festivo.",
-      hasCamera: false,
-      hasRoute: false
-    },
-    {
-      id: 4,
-      time: "11:00",
-      title: "Almoço Festivo",
-      location: "Área de Alimentação",
-      address: "Praça Central - Centro, Tijucas - SC",
-      type: "alimentacao",
-      date: "20/07/2025",
-      description: "Almoço comunitário para todos os participantes.",
+      description: "Entrega do Kit Festeiro e almoço festivo com completo serviço de bar e cozinha.",
       hasCamera: false,
       hasRoute: false
     },
     {
       id: 5,
       time: "15:00",
-      title: "Tarde Dançante com Banda Duetou",
+      title: "Tarde Dançante com Alciney e Sandro",
       location: "Palco Principal",
       address: "Praça Central - Centro, Tijucas - SC",
       type: "entretenimento",
       date: "20/07/2025",
-      description: "Apresentação musical com a renomada Banda Duetou.",
+      description: "Apresentação musical com Alciney e Sandro para animar a tarde.",
       hasCamera: true,
       hasRoute: false
     }

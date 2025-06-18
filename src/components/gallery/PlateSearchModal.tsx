@@ -76,7 +76,10 @@ export function PlateSearchModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-full mx-4 p-0 overflow-hidden">
+      <DialogContent 
+        className="max-w-md w-full mx-4 p-0 overflow-hidden"
+        aria-describedby="plate-search-description"
+      >
         <div className="bg-background">
           {/* Header */}
           <DialogHeader className="p-6 pb-4">
@@ -98,6 +101,11 @@ export function PlateSearchModal({
 
           {/* Content */}
           <div className="px-6 pb-6 space-y-6">
+            {/* Description for accessibility */}
+            <div id="plate-search-description" className="sr-only">
+              Digite a placa do veículo para buscar fotos específicas. O formato deve ser ABC-1234.
+            </div>
+
             {/* Plate Input */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">

@@ -30,7 +30,7 @@ export interface GalleryFilters {
     end?: Date;
   };
   timeOfDay: 'morning' | 'afternoon' | 'evening' | 'all';
-  sortBy: 'newest' | 'oldest' | 'most-viewed' | 'most-liked';
+  sortBy: 'newest' | 'oldest' | 'mostViewed' | 'mostLiked';
   searchQuery: string;
   vehiclePlate: string;
 }

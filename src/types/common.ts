@@ -86,3 +86,53 @@ export interface AppConfig {
     enableThemeSwitch: boolean;
   };
 }
+
+export interface TraccarAttributes {
+  batteryLevel: number;
+  motion: boolean;
+  totalDistance: number;
+  odometer: number;
+  activity: string;
+  distance: number;
+  event?: string;
+}
+
+export interface TraccarData {
+  id: number;
+  attributes: TraccarAttributes;
+  deviceId: number;
+  protocol: string;
+  serverTime: string;
+  deviceTime: string;
+  fixTime: string;
+  outdated: boolean;
+  valid: boolean;
+  latitude: number;
+  longitude: number;
+  altitude: number;
+  speed: number;
+  course: number;
+  address: string | null;
+  accuracy: number;
+  network: any | null;
+  geofenceIds: number[] | null;
+}
+
+export interface GeoJSONFeature {
+  type: "Feature";
+  geometry: {
+    type: "Point" | "LineString";
+    coordinates: number[] | number[][];
+  };
+  properties?: {
+    type?: string;
+    timestamp?: string;
+    speed?: number;
+    [key: string]: any;
+  };
+}
+
+export interface GeoJSONFeatureCollection {
+  type: "FeatureCollection";
+  features: GeoJSONFeature[];
+}

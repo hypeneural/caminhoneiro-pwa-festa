@@ -33,7 +33,7 @@ const Gallery = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
@@ -53,29 +53,34 @@ const Gallery = () => {
         </div>
       </motion.header>
 
-      {/* Intelligent Search */}
-      <IntelligentSearch
-        filters={filters}
-        onFiltersChange={updateFilters}
-        onClearFilters={clearFilters}
-        isFiltersActive={isFiltersActive}
-        photos={filteredPhotos}
-      />
+      {/* Content Area with proper spacing */}
+      <div className="flex-1 pt-16">
+        {/* Intelligent Search */}
+        <IntelligentSearch
+          filters={filters}
+          onFiltersChange={updateFilters}
+          onClearFilters={clearFilters}
+          isFiltersActive={isFiltersActive}
+          photos={filteredPhotos}
+        />
 
-      {/* Main content with Pull to Refresh */}
-      <main className="flex-1 pb-20">
-        <PullToRefresh onRefresh={refreshPhotos}>
-          <NativePhotoGrid
-            photos={filteredPhotos}
-            loading={loading}
-            hasMore={hasMore}
-            onPhotoClick={openLightbox}
-            onLoadMore={loadMorePhotos}
-            favorites={favorites}
-            onToggleFavorite={toggleFavorite}
-          />
-        </PullToRefresh>
-      </main>
+        {/* Main content with Pull to Refresh */}
+        <main className="flex-1 pb-20">
+          <PullToRefresh onRefresh={refreshPhotos}>
+            <div className="pt-2">
+              <NativePhotoGrid
+                photos={filteredPhotos}
+                loading={loading}
+                hasMore={hasMore}
+                onPhotoClick={openLightbox}
+                onLoadMore={loadMorePhotos}
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+              />
+            </div>
+          </PullToRefresh>
+        </main>
+      </div>
 
       {/* Lightbox */}
       <PhotoLightbox

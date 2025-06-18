@@ -60,8 +60,8 @@ const TIME_PERIODS = [
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Mais Recentes', icon: Calendar },
   { value: 'oldest', label: 'Mais Antigas', icon: Calendar },
-  { value: 'most-viewed', label: 'Mais Visualizadas', icon: Eye },
-  { value: 'most-liked', label: 'Mais Curtidas', icon: Heart },
+  { value: 'mostViewed', label: 'Mais Visualizadas', icon: Eye },
+  { value: 'mostLiked', label: 'Mais Curtidas', icon: Heart },
 ];
 
 export function SmartFiltersModal({
@@ -134,7 +134,7 @@ export function SmartFiltersModal({
         label: 'Fotos Populares',
         description: `${highLikedPhotos.length} fotos com muitas curtidas`,
         icon: Heart,
-        action: () => onFiltersChange({ sortBy: 'most-liked' }),
+        action: () => onFiltersChange({ sortBy: 'mostLiked' }),
         count: highLikedPhotos.length,
         trend: 'up'
       });

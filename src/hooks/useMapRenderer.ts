@@ -39,26 +39,72 @@ export const useMapRenderer = () => {
     };
 
     try {
-      // Verifica Leaflet
+      // Verifica Leaflet de forma mais robusta
       result.leafletAvailable = typeof window !== 'undefined' && 
-                               'L' in window;
+        (('L' in window) || 
+         document.querySelector('link[href*="leaflet"]') !== null);
 
-      // Verifica WebGL
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      result.webglSupported = !!gl;
+      // Verifica WebGL com fallbacks
+      const testWebGL = () => {
+        const canvas = document.createElement('canvas');
+        let gl = null;
+        
+        try {
+          gl = canvas.getContext('webgl') || 
+               canvas.getContext('experimental-webgl') ||
+               canvas.getContext('webgl2');
+        } catch (e) {
+          console.warn('WebGL não suportado:', e);
+        }
+        
+        return !!gl;
+      };
 
-      // Verifica Canvas 2D
-      result.canvasSupported = !!canvas.getContext('2d');
+      result.webglSupported = testWebGL();
 
-      // Calcula score de performance
+      // Verifica Canvas 2D com mais detalhes
+      const testCanvas = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) return false;
+        
+        // Testa operações básicas
+        try {
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, 1, 1);
+          return true;
+        } catch (e) {
+          console.warn('Canvas 2D não suportado completamente:', e);
+          return false;
+        }
+      };
+
+      result.canvasSupported = testCanvas();
+
+      // Calcula score de performance com mais critérios
       let score = 0;
-      if (result.leafletAvailable) score += 40;
-      if (result.webglSupported) score += 30;
-      if (result.canvasSupported) score += 20;
-      if (navigator.hardwareConcurrency >= 4) score += 10;
       
-      result.performanceScore = score;
+      // Leaflet disponível (40 pontos)
+      if (result.leafletAvailable) score += 40;
+      
+      // WebGL disponível (30 pontos)
+      if (result.webglSupported) score += 30;
+      
+      // Canvas disponível (20 pontos)
+      if (result.canvasSupported) score += 20;
+      
+      // Hardware adequado (até 10 pontos)
+      if (navigator.hardwareConcurrency >= 4) score += 5;
+      if (navigator.hardwareConcurrency >= 8) score += 5;
+      
+      // Memória disponível (bônus de até 10 pontos)
+      if ('memory' in performance) {
+        const memInfo = (performance as any).memory;
+        if (memInfo.jsHeapSizeLimit > 2048 * 1024 * 1024) score += 10;
+      }
+      
+      result.performanceScore = Math.min(100, score);
 
       console.log('🏥 Map Health Check:', result);
     } catch (error) {

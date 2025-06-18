@@ -17,6 +17,7 @@ interface PWAState {
   installationAttempts: number;
   lastPromptTime: number | null;
   userEngagement: number;
+  isScrolled: boolean;
 }
 
 interface PWAActions {
@@ -63,7 +64,8 @@ export function usePWAManager(): PWAManager {
     canPromptInstall: false,
     installationAttempts: 0,
     lastPromptTime: null,
-    userEngagement: 0
+    userEngagement: 0,
+    isScrolled: false
   });
 
   // Load persisted data
@@ -157,7 +159,7 @@ export function usePWAManager(): PWAManager {
 
   // Smart prompting logic
   useEffect(() => {
-    if (!deviceInfo.canShowInstallPrompt || state.isInstalled) return;
+    if (!deviceInfo.canShowInstallPrompt || state.isInstalled || state.showInstallPrompt) return;
 
     const isDismissedForever = localStorage.getItem(STORAGE_KEYS.DISMISSED_FOREVER) === 'true';
     if (isDismissedForever) return;
@@ -175,12 +177,15 @@ export function usePWAManager(): PWAManager {
     const delay = deviceInfo.isIOS ? CONFIG.IOS_PROMPT_DELAY : CONFIG.ANDROID_PROMPT_DELAY;
     
     const timer = setTimeout(() => {
-      setState(prev => ({ 
-        ...prev, 
-        isInstallable: true,
-        showInstallPrompt: !deviceInfo.isIOS,
-        showIOSInstructions: deviceInfo.isIOS && deviceInfo.isSafari
-      }));
+      setState(prev => {
+        if (prev.showInstallPrompt || prev.showIOSInstructions) return prev;
+        return { 
+          ...prev, 
+          isInstallable: true,
+          showInstallPrompt: !deviceInfo.isIOS,
+          showIOSInstructions: deviceInfo.isIOS && deviceInfo.isSafari
+        };
+      });
     }, delay);
 
     return () => clearTimeout(timer);
@@ -191,7 +196,9 @@ export function usePWAManager(): PWAManager {
     state.isInstalled,
     state.userEngagement,
     state.installationAttempts,
-    state.lastPromptTime
+    state.lastPromptTime,
+    state.showInstallPrompt,
+    state.showIOSInstructions
   ]);
 
   // Actions
@@ -285,6 +292,18 @@ export function usePWAManager(): PWAManager {
       showIOSInstructions: false
     }));
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolled = window.scrollY > 100;
+      if (scrolled !== state.isScrolled) {
+        setState(prev => ({ ...prev, isScrolled: scrolled }));
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [state.isScrolled]);
 
   return {
     ...state,

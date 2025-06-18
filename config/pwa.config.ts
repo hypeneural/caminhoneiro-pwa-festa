@@ -14,7 +14,7 @@ export const pwaConfig: Partial<VitePWAOptions> = {
     runtimeCaching: [
       // HTML pages - Network First with offline fallback
       {
-        urlPattern: ({ request }: any) => request.mode === 'navigate',
+        urlPattern: ({ request }) => request.mode === 'navigate',
         handler: 'NetworkFirst',
         options: {
           cacheName: 'pages-cache',
@@ -121,17 +121,10 @@ export const pwaConfig: Partial<VitePWAOptions> = {
       /^\/api\//,
       /\/manifest\.json$/,
     ],
-    // Pre-cache de rotas críticas
+    // Pre-cache apenas da rota principal
     additionalManifestEntries: [
       { url: '/', revision: Date.now().toString() },
-      { url: '/galeria', revision: Date.now().toString() },
-      { url: '/mapa', revision: Date.now().toString() },
-      { url: '/programacao', revision: Date.now().toString() },
-      { url: '/radio', revision: Date.now().toString() },
-      { url: '/videos', revision: Date.now().toString() },
-      { url: '/historia', revision: Date.now().toString() },
-      { url: '/noticias', revision: Date.now().toString() },
-      { url: '/mais', revision: Date.now().toString() },
+      { url: '/index.html', revision: Date.now().toString() },
     ],
   },
   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],

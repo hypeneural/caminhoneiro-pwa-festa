@@ -27,14 +27,14 @@ const sortOptions = [
     color: 'text-amber-500'
   },
   {
-    value: 'most-viewed',
+    value: 'mostViewed',
     label: 'Mais Visualizadas',
     description: 'Ordenar por número de visualizações',
     icon: Eye,
     color: 'text-green-500'
   },
   {
-    value: 'most-liked',
+    value: 'mostLiked',
     label: 'Mais Curtidas',
     description: 'Ordenar por número de curtidas',
     icon: Heart,

@@ -1,13 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Share2, Bookmark, Clock, Eye, ChevronLeft, ChevronRight, Heart, MessageCircle, ExternalLink, ArrowUp } from "lucide-react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TouchFeedback } from "@/components/ui/touch-feedback";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ROUTES } from "@/constants";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { NewsItem } from "@/types/news";
 
@@ -24,9 +24,39 @@ export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsMo
   const [isLiked, setIsLiked] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
+  const modalRef = useRef<HTMLDivElement>(null);
   const { navigateTo } = useNavigation();
 
   if (!news) return null;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setStartY(touch.clientY);
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const touch = e.touches[0];
+    const currentY = touch.clientY;
+    const diff = currentY - startY;
+    
+    // Só permite arrastar para baixo quando estiver no topo
+    if (modalRef.current?.scrollTop === 0) {
+      setOffsetY(Math.max(0, diff));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (offsetY > 100) {
+      onClose();
+    }
+    setIsDragging(false);
+    setOffsetY(0);
+  };
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
@@ -73,8 +103,7 @@ export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsMo
   };
 
   const scrollToTop = () => {
-    const modalContent = document.querySelector('[data-scroll-area]');
-    modalContent?.scrollTo({ top: 0, behavior: 'smooth' });
+    modalRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const currentIndex = allNews.findIndex(n => n.id === news.id);
@@ -108,7 +137,16 @@ export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsMo
       <SheetContent 
         side="bottom" 
         className="h-[95vh] p-0 overflow-hidden flex flex-col rounded-t-3xl border-t-2 border-border/20"
+        style={{
+          transform: `translateY(${offsetY}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+        }}
       >
+        <SheetHeader className="sr-only">
+          <SheetTitle>{news.title}</SheetTitle>
+          <SheetDescription>{news.summary}</SheetDescription>
+        </SheetHeader>
+
         {/* Progress Bar */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-muted z-50">
           <motion.div
@@ -121,7 +159,14 @@ export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsMo
         </div>
 
         {/* Handle Bar */}
-        <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mt-3 mb-1" />
+        <div 
+          className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mt-3 mb-1 cursor-grab active:cursor-grabbing"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          role="button"
+          aria-label="Arraste para fechar"
+        />
 
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -129,6 +174,10 @@ export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsMo
           exit={{ opacity: 0, y: 50 }}
           transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
           className="h-full flex flex-col min-h-0"
+          ref={modalRef}
+          onScroll={handleScroll}
+          data-scroll-area
+          style={{ scrollbarWidth: 'thin' }}
         >
           {/* Header Image */}
           <div className="relative h-64 flex-shrink-0">

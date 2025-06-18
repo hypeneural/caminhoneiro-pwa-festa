@@ -1,68 +1,59 @@
-import { useState, useCallback } from "react";
+import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface TouchFeedbackProps {
   children: React.ReactNode;
   className?: string;
-  haptic?: boolean;
-  scale?: number;
   disabled?: boolean;
+  onClick?: () => void;
 }
 
-export function TouchFeedback({ 
-  children, 
-  className, 
-  haptic = true, 
-  scale = 0.95,
-  disabled = false 
-}: TouchFeedbackProps) {
+export function TouchFeedback({ children, className = '', disabled = false, onClick }: TouchFeedbackProps) {
   const [isPressed, setIsPressed] = useState(false);
 
-  const handleTouchStart = useCallback(() => {
+  const handleTouchStart = () => {
     if (disabled) return;
     setIsPressed(true);
     
-    // Haptic feedback for supported devices
-    if (haptic && 'vibrate' in navigator && navigator.vibrate) {
-      try {
+    // Só tenta vibrar se o navegador suportar e tiver permissão
+    try {
+      if (navigator.vibrate && document.hasFocus()) {
         navigator.vibrate(10);
-      } catch (error) {
-        // Ignore vibration errors
       }
+    } catch (error) {
+      // Ignora erros de vibração silenciosamente
     }
-  }, [disabled, haptic]);
+  };
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = () => {
+    if (disabled) return;
     setIsPressed(false);
-  }, []);
+  };
 
-  const handleTouchCancel = useCallback(() => {
-    setIsPressed(false);
-  }, []);
+  const handleClick = (e: React.MouseEvent) => {
+    if (disabled) return;
+    onClick?.();
+  };
 
   return (
-    <motion.div
-      className={cn("select-none", className)}
-      animate={{ 
-        scale: isPressed ? scale : 1,
-        opacity: disabled ? 0.6 : 1
-      }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 400, 
-        damping: 30,
-        duration: 0.1 
-      }}
+    <div
+      className={`
+        transition-transform duration-100 active:scale-[0.97]
+        ${isPressed ? 'scale-[0.97]' : 'scale-100'}
+        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+        ${className}
+      `}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchCancel}
-      onMouseDown={handleTouchStart}
-      onMouseUp={handleTouchEnd}
-      onMouseLeave={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      onClick={handleClick}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -78,7 +69,7 @@ export function RippleEffect({
 }) {
   const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number }>>([]);
 
-  const handleClick = useCallback((event: React.MouseEvent) => {
+  const handleClick = (event: React.MouseEvent) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
@@ -95,7 +86,7 @@ export function RippleEffect({
     setTimeout(() => {
       setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id));
     }, 600);
-  }, []);
+  };
 
   return (
     <div 

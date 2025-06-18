@@ -15,13 +15,14 @@ const FlipCard = ({ value, label, index }: { value: number; label: string; index
 
   useEffect(() => {
     if (value !== displayValue) {
-      setIsFlipping(true);
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setDisplayValue(value);
         setIsFlipping(false);
       }, 300);
+      setIsFlipping(true);
+      return () => clearTimeout(timer);
     }
-  }, [value, displayValue]);
+  }, [value]);
 
   return (
     <motion.div

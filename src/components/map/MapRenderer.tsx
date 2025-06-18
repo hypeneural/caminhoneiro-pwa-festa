@@ -7,6 +7,7 @@ export interface MapRendererProps {
   data: TraccarData;
   height?: string;
   showSpeed?: boolean;
+  containerId?: string;
 }
 
 // Enum para os tipos de renderização
@@ -27,16 +28,16 @@ interface MapState {
 const MapRenderer: React.FC<MapRendererProps> = ({ 
   data, 
   height = "h-32", 
-  showSpeed = true 
+  showSpeed = true,
+  containerId
 }) => {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
   const [mapState, setMapState] = useState<MapState>({
-    renderType: MapRenderType.LEAFLET,
+    renderType: MapRenderType.PLACEHOLDER,
     error: null,
     isLoading: true
   });
-  
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
 
   // Health check básico do navegador
   const checkBrowserHealth = (): boolean => {
@@ -126,8 +127,20 @@ const MapRenderer: React.FC<MapRendererProps> = ({
     try {
       console.log('🗺️ Iniciando sistema híbrido de mapas...');
       
-      if (!mapContainerRef.current) {
-        throw new Error('Container não encontrado');
+      // Se temos um containerId, vamos tentar usar ele primeiro
+      const container = containerId ? document.getElementById(containerId) : mapContainerRef.current;
+      
+      if (!container) {
+        console.error('❌ MapRenderer: Container não encontrado, tentando novamente em 500ms');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const retryContainer = containerId ? document.getElementById(containerId) : mapContainerRef.current;
+        
+        if (!retryContainer) {
+          console.error('❌ MapRenderer: Container não encontrado após retry, usando mapa estático');
+          renderStaticMap();
+          return;
+        }
       }
 
       // Testa conectividade e encontra melhor provider
@@ -145,8 +158,8 @@ const MapRenderer: React.FC<MapRendererProps> = ({
         mapInstanceRef.current.remove();
       }
 
-      // Cria o mapa
-      const map = L.map(mapContainerRef.current, {
+      // Cria o mapa usando o container correto
+      const map = L.map(container || mapContainerRef.current!, {
         center: [data.latitude, data.longitude],
         zoom: 15,
         zoomControl: false,
@@ -271,15 +284,13 @@ const MapRenderer: React.FC<MapRendererProps> = ({
 
   // Inicialização do mapa
   useEffect(() => {
+    if (!data || !data.latitude || !data.longitude) return;
+    
+    console.log('🗺️ MapRenderer: Coordenadas válidas encontradas, inicializando mapa');
+    
     const initializeMap = async () => {
       console.log('🚀 MapRenderer: Iniciando inicialização do mapa');
-      console.log('📍 MapRenderer: Dados recebidos:', {
-        latitude: data?.latitude,
-        longitude: data?.longitude,
-        address: data?.address,
-        speed: data?.speed,
-        fixTime: data?.fixTime
-      });
+      console.log('📍 MapRenderer: Dados recebidos:', data);
       
       setMapState(prev => ({ ...prev, isLoading: true }));
 
@@ -291,21 +302,38 @@ const MapRenderer: React.FC<MapRendererProps> = ({
       // Sempre tenta renderizar com Leaflet primeiro (importação dinâmica)
       if (browserHealthy) {
         console.log('✅ MapRenderer: Tentando renderizar com Leaflet (importação dinâmica)');
+        
+        // Espera o container estar disponível
+        if (!mapContainerRef.current) {
+          await new Promise<void>((resolve) => {
+            const observer = new MutationObserver((mutations, obs) => {
+              if (mapContainerRef.current) {
+                obs.disconnect();
+                resolve();
+              }
+            });
+
+            observer.observe(document.body, {
+              childList: true,
+              subtree: true
+            });
+
+            // Timeout após 5 segundos
+            setTimeout(() => {
+              observer.disconnect();
+              resolve();
+            }, 5000);
+          });
+        }
+
         await renderLeafletMap();
       } else {
         console.log('⚠️ MapRenderer: Navegador incompatível, usando mapa estático');
         renderStaticMap();
       }
     };
-
-    if (data?.latitude && data?.longitude) {
-      console.log('🗺️ MapRenderer: Coordenadas válidas encontradas, inicializando mapa');
-      initializeMap();
-    } else {
-      console.log('❌ MapRenderer: Coordenadas inválidas, renderizando placeholder');
-      console.log('📊 MapRenderer: Dados inválidos:', { data });
-      renderPlaceholder();
-    }
+    
+    initializeMap();
 
     // Cleanup
     return () => {
@@ -315,7 +343,7 @@ const MapRenderer: React.FC<MapRendererProps> = ({
         mapInstanceRef.current = null;
       }
     };
-  }, [data.latitude, data.longitude]);
+  }, [data]);
 
   // Componente de mapa estático
   const StaticMapView = () => (

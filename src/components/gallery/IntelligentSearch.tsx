@@ -202,16 +202,34 @@ export function IntelligentSearch({
             variant="outline" 
             size="sm"
             onClick={() => setIsSortModalOpen(true)}
-            className="flex items-center gap-2 h-10 min-w-fit"
+            className={`flex items-center gap-2 h-10 min-w-fit ${
+              filters.sortBy !== 'newest' 
+                ? 'bg-trucker-blue text-trucker-blue-foreground border-trucker-blue' 
+                : ''
+            }`}
           >
             <ArrowUpDown className="w-4 h-4" />
             <span className="text-sm">
-              {filters.sortBy === 'newest' ? 'Recentes' :
-               filters.sortBy === 'oldest' ? 'Antigas' :
-               filters.sortBy === 'most-viewed' ? 'Visualizadas' :
-               filters.sortBy === 'most-liked' ? 'Curtidas' : 'Ordenar'}
+              {filters.sortBy === 'newest' ? 'Ordenar' : `Ordenado: ${
+                filters.sortBy === 'oldest' ? 'Mais Antigas' :
+                filters.sortBy === 'mostViewed' ? 'Mais Vistas' :
+                filters.sortBy === 'mostLiked' ? 'Mais Curtidas' : 'Mais Recentes'
+              }`}
             </span>
           </Button>
+
+          {/* Clear All Button */}
+          {isFiltersActive && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={handleClearAll}
+              className="flex items-center gap-2 h-10 min-w-fit text-destructive hover:text-destructive"
+            >
+              <X className="w-4 h-4" />
+              <span className="text-sm">Limpar Filtros</span>
+            </Button>
+          )}
         </div>
 
         {/* Active Filters Display */}
@@ -249,7 +267,7 @@ export function IntelligentSearch({
         </AnimatePresence>
       </div>
 
-      {/* Smart Filters Modal */}
+      {/* Modals */}
       <SmartFiltersModal
         isOpen={isFiltersModalOpen}
         onClose={() => setIsFiltersModalOpen(false)}
@@ -259,7 +277,6 @@ export function IntelligentSearch({
         photos={photos}
       />
 
-      {/* Plate Search Modal */}
       <PlateSearchModal
         isOpen={isPlateSearchOpen}
         onClose={() => setIsPlateSearchOpen(false)}
@@ -267,7 +284,6 @@ export function IntelligentSearch({
         currentPlate={filters.vehiclePlate}
       />
 
-      {/* Sort Modal */}
       <SortModal
         isOpen={isSortModalOpen}
         onClose={() => setIsSortModalOpen(false)}

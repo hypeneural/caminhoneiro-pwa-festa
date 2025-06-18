@@ -71,7 +71,7 @@ export const mockFAQs: FAQItem[] = [
   {
     id: '1',
     question: 'Quais são os horários da festa?',
-    answer: 'A Festa do Caminhoneiro acontece nos dias 25 e 26 de julho, das 8h às 22h. As atividades começam pela manhã com café da manhã gratuito para os caminhoneiros, seguido de shows, competições e atividades durante todo o dia.',
+    answer: 'A XXI Festa de São Cristóvão acontece nos dias 19 e 20 de julho de 2025. No sábado (19/07), a programação começa às 18h com a Missa dos Festeiros, seguida de serviço de bar e cozinha, galeto e música. No domingo (20/07), as atividades iniciam às 7h30 com café da manhã, seguido da procissão automotiva às 9h, almoço festivo às 11h e tarde dançante às 15h.',
     category: 'programacao',
     tags: ['horario', 'cronograma', 'atividades'],
     popular: true,
