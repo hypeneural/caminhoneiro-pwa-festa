@@ -41,38 +41,44 @@ export const useSponsors = () => {
     return shuffleArray(bannersByCategory.destaque);
   }, [bannersByCategory.destaque, lastShuffleTime]);
 
-  // Memoized sponsor logos (only apoio category for 1x1 grid)
+  // Memoized sponsor logos (combining all support categories for carousel display)
   const supportSponsors = useMemo(() => {
     const activeSponsors = sponsorsData.sponsors.filter(sponsor => sponsor.isActive);
     return activeSponsors.filter(s => s.category === 'apoiador' || s.category === 'bronze');
   }, [sponsorsData.sponsors]);
 
-  // Distribute banners across multiple positions in the home page
+  // Distribute 15 banners across 4 strategic positions
   const distributedBanners = useMemo(() => {
     const totalBanners = shuffledBanners.length;
     
-    // Define number of positions based on total banners
-    let positions: number;
-    if (totalBanners <= 5) positions = 2;
-    else if (totalBanners <= 10) positions = 4;
-    else if (totalBanners <= 15) positions = 6;
-    else positions = 8;
+    if (totalBanners === 0) return {};
     
-    // Calculate banners per position
-    const bannersPerPosition = Math.ceil(totalBanners / positions);
+    // Define fixed distribution for 4 strategic positions
+    const positions = [
+      { id: 'pos-1', name: 'after-stories', maxBanners: 4 },      // Após Stories - alta visibilidade
+      { id: 'pos-2', name: 'tracker-news', maxBanners: 4 },       // Entre Tracker e News - meio do feed
+      { id: 'pos-3', name: 'photo-quick', maxBanners: 4 },        // Entre Photo e Quick Access - final conteúdo
+      { id: 'pos-4', name: 'before-credits', maxBanners: 3 }      // Antes dos créditos - última impressão
+    ];
+    
     const distribution: Record<string, Banner[]> = {};
+    let bannerIndex = 0;
     
-    for (let i = 0; i < positions; i++) {
-      const start = i * bannersPerPosition;
-      const end = Math.min(start + bannersPerPosition, totalBanners);
-      const positionBanners = shuffledBanners.slice(start, end);
+    // Distribute banners across positions
+    positions.forEach(position => {
+      const bannersForPosition = [];
       
-      if (positionBanners.length > 0) {
-        distribution[`pos-${i + 1}`] = positionBanners;
+      for (let i = 0; i < position.maxBanners && bannerIndex < totalBanners; i++) {
+        bannersForPosition.push(shuffledBanners[bannerIndex]);
+        bannerIndex++;
       }
-    }
+      
+      if (bannersForPosition.length > 0) {
+        distribution[position.id] = bannersForPosition;
+      }
+    });
     
-    console.log('Banner distribution:', distribution);
+    console.log('Banner distribution (15 banners in 4 positions):', distribution);
     return distribution;
   }, [shuffledBanners]);
 

@@ -20,7 +20,7 @@ export function SponsorCarousel({
   sponsors,
   title = "Nossos Apoiadores",
   className,
-  itemsPerPage = 4, // 2x2 grid
+  itemsPerPage = 6, // 3x2 grid para 6 itens por página
   autoplayDelay = 4000,
   onSponsorClick
 }: SponsorCarouselProps) {
@@ -90,7 +90,7 @@ export function SponsorCarousel({
         onMouseEnter={() => setIsAutoplayActive(false)}
         onMouseLeave={() => setIsAutoplayActive(true)}
       >
-        {/* Sponsors Grid */}
+        {/* Sponsors Grid - 3x2 Layout */}
         <div className="relative overflow-hidden rounded-lg">
           <AnimatePresence mode="wait">
             <motion.div
@@ -99,41 +99,41 @@ export function SponsorCarousel({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -100 }}
               transition={{ duration: 0.3 }}
-              className="grid grid-cols-2 gap-3 sm:gap-4"
+              className="grid grid-cols-3 grid-rows-2 gap-2 sm:gap-3"
             >
               {currentSponsors.map((sponsor, index) => (
                 <motion.div
                   key={sponsor.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.05 }}
                   className="group"
                 >
                   <TouchFeedback
                     onClick={() => handleSponsorClick(sponsor)}
                     scale={0.95}
                     haptic={true}
-                    className="relative bg-background border border-border/50 rounded-xl p-3 sm:p-4 hover:border-trucker-blue/50 hover:shadow-lg transition-all duration-300"
+                    className="relative bg-background border border-border/50 rounded-xl p-2 sm:p-3 hover:border-trucker-blue/50 hover:shadow-lg transition-all duration-300"
                   >
                     {/* Logo Container */}
-                    <div className="relative aspect-square mb-2 overflow-hidden rounded-lg bg-white/5">
+                    <div className="relative aspect-square mb-1 overflow-hidden rounded-lg bg-white/5">
                       <OptimizedImage
                         src={sponsor.logoUrlWebp || sponsor.logoUrl}
                         alt={sponsor.altText}
                         fallbackSrc={sponsor.logoUrl}
-                        className="w-full h-full object-contain p-2"
-                        sizes="150px"
+                        className="w-full h-full object-contain p-1"
+                        sizes="120px"
                       />
                       
                       {/* Hover overlay */}
                       <div className="absolute inset-0 bg-trucker-blue/0 group-hover:bg-trucker-blue/10 transition-all duration-300 flex items-center justify-center">
-                        <ExternalLink className="w-4 h-4 text-trucker-blue opacity-0 group-hover:opacity-70 transition-all duration-300" />
+                        <ExternalLink className="w-3 h-3 text-trucker-blue opacity-0 group-hover:opacity-70 transition-all duration-300" />
                       </div>
                     </div>
 
                     {/* Company Name */}
                     <div className="text-center">
-                      <h4 className="font-medium text-xs sm:text-sm text-foreground group-hover:text-trucker-blue transition-colors duration-300 line-clamp-2">
+                      <h4 className="font-medium text-xs text-foreground group-hover:text-trucker-blue transition-colors duration-300 line-clamp-1">
                         {sponsor.companyName}
                       </h4>
                     </div>
