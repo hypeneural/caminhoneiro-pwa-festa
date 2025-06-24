@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { Header } from "@/components/mobile/Header";
 import { Stories } from "@/components/mobile/Stories";
@@ -7,9 +8,12 @@ import { NewsCarousel } from "@/components/mobile/NewsCarousel";
 import { PhotoCarousel } from "@/components/mobile/PhotoCarousel";
 import { QuickAccess } from "@/components/mobile/QuickAccess";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
-import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
 import { PWAInstaller } from "@/components/PWAInstaller";
 import { ProgramPreview } from "@/components/mobile/ProgramPreview";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { SponsorLogos } from "@/components/sponsors/SponsorLogos";
+import { AdBannerGroup } from "@/components/sponsors/AdBanner";
+import { useSponsors } from "@/hooks/useSponsors";
 import { usePrefetch } from "@/hooks/usePrefetch";
 import { useEffect, useRef } from "react";
 
@@ -34,6 +38,14 @@ const Section = ({ children, className = "", delay = 0 }: SectionProps) => (
 
 const Index = () => {
   const { recordVisit, prefetchPredicted } = usePrefetch();
+  const {
+    shuffledBanners,
+    sponsorsByCategory,
+    getBannersForPosition,
+    trackBannerClick,
+    trackSponsorClick,
+    loading: sponsorsLoading
+  } = useSponsors();
   const hasRecorded = useRef(false);
 
   // Record page visit and prefetch predicted routes
@@ -49,8 +61,22 @@ const Index = () => {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, []); // Remove as dependências para evitar o loop
+  }, [recordVisit, prefetchPredicted]);
 
+  // Get banners for each position
+  const bannersAfterStories = getBannersForPosition('pos-1');
+  const bannersBetweenTrackerNews = getBannersForPosition('pos-2');
+  const bannersBetweenPhotoQuick = getBannersForPosition('pos-3');
+  const bannersBeforeCredits = getBannersForPosition('pos-4');
+
+  // Get all active sponsors for the sponsors section
+  const allActiveSponsors = [
+    ...sponsorsByCategory.diamante,
+    ...sponsorsByCategory.ouro,
+    ...sponsorsByCategory.prata,
+    ...sponsorsByCategory.bronze,
+    ...sponsorsByCategory.apoiador
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,8 +90,31 @@ const Index = () => {
           <Stories />
         </Section>
 
+        {/* Banner Carousel - Hero Banners */}
+        {shuffledBanners.length > 0 && (
+          <Section delay={0.05} className="px-4">
+            <BannerCarousel
+              banners={shuffledBanners.slice(0, 5)}
+              onBannerClick={(banner) => trackBannerClick(banner.id, 'hero-carousel')}
+              className="mb-4"
+            />
+          </Section>
+        )}
+
+        {/* Ad Banner Group - After Stories */}
+        {bannersAfterStories.length > 0 && (
+          <Section delay={0.1} className="px-4">
+            <AdBannerGroup
+              banners={bannersAfterStories}
+              position="after-stories"
+              onBannerClick={trackBannerClick}
+              layout="carousel"
+            />
+          </Section>
+        )}
+
         {/* Countdown Timer - Second */}
-        <Section delay={0.1} className="px-4">
+        <Section delay={0.15} className="px-4">
           <div className="space-y-4">
             <CountdownTimer />
             <ProgramPreview />
@@ -73,35 +122,71 @@ const Index = () => {
         </Section>
 
         {/* São Cristóvão Tracker */}
-        <Section 
-          delay={0.2} 
-          className="px-4"
-        >
+        <Section delay={0.2} className="px-4">
           <SaoCristovaoTracker />
         </Section>
 
+        {/* Ad Banner Group - Between Tracker and News */}
+        {bannersBetweenTrackerNews.length > 0 && (
+          <Section delay={0.25} className="px-4">
+            <AdBannerGroup
+              banners={bannersBetweenTrackerNews}
+              position="between-tracker-news"
+              onBannerClick={trackBannerClick}
+              layout="grid"
+            />
+          </Section>
+        )}
+
         {/* News Carousel */}
-        <Section 
-          delay={0.3} 
-          className="px-4"
-        >
+        <Section delay={0.3} className="px-4">
           <NewsCarousel />
         </Section>
 
         {/* Photo Carousel */}
-        <Section 
-          delay={0.4}
-        >
+        <Section delay={0.35}>
           <PhotoCarousel />
         </Section>
 
+        {/* Ad Banner Group - Between Photo and Quick Access */}
+        {bannersBetweenPhotoQuick.length > 0 && (
+          <Section delay={0.4} className="px-4">
+            <AdBannerGroup
+              banners={bannersBetweenPhotoQuick}
+              position="between-photo-quick"
+              onBannerClick={trackBannerClick}
+              layout="stack"
+            />
+          </Section>
+        )}
+
         {/* Quick Access Menu */}
-        <Section 
-          delay={0.5} 
-          className="px-4"
-        >
+        <Section delay={0.45} className="px-4">
           <QuickAccess />
         </Section>
+
+        {/* Sponsors Section */}
+        {!sponsorsLoading && allActiveSponsors.length > 0 && (
+          <Section delay={0.5} className="px-4">
+            <SponsorLogos
+              sponsors={allActiveSponsors}
+              title="Nossos Patrocinadores e Apoiadores"
+              onSponsorClick={(sponsor) => trackSponsorClick(sponsor.id, sponsor.category)}
+            />
+          </Section>
+        )}
+
+        {/* Ad Banner Group - Before Credits */}
+        {bannersBeforeCredits.length > 0 && (
+          <Section delay={0.55} className="px-4">
+            <AdBannerGroup
+              banners={bannersBeforeCredits}
+              position="before-credits"
+              onBannerClick={trackBannerClick}
+              layout="carousel"
+            />
+          </Section>
+        )}
 
         {/* Créditos */}
         <Section delay={0.6} className="px-4 text-center text-sm text-foreground/70">
