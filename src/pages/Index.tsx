@@ -11,7 +11,7 @@ import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { PWAInstaller } from "@/components/PWAInstaller";
 import { ProgramPreview } from "@/components/mobile/ProgramPreview";
 import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
-import { SponsorLogos } from "@/components/sponsors/SponsorLogos";
+import { SponsorCarousel } from "@/components/sponsors/SponsorCarousel";
 import { AdBannerGroup } from "@/components/sponsors/AdBanner";
 import { useSponsors } from "@/hooks/useSponsors";
 import { usePrefetch } from "@/hooks/usePrefetch";
@@ -40,7 +40,8 @@ const Index = () => {
   const { recordVisit, prefetchPredicted } = usePrefetch();
   const {
     shuffledBanners,
-    sponsorsByCategory,
+    distributedBanners,
+    supportSponsors,
     getBannersForPosition,
     trackBannerClick,
     trackSponsorClick,
@@ -63,20 +64,8 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, [recordVisit, prefetchPredicted]);
 
-  // Get banners for each position
-  const bannersAfterStories = getBannersForPosition('pos-1');
-  const bannersBetweenTrackerNews = getBannersForPosition('pos-2');
-  const bannersBetweenPhotoQuick = getBannersForPosition('pos-3');
-  const bannersBeforeCredits = getBannersForPosition('pos-4');
-
-  // Get all active sponsors for the sponsors section
-  const allActiveSponsors = [
-    ...sponsorsByCategory.diamante,
-    ...sponsorsByCategory.ouro,
-    ...sponsorsByCategory.prata,
-    ...sponsorsByCategory.bronze,
-    ...sponsorsByCategory.apoiador
-  ];
+  // Get banners for distributed positions
+  const bannerPositions = Object.keys(distributedBanners);
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,48 +79,48 @@ const Index = () => {
           <Stories />
         </Section>
 
-        {/* Banner Carousel - Hero Banners */}
-        {shuffledBanners.length > 0 && (
+        {/* Banner Carousel - Hero Banners (Position 1) */}
+        {getBannersForPosition('pos-1').length > 0 && (
           <Section delay={0.05} className="px-4">
             <BannerCarousel
-              banners={shuffledBanners.slice(0, 5)}
-              onBannerClick={(banner) => trackBannerClick(banner.id, 'hero-carousel')}
+              banners={getBannersForPosition('pos-1')}
+              onBannerClick={(banner) => trackBannerClick(banner, 'hero-carousel')}
               className="mb-4"
             />
           </Section>
         )}
 
-        {/* Ad Banner Group - After Stories */}
-        {bannersAfterStories.length > 0 && (
-          <Section delay={0.1} className="px-4">
-            <AdBannerGroup
-              banners={bannersAfterStories}
-              position="after-stories"
-              onBannerClick={trackBannerClick}
-              layout="carousel"
-            />
-          </Section>
-        )}
-
-        {/* Countdown Timer - Second */}
-        <Section delay={0.15} className="px-4">
+        {/* Countdown Timer + Program Preview */}
+        <Section delay={0.1} className="px-4">
           <div className="space-y-4">
             <CountdownTimer />
             <ProgramPreview />
           </div>
         </Section>
 
+        {/* Banner Position 2 */}
+        {getBannersForPosition('pos-2').length > 0 && (
+          <Section delay={0.15} className="px-4">
+            <AdBannerGroup
+              banners={getBannersForPosition('pos-2')}
+              position="after-program"
+              onBannerClick={trackBannerClick}
+              layout="carousel"
+            />
+          </Section>
+        )}
+
         {/* São Cristóvão Tracker */}
         <Section delay={0.2} className="px-4">
           <SaoCristovaoTracker />
         </Section>
 
-        {/* Ad Banner Group - Between Tracker and News */}
-        {bannersBetweenTrackerNews.length > 0 && (
+        {/* Banner Position 3 */}
+        {getBannersForPosition('pos-3').length > 0 && (
           <Section delay={0.25} className="px-4">
             <AdBannerGroup
-              banners={bannersBetweenTrackerNews}
-              position="between-tracker-news"
+              banners={getBannersForPosition('pos-3')}
+              position="after-tracker"
               onBannerClick={trackBannerClick}
               layout="grid"
             />
@@ -143,17 +132,29 @@ const Index = () => {
           <NewsCarousel />
         </Section>
 
+        {/* Banner Position 4 */}
+        {getBannersForPosition('pos-4').length > 0 && (
+          <Section delay={0.35} className="px-4">
+            <AdBannerGroup
+              banners={getBannersForPosition('pos-4')}
+              position="after-news"
+              onBannerClick={trackBannerClick}
+              layout="carousel"
+            />
+          </Section>
+        )}
+
         {/* Photo Carousel */}
-        <Section delay={0.35}>
+        <Section delay={0.4}>
           <PhotoCarousel />
         </Section>
 
-        {/* Ad Banner Group - Between Photo and Quick Access */}
-        {bannersBetweenPhotoQuick.length > 0 && (
-          <Section delay={0.4} className="px-4">
+        {/* Banner Position 5 */}
+        {getBannersForPosition('pos-5').length > 0 && (
+          <Section delay={0.45} className="px-4">
             <AdBannerGroup
-              banners={bannersBetweenPhotoQuick}
-              position="between-photo-quick"
+              banners={getBannersForPosition('pos-5')}
+              position="after-photos"
               onBannerClick={trackBannerClick}
               layout="stack"
             />
@@ -161,26 +162,50 @@ const Index = () => {
         )}
 
         {/* Quick Access Menu */}
-        <Section delay={0.45} className="px-4">
+        <Section delay={0.5} className="px-4">
           <QuickAccess />
         </Section>
 
-        {/* Sponsors Section */}
-        {!sponsorsLoading && allActiveSponsors.length > 0 && (
-          <Section delay={0.5} className="px-4">
-            <SponsorLogos
-              sponsors={allActiveSponsors}
-              title="Nossos Patrocinadores e Apoiadores"
+        {/* Banner Position 6 */}
+        {getBannersForPosition('pos-6').length > 0 && (
+          <Section delay={0.55} className="px-4">
+            <AdBannerGroup
+              banners={getBannersForPosition('pos-6')}
+              position="after-quick-access"
+              onBannerClick={trackBannerClick}
+              layout="carousel"
+            />
+          </Section>
+        )}
+
+        {/* Banner Position 7 */}
+        {getBannersForPosition('pos-7').length > 0 && (
+          <Section delay={0.6} className="px-4">
+            <AdBannerGroup
+              banners={getBannersForPosition('pos-7')}
+              position="mid-final"
+              onBannerClick={trackBannerClick}
+              layout="grid"
+            />
+          </Section>
+        )}
+
+        {/* Support Sponsors Carousel - 2x2 Grid */}
+        {!sponsorsLoading && supportSponsors.length > 0 && (
+          <Section delay={0.65} className="px-4">
+            <SponsorCarousel
+              sponsors={supportSponsors}
+              title="Nossos Apoiadores"
               onSponsorClick={(sponsor) => trackSponsorClick(sponsor.id, sponsor.category)}
             />
           </Section>
         )}
 
-        {/* Ad Banner Group - Before Credits */}
-        {bannersBeforeCredits.length > 0 && (
-          <Section delay={0.55} className="px-4">
+        {/* Banner Position 8 - Final */}
+        {getBannersForPosition('pos-8').length > 0 && (
+          <Section delay={0.7} className="px-4">
             <AdBannerGroup
-              banners={bannersBeforeCredits}
+              banners={getBannersForPosition('pos-8')}
               position="before-credits"
               onBannerClick={trackBannerClick}
               layout="carousel"
@@ -189,7 +214,7 @@ const Index = () => {
         )}
 
         {/* Créditos */}
-        <Section delay={0.6} className="px-4 text-center text-sm text-foreground/70">
+        <Section delay={0.75} className="px-4 text-center text-sm text-foreground/70">
           <div className="space-y-1">
             <p>Tecnologia criada por: Anderson Marques Vieira (Hype Neural)</p>
             <p>Fotografias e Vídeos por: Estúdio Evydência</p>

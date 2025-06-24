@@ -26,38 +26,47 @@ export const useSponsors = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastShuffleTime, setLastShuffleTime] = useState(Date.now());
 
-  // Memoized shuffled banners that only change when data changes or manually refreshed
-  const shuffledBanners = useMemo(() => {
+  // Separate banners by category
+  const bannersByCategory = useMemo(() => {
     const activeBanners = sponsorsData.banners.filter(banner => banner.isActive);
-    return shuffleArray(activeBanners);
+    
+    return {
+      destaque: activeBanners.filter(banner => banner.category === 'patrocinador'),
+      apoio: activeBanners.filter(banner => banner.category === 'apoiador' || banner.category === 'promocional')
+    };
   }, [sponsorsData.banners, lastShuffleTime]);
 
-  // Memoized sponsor logos grouped by category
-  const sponsorsByCategory = useMemo(() => {
+  // Memoized shuffled banners that only change when data changes or manually refreshed
+  const shuffledBanners = useMemo(() => {
+    return shuffleArray(bannersByCategory.destaque);
+  }, [bannersByCategory.destaque, lastShuffleTime]);
+
+  // Memoized sponsor logos (only apoio category for 1x1 grid)
+  const supportSponsors = useMemo(() => {
     const activeSponsors = sponsorsData.sponsors.filter(sponsor => sponsor.isActive);
-    return {
-      diamante: activeSponsors.filter(s => s.category === 'diamante'),
-      ouro: activeSponsors.filter(s => s.category === 'ouro'),
-      prata: activeSponsors.filter(s => s.category === 'prata'),
-      bronze: activeSponsors.filter(s => s.category === 'bronze'),
-      apoiador: activeSponsors.filter(s => s.category === 'apoiador'),
-    };
+    return activeSponsors.filter(s => s.category === 'apoiador' || s.category === 'bronze');
   }, [sponsorsData.sponsors]);
 
-  // Memoized banner groups for different positions
-  const bannerGroups = useMemo(() => {
-    const positions = sponsorsData.positions.filter(p => p.isActive);
-    const groups: Record<string, Banner[]> = {};
-
-    let bannerIndex = 0;
-    positions.forEach(position => {
-      const bannersForPosition = shuffledBanners.slice(bannerIndex, bannerIndex + position.maxBanners);
-      groups[position.id] = bannersForPosition;
-      bannerIndex += position.maxBanners;
-    });
-
-    return groups;
-  }, [shuffledBanners, sponsorsData.positions]);
+  // Distribute banners across multiple positions in the home page
+  const distributedBanners = useMemo(() => {
+    const totalBanners = shuffledBanners.length;
+    const positions = Math.min(8, Math.ceil(totalBanners / 3)); // Max 8 positions
+    
+    const bannersPerPosition = Math.ceil(totalBanners / positions);
+    const distribution: Record<string, Banner[]> = {};
+    
+    for (let i = 0; i < positions; i++) {
+      const start = i * bannersPerPosition;
+      const end = Math.min(start + bannersPerPosition, totalBanners);
+      const positionBanners = shuffledBanners.slice(start, end);
+      
+      if (positionBanners.length > 0) {
+        distribution[`pos-${i + 1}`] = positionBanners;
+      }
+    }
+    
+    return distribution;
+  }, [shuffledBanners]);
 
   // Function to manually shuffle banners
   const reshuffleBanners = useCallback(() => {
@@ -86,13 +95,12 @@ export const useSponsors = () => {
     }
   }, []);
 
-  // Function to track banner click for analytics
-  const trackBannerClick = useCallback((bannerId: string, position: string) => {
-    // TODO: Implement analytics tracking
-    console.log(`Banner clicked: ${bannerId} at position: ${position}`);
+  // Function to track banner click for analytics - FIXED SIGNATURE
+  const trackBannerClick = useCallback((banner: Banner, position: string) => {
+    console.log(`Banner clicked: ${banner.id} at position: ${position}`);
     
     // Future implementation could send to analytics service
-    // analytics.track('banner_click', { bannerId, position, timestamp: Date.now() });
+    // analytics.track('banner_click', { bannerId: banner.id, position, timestamp: Date.now() });
   }, []);
 
   // Function to track sponsor click for analytics
@@ -112,8 +120,9 @@ export const useSponsors = () => {
     // Data
     sponsorsData,
     shuffledBanners,
-    sponsorsByCategory,
-    bannerGroups,
+    distributedBanners,
+    supportSponsors,
+    bannersByCategory,
     
     // State
     loading,
@@ -126,8 +135,8 @@ export const useSponsors = () => {
     trackSponsorClick,
     
     // Utilities
-    getBannersForPosition: (positionId: string) => bannerGroups[positionId] || [],
+    getBannersForPosition: (positionId: string) => distributedBanners[positionId] || [],
     getActiveBannersCount: () => shuffledBanners.length,
-    getActiveSponsorsCount: () => sponsorsData.sponsors.filter(s => s.isActive).length,
+    getActiveSponsorsCount: () => supportSponsors.length,
   };
 };
