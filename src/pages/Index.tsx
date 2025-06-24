@@ -45,7 +45,8 @@ const Index = () => {
     getBannersForPosition,
     trackBannerClick,
     trackSponsorClick,
-    loading: sponsorsLoading
+    loading: sponsorsLoading,
+    getTotalPositions
   } = useSponsors();
   const hasRecorded = useRef(false);
 
@@ -64,8 +65,11 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, [recordVisit, prefetchPredicted]);
 
-  // Get banners for distributed positions
-  const bannerPositions = Object.keys(distributedBanners);
+  // Get total number of positions with banners
+  const totalPositions = getTotalPositions();
+
+  console.log('Total banner positions:', totalPositions);
+  console.log('Distributed banners:', distributedBanners);
 
   return (
     <div className="min-h-screen bg-background">
@@ -79,12 +83,12 @@ const Index = () => {
           <Stories />
         </Section>
 
-        {/* Banner Carousel - Hero Banners (Position 1) */}
+        {/* Banner Position 1 - Hero Section */}
         {getBannersForPosition('pos-1').length > 0 && (
           <Section delay={0.05} className="px-4">
             <BannerCarousel
               banners={getBannersForPosition('pos-1')}
-              onBannerClick={(banner) => trackBannerClick(banner, 'hero-carousel')}
+              onBannerClick={(banner) => trackBannerClick(banner, 'hero-section')}
               className="mb-4"
             />
           </Section>
@@ -98,14 +102,13 @@ const Index = () => {
           </div>
         </Section>
 
-        {/* Banner Position 2 */}
+        {/* Banner Position 2 - After Program */}
         {getBannersForPosition('pos-2').length > 0 && (
           <Section delay={0.15} className="px-4">
-            <AdBannerGroup
+            <BannerCarousel
               banners={getBannersForPosition('pos-2')}
-              position="after-program"
-              onBannerClick={trackBannerClick}
-              layout="carousel"
+              onBannerClick={(banner) => trackBannerClick(banner, 'after-program')}
+              className="mb-4"
             />
           </Section>
         )}
@@ -115,14 +118,13 @@ const Index = () => {
           <SaoCristovaoTracker />
         </Section>
 
-        {/* Banner Position 3 */}
+        {/* Banner Position 3 - After Tracker */}
         {getBannersForPosition('pos-3').length > 0 && (
           <Section delay={0.25} className="px-4">
-            <AdBannerGroup
+            <BannerCarousel
               banners={getBannersForPosition('pos-3')}
-              position="after-tracker"
-              onBannerClick={trackBannerClick}
-              layout="grid"
+              onBannerClick={(banner) => trackBannerClick(banner, 'after-tracker')}
+              className="mb-4"
             />
           </Section>
         )}
@@ -132,14 +134,13 @@ const Index = () => {
           <NewsCarousel />
         </Section>
 
-        {/* Banner Position 4 */}
+        {/* Banner Position 4 - After News */}
         {getBannersForPosition('pos-4').length > 0 && (
           <Section delay={0.35} className="px-4">
-            <AdBannerGroup
+            <BannerCarousel
               banners={getBannersForPosition('pos-4')}
-              position="after-news"
-              onBannerClick={trackBannerClick}
-              layout="carousel"
+              onBannerClick={(banner) => trackBannerClick(banner, 'after-news')}
+              className="mb-4"
             />
           </Section>
         )}
@@ -149,14 +150,13 @@ const Index = () => {
           <PhotoCarousel />
         </Section>
 
-        {/* Banner Position 5 */}
+        {/* Banner Position 5 - After Photos */}
         {getBannersForPosition('pos-5').length > 0 && (
           <Section delay={0.45} className="px-4">
-            <AdBannerGroup
+            <BannerCarousel
               banners={getBannersForPosition('pos-5')}
-              position="after-photos"
-              onBannerClick={trackBannerClick}
-              layout="stack"
+              onBannerClick={(banner) => trackBannerClick(banner, 'after-photos')}
+              className="mb-4"
             />
           </Section>
         )}
@@ -166,26 +166,24 @@ const Index = () => {
           <QuickAccess />
         </Section>
 
-        {/* Banner Position 6 */}
+        {/* Banner Position 6 - After Quick Access */}
         {getBannersForPosition('pos-6').length > 0 && (
           <Section delay={0.55} className="px-4">
-            <AdBannerGroup
+            <BannerCarousel
               banners={getBannersForPosition('pos-6')}
-              position="after-quick-access"
-              onBannerClick={trackBannerClick}
-              layout="carousel"
+              onBannerClick={(banner) => trackBannerClick(banner, 'after-quick-access')}
+              className="mb-4"
             />
           </Section>
         )}
 
-        {/* Banner Position 7 */}
+        {/* Banner Position 7 - Mid Final */}
         {getBannersForPosition('pos-7').length > 0 && (
           <Section delay={0.6} className="px-4">
-            <AdBannerGroup
+            <BannerCarousel
               banners={getBannersForPosition('pos-7')}
-              position="mid-final"
-              onBannerClick={trackBannerClick}
-              layout="grid"
+              onBannerClick={(banner) => trackBannerClick(banner, 'mid-final')}
+              className="mb-4"
             />
           </Section>
         )}
@@ -201,15 +199,25 @@ const Index = () => {
           </Section>
         )}
 
-        {/* Banner Position 8 - Final */}
+        {/* Banner Position 8 - Before Credits */}
         {getBannersForPosition('pos-8').length > 0 && (
           <Section delay={0.7} className="px-4">
-            <AdBannerGroup
+            <BannerCarousel
               banners={getBannersForPosition('pos-8')}
-              position="before-credits"
-              onBannerClick={trackBannerClick}
-              layout="carousel"
+              onBannerClick={(banner) => trackBannerClick(banner, 'before-credits')}
+              className="mb-4"
             />
+          </Section>
+        )}
+
+        {/* Debug Info - Remove in production */}
+        {process.env.NODE_ENV === 'development' && (
+          <Section delay={0.72} className="px-4">
+            <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+              <p>Debug: {totalPositions} posições com banners ativos</p>
+              <p>Total banners: {shuffledBanners.length}</p>
+              <p>Apoiadores: {supportSponsors.length}</p>
+            </div>
           </Section>
         )}
 

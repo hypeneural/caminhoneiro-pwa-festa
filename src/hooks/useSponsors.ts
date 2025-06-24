@@ -50,8 +50,15 @@ export const useSponsors = () => {
   // Distribute banners across multiple positions in the home page
   const distributedBanners = useMemo(() => {
     const totalBanners = shuffledBanners.length;
-    const positions = Math.min(8, Math.ceil(totalBanners / 3)); // Max 8 positions
     
+    // Define number of positions based on total banners
+    let positions: number;
+    if (totalBanners <= 5) positions = 2;
+    else if (totalBanners <= 10) positions = 4;
+    else if (totalBanners <= 15) positions = 6;
+    else positions = 8;
+    
+    // Calculate banners per position
     const bannersPerPosition = Math.ceil(totalBanners / positions);
     const distribution: Record<string, Banner[]> = {};
     
@@ -65,6 +72,7 @@ export const useSponsors = () => {
       }
     }
     
+    console.log('Banner distribution:', distribution);
     return distribution;
   }, [shuffledBanners]);
 
@@ -138,5 +146,6 @@ export const useSponsors = () => {
     getBannersForPosition: (positionId: string) => distributedBanners[positionId] || [],
     getActiveBannersCount: () => shuffledBanners.length,
     getActiveSponsorsCount: () => supportSponsors.length,
+    getTotalPositions: () => Object.keys(distributedBanners).length,
   };
 };
