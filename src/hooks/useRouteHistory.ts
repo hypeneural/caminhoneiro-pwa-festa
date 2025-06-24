@@ -10,6 +10,38 @@ export interface RoutePoint {
   course: number;
 }
 
+// Proper GeoJSON types
+interface PointFeature {
+  type: "Feature";
+  geometry: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+  properties: {
+    timestamp: string;
+    speed: number;
+    course: number;
+  };
+}
+
+interface LineStringFeature {
+  type: "Feature";
+  geometry: {
+    type: "LineString";
+    coordinates: [number, number][];
+  };
+  properties: {
+    routeType: string;
+  };
+}
+
+type GeoJSONFeature = PointFeature | LineStringFeature;
+
+interface GeoJSONFeatureCollection {
+  type: "FeatureCollection";
+  features: GeoJSONFeature[];
+}
+
 export const useRouteHistory = () => {
   const { data } = useTraccarData();
   const [routeHistory, setRouteHistory] = useState<RoutePoint[]>([]);
@@ -51,36 +83,43 @@ export const useRouteHistory = () => {
   };
 
   // Exporta rota como GeoJSON
-  const exportToGeoJSON = () => {
-    const features = routeHistory.map(point => ({
-      type: "Feature" as const,
-      geometry: {
-        type: "Point" as const,
-        coordinates: [point.longitude, point.latitude] as [number, number]
-      },
-      properties: {
-        timestamp: point.timestamp,
-        speed: point.speed,
-        course: point.course
-      }
-    }));
+  const exportToGeoJSON = (): GeoJSONFeatureCollection => {
+    const features: GeoJSONFeature[] = [];
 
-    // Adiciona linha conectando os pontos
-    if (routeHistory.length > 1) {
-      features.push({
-        type: "Feature" as const,
+    // Adiciona pontos individuais
+    routeHistory.forEach(point => {
+      const pointFeature: PointFeature = {
+        type: "Feature",
         geometry: {
-          type: "LineString" as const,
+          type: "Point",
+          coordinates: [point.longitude, point.latitude]
+        },
+        properties: {
+          timestamp: point.timestamp,
+          speed: point.speed,
+          course: point.course
+        }
+      };
+      features.push(pointFeature);
+    });
+
+    // Adiciona linha conectando os pontos se houver mais de um
+    if (routeHistory.length > 1) {
+      const lineFeature: LineStringFeature = {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
           coordinates: routeHistory.map(p => [p.longitude, p.latitude] as [number, number])
         },
         properties: {
           routeType: "path"
         }
-      });
+      };
+      features.push(lineFeature);
     }
 
     return {
-      type: "FeatureCollection" as const,
+      type: "FeatureCollection",
       features
     };
   };
@@ -92,4 +131,4 @@ export const useRouteHistory = () => {
     toggleRecording,
     exportToGeoJSON
   };
-}; 
+};
