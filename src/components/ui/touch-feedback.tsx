@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -7,22 +8,33 @@ interface TouchFeedbackProps {
   className?: string;
   disabled?: boolean;
   onClick?: () => void;
+  scale?: number;
+  haptic?: boolean;
 }
 
-export function TouchFeedback({ children, className = '', disabled = false, onClick }: TouchFeedbackProps) {
+export function TouchFeedback({ 
+  children, 
+  className = '', 
+  disabled = false, 
+  onClick,
+  scale = 0.97,
+  haptic = false
+}: TouchFeedbackProps) {
   const [isPressed, setIsPressed] = useState(false);
 
   const handleTouchStart = () => {
     if (disabled) return;
     setIsPressed(true);
     
-    // Só tenta vibrar se o navegador suportar e tiver permissão
-    try {
-      if (navigator.vibrate && document.hasFocus()) {
-        navigator.vibrate(10);
+    // Only try to vibrate if haptic is enabled and browser supports it
+    if (haptic) {
+      try {
+        if (navigator.vibrate && document.hasFocus()) {
+          navigator.vibrate(10);
+        }
+      } catch (error) {
+        // Ignore vibration errors silently
       }
-    } catch (error) {
-      // Ignora erros de vibração silenciosamente
     }
   };
 
@@ -39,8 +51,8 @@ export function TouchFeedback({ children, className = '', disabled = false, onCl
   return (
     <div
       className={`
-        transition-transform duration-100 active:scale-[0.97]
-        ${isPressed ? 'scale-[0.97]' : 'scale-100'}
+        transition-transform duration-100 active:scale-[${scale}]
+        ${isPressed ? `scale-[${scale}]` : 'scale-100'}
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${className}
       `}

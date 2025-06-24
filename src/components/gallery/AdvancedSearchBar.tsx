@@ -27,8 +27,8 @@ const timeOfDayOptions = [
 const sortOptions = [
   { value: 'newest', label: 'Mais Recentes' },
   { value: 'oldest', label: 'Mais Antigas' },
-  { value: 'most-viewed', label: 'Mais Visualizadas' },
-  { value: 'most-liked', label: 'Mais Curtidas' }
+  { value: 'mostViewed', label: 'Mais Visualizadas' },
+  { value: 'mostLiked', label: 'Mais Curtidas' }
 ];
 
 const vehicleTypes = [
@@ -89,7 +89,7 @@ export function AdvancedSearchBar({
 
   const handleSortChange = useCallback((value: string) => {
     onFiltersChange({ 
-      sortBy: value as 'newest' | 'oldest' | 'most-viewed' | 'most-liked'
+      sortBy: value as 'newest' | 'oldest' | 'mostViewed' | 'mostLiked'
     });
   }, [onFiltersChange]);
 

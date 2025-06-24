@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useTraccarData } from './useTraccarData';
 
@@ -52,10 +53,10 @@ export const useRouteHistory = () => {
   // Exporta rota como GeoJSON
   const exportToGeoJSON = () => {
     const features = routeHistory.map(point => ({
-      type: "Feature",
+      type: "Feature" as const,
       geometry: {
-        type: "Point",
-        coordinates: [point.longitude, point.latitude]
+        type: "Point" as const,
+        coordinates: [point.longitude, point.latitude] as [number, number]
       },
       properties: {
         timestamp: point.timestamp,
@@ -67,19 +68,19 @@ export const useRouteHistory = () => {
     // Adiciona linha conectando os pontos
     if (routeHistory.length > 1) {
       features.push({
-        type: "Feature",
+        type: "Feature" as const,
         geometry: {
-          type: "LineString",
-          coordinates: routeHistory.map(p => [p.longitude, p.latitude])
+          type: "LineString" as const,
+          coordinates: routeHistory.map(p => [p.longitude, p.latitude] as [number, number])
         },
         properties: {
-          type: "route"
+          routeType: "path"
         }
       });
     }
 
     return {
-      type: "FeatureCollection",
+      type: "FeatureCollection" as const,
       features
     };
   };
