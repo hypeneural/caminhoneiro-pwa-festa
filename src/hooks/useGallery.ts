@@ -13,6 +13,7 @@ const generateMockPhotos = (): Photo[] => {
   const cities = ['Chapecó', 'Xanxerê', 'Concórdia', 'São Miguel do Oeste'];
   const fuelTypes = ['Diesel', 'Diesel S-10', 'Gasolina', 'Etanol'];
   const vehicleTypes = ['Caminhão', 'Carreta', 'Bitrem', 'Rodotrem', 'Truck', 'VUC'];
+  const tagCategories = ['transportadora1', 'transportadora2', 'bencao', 'sao-cristovao', 'pavilhao'] as const;
   
   const placeholderImages = [
     'photo-1452378174528-3090a4bba7b2',
@@ -64,7 +65,8 @@ const generateMockPhotos = (): Photo[] => {
       city: cities[Math.floor(Math.random() * cities.length)],
       fuelType: fuelTypes[Math.floor(Math.random() * fuelTypes.length)],
       vehicleType: vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)],
-      featured: Math.random() > 0.8 // 20% das fotos são destacadas
+      featured: Math.random() > 0.8,
+      tagCategory: tagCategories[Math.floor(Math.random() * tagCategories.length)] // Nova propriedade
     };
   });
 };
@@ -77,7 +79,8 @@ const initialFilters: GalleryFilters = {
   searchQuery: '',
   vehiclePlate: '',
   timeRange: {},
-  showFeaturedOnly: false
+  showFeaturedOnly: false,
+  tagCategory: 'all' // Novo filtro inicial
 };
 
 export const useGallery = () => {
@@ -231,7 +234,8 @@ export const useGallery = () => {
       !!filters.specificDate ||
       !!filters.timeRange.start ||
       !!filters.timeRange.end ||
-      filters.showFeaturedOnly
+      filters.showFeaturedOnly ||
+      filters.tagCategory !== 'all' // Novo filtro
     );
   }, [state.filters]);
 
@@ -242,6 +246,13 @@ export const useGallery = () => {
     
     let result = [...state.photos];
 
+    // Filtro por tag category
+    if (state.filters.tagCategory !== 'all') {
+      result = result.filter(photo => photo.tagCategory === state.filters.tagCategory);
+    }
+
+    // ... keep existing code (outros filtros - vehiclePlate, specificDate, timeRange, showFeaturedOnly, brand, model, etc.)
+    
     // Filtro otimizado por placa
     if (state.filters.vehiclePlate) {
       const plateQuery = state.filters.vehiclePlate.toUpperCase();
@@ -291,7 +302,6 @@ export const useGallery = () => {
       result = result.filter(photo => photo.featured === true);
     }
 
-    // ... keep existing code (outros filtros - brand, model, color, city, etc.)
     if (state.filters.brand) {
       result = result.filter(photo => 
         photo.brand?.toLowerCase().includes(state.filters.brand!.toLowerCase())

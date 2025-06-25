@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
 import { VehicleFilters } from "@/components/gallery/VehicleFilters";
+import { TagSegmentation } from "@/components/gallery/TagSegmentation";
 import { NativePhotoGrid } from "@/components/gallery/NativePhotoGrid";
 import { PullToRefresh } from "@/components/gallery/PullToRefresh";
 import { PhotoLightbox } from "@/components/gallery/PhotoLightbox";
@@ -34,7 +35,13 @@ const Gallery = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* Filtros fixos no topo */}
+      {/* Segmentação por tags fixa no topo */}
+      <TagSegmentation
+        selectedTag={filters.tagCategory}
+        onTagChange={(tag) => updateFilters({ tagCategory: tag })}
+      />
+
+      {/* Filtros fixos abaixo das tags */}
       <VehicleFilters
         filters={filters}
         onFiltersChange={updateFilters}
@@ -74,7 +81,7 @@ const Gallery = () => {
         currentIndex={currentIndex}
       />
 
-      {/* FAB */}
+      {/* FAB para enviar fotos */}
       <FloatingActionButton />
 
       <BottomNavigation />

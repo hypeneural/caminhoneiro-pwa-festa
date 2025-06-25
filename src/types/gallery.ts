@@ -1,4 +1,3 @@
-
 export interface Photo {
   id: string;
   url: string;
@@ -30,7 +29,8 @@ export interface Photo {
   city?: string;
   fuelType?: string;
   vehicleType?: string;
-  featured?: boolean; // Nova propriedade para fotos em destaque
+  featured?: boolean;
+  tagCategory?: 'transportadora1' | 'transportadora2' | 'bencao' | 'sao-cristovao' | 'pavilhao';
 }
 
 export interface GalleryFilters {
@@ -51,13 +51,13 @@ export interface GalleryFilters {
   city?: string;
   fuelType?: string;
   vehicleType?: string;
-  // Novos filtros
   specificDate?: Date;
   timeRange: {
-    start?: string; // formato HH:mm
-    end?: string;   // formato HH:mm
+    start?: string;
+    end?: string;
   };
   showFeaturedOnly: boolean;
+  tagCategory: string;
 }
 
 export interface GalleryState {
