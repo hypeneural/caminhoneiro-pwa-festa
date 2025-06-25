@@ -15,6 +15,7 @@ import { AdBannerGroup } from "@/components/sponsors/AdBanner";
 import { useSponsors } from "@/hooks/useSponsors";
 import { usePrefetch } from "@/hooks/usePrefetch";
 import { useEffect, useRef } from "react";
+import { PollCard } from "@/components/mobile/PollCard";
 
 // Interface para as props das seções
 interface SectionProps {
@@ -101,6 +102,11 @@ const Index = () => {
             <CountdownTimer />
             <ProgramPreview />
           </div>
+        </Section>
+
+        {/* ENQUETE - Posicionada entre Countdown e São Cristóvão */}
+        <Section delay={0.12} className="px-4">
+          <PollCard />
         </Section>
 
         {/* São Cristóvão Tracker */}

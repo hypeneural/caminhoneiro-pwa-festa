@@ -1,3 +1,4 @@
+
 import type { VitePWAOptions } from 'vite-plugin-pwa';
 
 export const pwaConfig: Partial<VitePWAOptions> = {
@@ -31,6 +32,22 @@ export const pwaConfig: Partial<VitePWAOptions> = {
           expiration: {
             maxEntries: 200,
             maxAgeSeconds: 60 * 60 * 24 * 2, // 2 days
+          },
+          cacheableResponse: {
+            statuses: [0, 200],
+          },
+        },
+      },
+      // Poll API - NetworkFirst strategy
+      {
+        urlPattern: /\/poll\/.*/i,
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'poll-cache',
+          networkTimeoutSeconds: 3,
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 60 * 60 * 24, // 1 day
           },
           cacheableResponse: {
             statuses: [0, 200],
@@ -125,10 +142,29 @@ export const pwaConfig: Partial<VitePWAOptions> = {
     additionalManifestEntries: [
       { url: '/', revision: Date.now().toString() },
       { url: '/index.html', revision: Date.now().toString() },
+      { url: '/#poll', revision: Date.now().toString() },
     ],
   },
   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
   manifestFilename: 'manifest.json',
+  manifest: {
+    name: 'Festa do Caminhoneiro',
+    short_name: 'Caminhoneiro',
+    description: 'App oficial da Festa do Caminhoneiro',
+    theme_color: '#1e40af',
+    background_color: '#ffffff',
+    display: 'standalone',
+    start_url: '/',
+    shortcuts: [
+      {
+        name: 'Votar na Enquete',
+        short_name: 'Enquete',
+        description: 'Participar da enquete da festa',
+        url: '/#poll',
+        icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
+      }
+    ]
+  },
   devOptions: {
     enabled: true,
     type: 'module',
