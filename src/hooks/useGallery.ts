@@ -2,10 +2,10 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Photo, GalleryFilters, GalleryState } from '@/types/gallery';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
-// Mock data com novos campos de veículo
+// Mock data com novos campos de veículo e featured
 const generateMockPhotos = (): Photo[] => {
   const categories = ['caminhoes', 'carretas', 'familia', 'shows', 'religioso', 'geral'] as const;
-  const plateFormats = ['ABC-1234', 'DEF-5678', 'GHI-9012', 'JKL-3456', 'MNO-7890', 'PQR-2468'];
+  const plateFormats = ['ABC1234', 'DEF5678', 'GHI9012', 'JKL3456', 'MNO7890', 'PQR2468', 'STU1V23', 'XYZ4W56'];
   const photographers = ['João Silva', 'Maria Santos', 'Pedro Oliveira', 'Ana Costa', 'Carlos Lima'];
   const brands = ['Volvo', 'Scania', 'Mercedes-Benz', 'Iveco', 'DAF', 'MAN'];
   const models = ['FH', 'FM', 'R-Series', 'S-Series', 'Actros', 'Atego'];
@@ -28,6 +28,9 @@ const generateMockPhotos = (): Photo[] => {
     const imageId = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
     const currentYear = new Date().getFullYear();
     
+    // Gera timestamp aleatório nas últimas 2 semanas
+    const randomDate = new Date(Date.now() - Math.random() * 14 * 24 * 60 * 60 * 1000);
+    
     return {
       id: `photo-${index + 1}`,
       url: `https://images.unsplash.com/${imageId}?auto=format&fit=crop&q=80&w=800`,
@@ -38,7 +41,7 @@ const generateMockPhotos = (): Photo[] => {
       vehiclePlate: category === 'caminhoes' || category === 'carretas' 
         ? plateFormats[Math.floor(Math.random() * plateFormats.length)]
         : undefined,
-      timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
+      timestamp: randomDate,
       location: {
         lat: -27.2423 + (Math.random() - 0.5) * 0.1,
         lng: -48.6467 + (Math.random() - 0.5) * 0.1,
@@ -53,7 +56,6 @@ const generateMockPhotos = (): Photo[] => {
         width: 1920,
         height: 1080
       },
-      // Novos campos
       brand: brands[Math.floor(Math.random() * brands.length)],
       model: models[Math.floor(Math.random() * models.length)],
       modelYear: (currentYear - Math.floor(Math.random() * 10)).toString(),
@@ -61,7 +63,8 @@ const generateMockPhotos = (): Photo[] => {
       color: colors[Math.floor(Math.random() * colors.length)],
       city: cities[Math.floor(Math.random() * cities.length)],
       fuelType: fuelTypes[Math.floor(Math.random() * fuelTypes.length)],
-      vehicleType: vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)]
+      vehicleType: vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)],
+      featured: Math.random() > 0.8 // 20% das fotos são destacadas
     };
   });
 };
@@ -72,7 +75,9 @@ const initialFilters: GalleryFilters = {
   timeOfDay: 'all',
   sortBy: 'newest',
   searchQuery: '',
-  vehiclePlate: ''
+  vehiclePlate: '',
+  timeRange: {},
+  showFeaturedOnly: false
 };
 
 export const useGallery = () => {
@@ -204,98 +209,133 @@ export const useGallery = () => {
     }));
   }, []);
 
-  // Check if any filter is active
+  // Check if any filter is active - versão otimizada
   const isFiltersActive = useMemo(() => {
+    const { filters } = state;
     return (
-      state.filters.category.length > 0 ||
-      !!state.filters.dateRange.start ||
-      !!state.filters.dateRange.end ||
-      state.filters.timeOfDay !== 'all' ||
-      state.filters.sortBy !== 'newest' ||
-      !!state.filters.vehiclePlate ||
-      !!state.filters.searchQuery ||
-      !!state.filters.brand ||
-      !!state.filters.model ||
-      !!state.filters.modelYear ||
-      !!state.filters.manufacturingYear ||
-      !!state.filters.color ||
-      !!state.filters.city ||
-      !!state.filters.fuelType ||
-      !!state.filters.vehicleType
+      filters.category.length > 0 ||
+      !!filters.dateRange.start ||
+      !!filters.dateRange.end ||
+      filters.timeOfDay !== 'all' ||
+      filters.sortBy !== 'newest' ||
+      !!filters.vehiclePlate ||
+      !!filters.searchQuery ||
+      !!filters.brand ||
+      !!filters.model ||
+      !!filters.modelYear ||
+      !!filters.manufacturingYear ||
+      !!filters.color ||
+      !!filters.city ||
+      !!filters.fuelType ||
+      !!filters.vehicleType ||
+      !!filters.specificDate ||
+      !!filters.timeRange.start ||
+      !!filters.timeRange.end ||
+      filters.showFeaturedOnly
     );
   }, [state.filters]);
 
-  // Enhanced filter and sort photos
+  // Enhanced filter and sort photos - versão otimizada
   useEffect(() => {
     console.log('Applying filters:', state.filters);
     console.time('filterPhotos');
     
     let result = [...state.photos];
-    const filterResults: { [key: string]: number } = {};
 
-    // Apply vehicle plate filter
+    // Filtro otimizado por placa
     if (state.filters.vehiclePlate) {
-      const plateQuery = state.filters.vehiclePlate.toLowerCase();
+      const plateQuery = state.filters.vehiclePlate.toUpperCase();
       result = result.filter(photo => 
-        photo.vehiclePlate?.toLowerCase().includes(plateQuery)
+        photo.vehiclePlate?.includes(plateQuery)
       );
-      filterResults.plateFilter = result.length;
     }
 
-    // Apply new vehicle filters
+    // Filtro por data específica
+    if (state.filters.specificDate) {
+      const targetDate = state.filters.specificDate;
+      result = result.filter(photo => {
+        const photoDate = photo.timestamp;
+        return (
+          photoDate.getDate() === targetDate.getDate() &&
+          photoDate.getMonth() === targetDate.getMonth() &&
+          photoDate.getFullYear() === targetDate.getFullYear()
+        );
+      });
+    }
+
+    // Filtro por faixa de horário
+    if (state.filters.timeRange.start || state.filters.timeRange.end) {
+      result = result.filter(photo => {
+        const photoHour = photo.timestamp.getHours();
+        const photoMinute = photo.timestamp.getMinutes();
+        const photoTime = photoHour * 60 + photoMinute;
+
+        if (state.filters.timeRange.start) {
+          const [startHour, startMinute] = state.filters.timeRange.start.split(':').map(Number);
+          const startTime = startHour * 60 + startMinute;
+          if (photoTime < startTime) return false;
+        }
+
+        if (state.filters.timeRange.end) {
+          const [endHour, endMinute] = state.filters.timeRange.end.split(':').map(Number);
+          const endTime = endHour * 60 + endMinute;
+          if (photoTime > endTime) return false;
+        }
+
+        return true;
+      });
+    }
+
+    // Filtro por fotos em destaque
+    if (state.filters.showFeaturedOnly) {
+      result = result.filter(photo => photo.featured === true);
+    }
+
+    // ... keep existing code (outros filtros - brand, model, color, city, etc.)
     if (state.filters.brand) {
       result = result.filter(photo => 
         photo.brand?.toLowerCase().includes(state.filters.brand!.toLowerCase())
       );
-      filterResults.brandFilter = result.length;
     }
 
     if (state.filters.model) {
       result = result.filter(photo => 
         photo.model?.toLowerCase().includes(state.filters.model!.toLowerCase())
       );
-      filterResults.modelFilter = result.length;
     }
 
     if (state.filters.color) {
       result = result.filter(photo => 
         photo.color?.toLowerCase().includes(state.filters.color!.toLowerCase())
       );
-      filterResults.colorFilter = result.length;
     }
 
     if (state.filters.city) {
       result = result.filter(photo => 
         photo.city?.toLowerCase().includes(state.filters.city!.toLowerCase())
       );
-      filterResults.cityFilter = result.length;
     }
 
     if (state.filters.fuelType) {
       result = result.filter(photo => 
         photo.fuelType?.toLowerCase().includes(state.filters.fuelType!.toLowerCase())
       );
-      filterResults.fuelFilter = result.length;
     }
 
     if (state.filters.vehicleType) {
       result = result.filter(photo => 
         photo.vehicleType?.toLowerCase().includes(state.filters.vehicleType!.toLowerCase())
       );
-      filterResults.vehicleTypeFilter = result.length;
     }
 
     if (state.filters.modelYear) {
       result = result.filter(photo => photo.modelYear === state.filters.modelYear);
-      filterResults.modelYearFilter = result.length;
     }
 
     if (state.filters.manufacturingYear) {
       result = result.filter(photo => photo.manufacturingYear === state.filters.manufacturingYear);
-      filterResults.manufacturingYearFilter = result.length;
     }
 
-    // Apply existing filters
     if (state.filters.searchQuery) {
       const query = state.filters.searchQuery.toLowerCase();
       result = result.filter(photo =>
@@ -304,14 +344,12 @@ export const useGallery = () => {
         photo.tags.some(tag => tag.toLowerCase().includes(query)) ||
         photo.vehiclePlate?.toLowerCase().includes(query)
       );
-      filterResults.searchFilter = result.length;
     }
 
     if (state.filters.category.length > 0) {
       result = result.filter(photo => 
         state.filters.category.includes(photo.category)
       );
-      filterResults.categoryFilter = result.length;
     }
 
     if (state.filters.timeOfDay !== 'all') {
@@ -328,7 +366,6 @@ export const useGallery = () => {
             return true;
         }
       });
-      filterResults.timeFilter = result.length;
     }
 
     if (state.filters.dateRange.start || state.filters.dateRange.end) {
@@ -342,11 +379,9 @@ export const useGallery = () => {
         }
         return true;
       });
-      filterResults.dateFilter = result.length;
     }
 
-    // Apply sorting
-    console.time('sortPhotos');
+    // Sorting otimizado
     result.sort((a, b) => {
       switch (state.filters.sortBy) {
         case 'oldest':
@@ -360,10 +395,9 @@ export const useGallery = () => {
           return b.timestamp.getTime() - a.timestamp.getTime();
       }
     });
-    console.timeEnd('sortPhotos');
 
-    console.log('Filter results:', filterResults);
     console.timeEnd('filterPhotos');
+    console.log('Filtered results:', result.length);
 
     setState(prev => ({
       ...prev,

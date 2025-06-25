@@ -1,12 +1,18 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Search, X, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState, useCallback, useEffect, KeyboardEventHandler } from 'react';
+import { Search, X, ChevronDown, ChevronUp, Calendar, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { GalleryFilters } from '@/types/gallery';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface VehicleFiltersProps {
   filters: GalleryFilters;
@@ -41,8 +47,22 @@ const cities = [
   'Chapecó', 'Xanxerê', 'Concórdia', 'São Miguel do Oeste', 'Pinhalzinho', 'Maravilha', 'Seara', 'Joaçaba'
 ];
 
-// Regex para validação de placas (padrão antigo e Mercosul)
-const plateRegex = /^(?:[A-Z]{3}-?\d{4}|[A-Z]{3}\d[A-Z]\d{2})$/i;
+// Validação aprimorada de placa
+const allowAtPos = (c: string, pos: number): boolean => {
+  if (pos < 3) return /[A-Z]/i.test(c);         // posições 0-1-2: letras
+  if (pos === 3) return /\d/.test(c);           // posição 3: dígito
+  if (pos === 4) return /[A-Z0-9]/i.test(c);    // posição 4: letra OU dígito
+  return pos > 4 && /\d/.test(c);               // posições 5-6: sempre dígitos
+};
+
+const validatePlate = (plate: string): boolean => {
+  if (plate.length < 7) return plate.length === 0;
+  
+  const pattern1990 = /^[A-Z]{3}\d{4}$/i;    // ABC1234
+  const patternMercosul = /^[A-Z]{3}\d[A-Z]\d{2}$/i; // ABC1D23
+  
+  return pattern1990.test(plate) || patternMercosul.test(plate);
+};
 
 export function VehicleFilters({ 
   filters, 
@@ -53,42 +73,48 @@ export function VehicleFilters({
   const [plateInput, setPlateInput] = useState(filters.vehiclePlate || '');
   const [plateValid, setPlateValid] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDateOpen, setIsDateOpen] = useState(false);
 
   // Validação de placa em tempo real
   const handlePlateChange = useCallback((value: string) => {
-    // Converte para maiúsculas e remove espaços
-    const cleanValue = value.toUpperCase().replace(/\s+/g, '');
+    // Converte para maiúsculas e remove caracteres inválidos
+    const cleanValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     
-    // Limita a 8 caracteres
-    const limitedValue = cleanValue.slice(0, 8);
+    // Limita a 7 caracteres
+    const limitedValue = cleanValue.slice(0, 7);
     
     setPlateInput(limitedValue);
     
-    // Valida formato se não estiver vazio
-    if (limitedValue.length > 0) {
-      const isValid = plateRegex.test(limitedValue);
-      setPlateValid(isValid);
-      
-      // Só aplica o filtro se for válido ou vazio
-      if (isValid || limitedValue.length === 0) {
-        onFiltersChange({ vehiclePlate: limitedValue });
-      }
-    } else {
-      setPlateValid(true);
-      onFiltersChange({ vehiclePlate: '' });
+    // Valida formato
+    const isValid = validatePlate(limitedValue);
+    setPlateValid(isValid);
+    
+    // Só aplica o filtro se for válido ou vazio
+    if (isValid || limitedValue.length === 0) {
+      onFiltersChange({ vehiclePlate: limitedValue });
     }
   }, [onFiltersChange]);
 
-  // Debounce para outros filtros
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (plateInput.length === 0 || plateRegex.test(plateInput)) {
-        onFiltersChange({ vehiclePlate: plateInput });
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [plateInput, onFiltersChange]);
+  // Handler para keydown com validação por posição
+  const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
+    const pos = (e.target as HTMLInputElement).selectionStart ?? 0;
+    
+    // Permite teclas de controle
+    if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+      return;
+    }
+    
+    // Impede entrada se exceder 7 caracteres
+    if (pos >= 7) {
+      e.preventDefault();
+      return;
+    }
+    
+    // Valida caractere na posição atual
+    if (!allowAtPos(e.key, pos)) {
+      e.preventDefault();
+    }
+  };
 
   const handleClearAll = useCallback(() => {
     setPlateInput('');
@@ -96,13 +122,38 @@ export function VehicleFilters({
     onClearFilters();
   }, [onClearFilters]);
 
+  // Gera opções de datas (próximos 7 dias como exemplo)
+  const getDateOptions = () => {
+    const options = [];
+    const today = new Date();
+    
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      const dayName = format(date, 'EEE', { locale: ptBR });
+      const dayDate = format(date, 'dd/MM', { locale: ptBR });
+      
+      options.push({
+        value: date.toISOString(),
+        label: `${dayName} - ${dayDate}`,
+        date
+      });
+    }
+    
+    return options;
+  };
+
   const activeFiltersCount = [
     filters.category.length > 0,
     filters.dateRange.start || filters.dateRange.end,
     filters.timeOfDay !== 'all',
     filters.sortBy !== 'newest',
     filters.vehiclePlate,
-    filters.searchQuery
+    filters.searchQuery,
+    filters.specificDate,
+    filters.timeRange.start || filters.timeRange.end,
+    filters.showFeaturedOnly
   ].filter(Boolean).length;
 
   return (
@@ -116,13 +167,14 @@ export function VehicleFilters({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             type="text"
-            placeholder="Buscar por placa do veículo..."
+            placeholder="Buscar por placa (ABC1234 ou ABC1D23)..."
             value={plateInput}
             onChange={(e) => handlePlateChange(e.target.value)}
+            onKeyDown={handleKeyDown}
             className={`pl-10 pr-12 bg-background transition-all ${
               !plateValid ? 'border-red-500 focus:border-red-500' : 'border-border/50 focus:border-trucker-blue'
             }`}
-            maxLength={8}
+            maxLength={7}
           />
           
           {plateInput && (
@@ -155,7 +207,7 @@ export function VehicleFilters({
               exit={{ opacity: 0, height: 0 }}
               className="text-sm text-red-500 px-1"
             >
-              Formato inválido. Use ABC-1234 ou ABC1D23
+              Formato inválido. Use ABC1234 ou ABC1D23 (sem hífen)
             </motion.div>
           )}
         </AnimatePresence>
@@ -169,6 +221,85 @@ export function VehicleFilters({
               exit={{ opacity: 0, height: 0 }}
               className="space-y-4 pt-2"
             >
+              {/* Busca por dia específico */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Busca por Dia
+                </label>
+                <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal h-9",
+                        !filters.specificDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {filters.specificDate ? (
+                        `${format(filters.specificDate, 'EEE', { locale: ptBR })} - ${format(filters.specificDate, 'dd/MM/yyyy', { locale: ptBR })}`
+                      ) : (
+                        "Selecionar dia"
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={filters.specificDate}
+                      onSelect={(date) => {
+                        onFiltersChange({ specificDate: date });
+                        setIsDateOpen(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Faixa de horário */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Faixa de Horário
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Input
+                      type="time"
+                      placeholder="Início"
+                      value={filters.timeRange.start || ''}
+                      onChange={(e) => onFiltersChange({ 
+                        timeRange: { ...filters.timeRange, start: e.target.value }
+                      })}
+                      className="h-9"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="time"
+                      placeholder="Fim"
+                      value={filters.timeRange.end || ''}
+                      onChange={(e) => onFiltersChange({ 
+                        timeRange: { ...filters.timeRange, end: e.target.value }
+                      })}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Switch para fotos em destaque */}
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-muted-foreground">
+                  Mostrar Apenas Fotos em Destaque
+                </label>
+                <Switch
+                  checked={filters.showFeaturedOnly}
+                  onCheckedChange={(checked) => onFiltersChange({ showFeaturedOnly: checked })}
+                />
+              </div>
+
               {/* Marca e Modelo */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -259,7 +390,6 @@ export function VehicleFilters({
                 </div>
               </div>
 
-              {/* Cor e Município */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground mb-1 block">
@@ -304,7 +434,6 @@ export function VehicleFilters({
                 </div>
               </div>
 
-              {/* Combustível e Tipo */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground mb-1 block">
@@ -377,6 +506,20 @@ export function VehicleFilters({
             >
               {Object.entries(filters).map(([key, value]) => {
                 if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                if (key === 'timeRange' && !value.start && !value.end) return null;
+                
+                let displayValue = '';
+                if (key === 'specificDate' && value instanceof Date) {
+                  displayValue = format(value, 'dd/MM', { locale: ptBR });
+                } else if (key === 'timeRange' && (value.start || value.end)) {
+                  displayValue = `${value.start || '00:00'}-${value.end || '23:59'}`;
+                } else if (key === 'showFeaturedOnly' && value) {
+                  displayValue = 'Destaque';
+                } else {
+                  displayValue = String(value).slice(0, 15);
+                }
+                
+                if (!displayValue) return null;
                 
                 return (
                   <Badge
@@ -384,12 +527,22 @@ export function VehicleFilters({
                     variant="secondary"
                     className="text-xs flex items-center gap-1 bg-trucker-blue/10 text-trucker-blue"
                   >
-                    {String(value).slice(0, 15)}
+                    {displayValue}
                     <Button
                       variant="ghost"
                       size="sm"
                       className="w-3 h-3 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => onFiltersChange({ [key]: key === 'category' ? [] : '' })}
+                      onClick={() => {
+                        if (key === 'category') {
+                          onFiltersChange({ [key]: [] });
+                        } else if (key === 'timeRange') {
+                          onFiltersChange({ [key]: { start: '', end: '' } });
+                        } else if (key === 'showFeaturedOnly') {
+                          onFiltersChange({ [key]: false });
+                        } else {
+                          onFiltersChange({ [key]: '' });
+                        }
+                      }}
                     >
                       <X className="w-2 h-2" />
                     </Button>
