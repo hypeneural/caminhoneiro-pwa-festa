@@ -1,8 +1,8 @@
+
 import { motion } from "framer-motion";
-import { Camera } from "lucide-react";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
-import { IntelligentSearch } from "@/components/gallery/IntelligentSearch";
+import { VehicleFilters } from "@/components/gallery/VehicleFilters";
 import { NativePhotoGrid } from "@/components/gallery/NativePhotoGrid";
 import { PullToRefresh } from "@/components/gallery/PullToRefresh";
 import { PhotoLightbox } from "@/components/gallery/PhotoLightbox";
@@ -34,36 +34,16 @@ const Gallery = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* Header */}
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="fixed top-0 left-0 right-0 z-50 h-16 bg-background/95 backdrop-blur-sm border-b border-border/50 px-4 flex items-center shadow-sm"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-trucker-blue rounded-lg flex items-center justify-center">
-            <Camera className="w-5 h-5 text-trucker-blue-foreground" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-foreground">Galeria</h1>
-            <p className="text-xs text-muted-foreground">
-              {filteredPhotos.length} foto{filteredPhotos.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-        </div>
-      </motion.header>
+      {/* Filtros fixos no topo */}
+      <VehicleFilters
+        filters={filters}
+        onFiltersChange={updateFilters}
+        onClearFilters={clearFilters}
+        isFiltersActive={isFiltersActive}
+      />
 
-      {/* Content Area with proper spacing */}
-      <div className="flex-1 pt-16">
-        {/* Intelligent Search */}
-        <IntelligentSearch
-          filters={filters}
-          onFiltersChange={updateFilters}
-          onClearFilters={clearFilters}
-          isFiltersActive={isFiltersActive}
-          photos={filteredPhotos}
-        />
-
+      {/* Content Area */}
+      <div className="flex-1">
         {/* Main content with Pull to Refresh */}
         <main className="flex-1 pb-20">
           <PullToRefresh onRefresh={refreshPhotos}>

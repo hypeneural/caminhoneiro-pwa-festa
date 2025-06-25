@@ -1,4 +1,3 @@
-
 export interface Photo {
   id: string;
   url: string;
@@ -22,6 +21,14 @@ export interface Photo {
     width: number;
     height: number;
   };
+  brand?: string;
+  model?: string;
+  modelYear?: string;
+  manufacturingYear?: string;
+  color?: string;
+  city?: string;
+  fuelType?: string;
+  vehicleType?: string;
 }
 
 export interface GalleryFilters {
@@ -34,6 +41,14 @@ export interface GalleryFilters {
   sortBy: 'newest' | 'oldest' | 'mostViewed' | 'mostLiked';
   searchQuery: string;
   vehiclePlate: string;
+  brand?: string;
+  model?: string;
+  modelYear?: string;
+  manufacturingYear?: string;
+  color?: string;
+  city?: string;
+  fuelType?: string;
+  vehicleType?: string;
 }
 
 export interface GalleryState {

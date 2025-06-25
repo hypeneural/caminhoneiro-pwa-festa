@@ -2,11 +2,18 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Photo, GalleryFilters, GalleryState } from '@/types/gallery';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
-// Mock data for demonstration
+// Mock data com novos campos de veículo
 const generateMockPhotos = (): Photo[] => {
   const categories = ['caminhoes', 'carretas', 'familia', 'shows', 'religioso', 'geral'] as const;
   const plateFormats = ['ABC-1234', 'DEF-5678', 'GHI-9012', 'JKL-3456', 'MNO-7890', 'PQR-2468'];
   const photographers = ['João Silva', 'Maria Santos', 'Pedro Oliveira', 'Ana Costa', 'Carlos Lima'];
+  const brands = ['Volvo', 'Scania', 'Mercedes-Benz', 'Iveco', 'DAF', 'MAN'];
+  const models = ['FH', 'FM', 'R-Series', 'S-Series', 'Actros', 'Atego'];
+  const colors = ['Branco', 'Preto', 'Prata', 'Azul', 'Vermelho', 'Verde'];
+  const cities = ['Chapecó', 'Xanxerê', 'Concórdia', 'São Miguel do Oeste'];
+  const fuelTypes = ['Diesel', 'Diesel S-10', 'Gasolina', 'Etanol'];
+  const vehicleTypes = ['Caminhão', 'Carreta', 'Bitrem', 'Rodotrem', 'Truck', 'VUC'];
+  
   const placeholderImages = [
     'photo-1452378174528-3090a4bba7b2',
     'photo-1487252665478-49b61b47f302',
@@ -19,6 +26,7 @@ const generateMockPhotos = (): Photo[] => {
   return Array.from({ length: 100 }, (_, index) => {
     const category = categories[Math.floor(Math.random() * categories.length)];
     const imageId = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
+    const currentYear = new Date().getFullYear();
     
     return {
       id: `photo-${index + 1}`,
@@ -30,7 +38,7 @@ const generateMockPhotos = (): Photo[] => {
       vehiclePlate: category === 'caminhoes' || category === 'carretas' 
         ? plateFormats[Math.floor(Math.random() * plateFormats.length)]
         : undefined,
-      timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // Last 7 days
+      timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
       location: {
         lat: -27.2423 + (Math.random() - 0.5) * 0.1,
         lng: -48.6467 + (Math.random() - 0.5) * 0.1,
@@ -40,11 +48,20 @@ const generateMockPhotos = (): Photo[] => {
       views: Math.floor(Math.random() * 1000),
       likes: Math.floor(Math.random() * 100),
       tags: ['festa', 'caminhoneiro', 'chapeco'],
-      fileSize: Math.floor(Math.random() * 5000000) + 1000000, // 1-6MB
+      fileSize: Math.floor(Math.random() * 5000000) + 1000000,
       dimensions: {
         width: 1920,
         height: 1080
-      }
+      },
+      // Novos campos
+      brand: brands[Math.floor(Math.random() * brands.length)],
+      model: models[Math.floor(Math.random() * models.length)],
+      modelYear: (currentYear - Math.floor(Math.random() * 10)).toString(),
+      manufacturingYear: (currentYear - Math.floor(Math.random() * 10)).toString(),
+      color: colors[Math.floor(Math.random() * colors.length)],
+      city: cities[Math.floor(Math.random() * cities.length)],
+      fuelType: fuelTypes[Math.floor(Math.random() * fuelTypes.length)],
+      vehicleType: vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)]
     };
   });
 };
@@ -85,11 +102,10 @@ export const useGallery = () => {
     setState(prev => ({ ...prev, loading: true }));
     
     try {
-      // Simulate API delay for loading more
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const newPhotos = generateMockPhotos().slice(state.photos.length, state.photos.length + 20);
-      const hasMore = state.photos.length + newPhotos.length < 200; // Max 200 photos for demo
+      const hasMore = state.photos.length + newPhotos.length < 200;
       
       console.log('Loaded new photos:', { count: newPhotos.length, hasMore });
       
@@ -117,7 +133,7 @@ export const useGallery = () => {
     
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      const photos = generateMockPhotos().slice(0, 20); // Reset to first 20 photos
+      const photos = generateMockPhotos().slice(0, 20);
       
       console.log('Photos refreshed:', { count: photos.length });
       
@@ -143,7 +159,6 @@ export const useGallery = () => {
     const loadPhotos = async () => {
       try {
         setState(prev => ({ ...prev, loading: true }));
-        // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 1000));
         const photos = generateMockPhotos();
         setState(prev => ({ 
@@ -198,11 +213,19 @@ export const useGallery = () => {
       state.filters.timeOfDay !== 'all' ||
       state.filters.sortBy !== 'newest' ||
       !!state.filters.vehiclePlate ||
-      !!state.filters.searchQuery
+      !!state.filters.searchQuery ||
+      !!state.filters.brand ||
+      !!state.filters.model ||
+      !!state.filters.modelYear ||
+      !!state.filters.manufacturingYear ||
+      !!state.filters.color ||
+      !!state.filters.city ||
+      !!state.filters.fuelType ||
+      !!state.filters.vehicleType
     );
   }, [state.filters]);
 
-  // Filter and sort photos
+  // Enhanced filter and sort photos
   useEffect(() => {
     console.log('Applying filters:', state.filters);
     console.time('filterPhotos');
@@ -210,7 +233,7 @@ export const useGallery = () => {
     let result = [...state.photos];
     const filterResults: { [key: string]: number } = {};
 
-    // Apply all filters
+    // Apply vehicle plate filter
     if (state.filters.vehiclePlate) {
       const plateQuery = state.filters.vehiclePlate.toLowerCase();
       result = result.filter(photo => 
@@ -219,6 +242,60 @@ export const useGallery = () => {
       filterResults.plateFilter = result.length;
     }
 
+    // Apply new vehicle filters
+    if (state.filters.brand) {
+      result = result.filter(photo => 
+        photo.brand?.toLowerCase().includes(state.filters.brand!.toLowerCase())
+      );
+      filterResults.brandFilter = result.length;
+    }
+
+    if (state.filters.model) {
+      result = result.filter(photo => 
+        photo.model?.toLowerCase().includes(state.filters.model!.toLowerCase())
+      );
+      filterResults.modelFilter = result.length;
+    }
+
+    if (state.filters.color) {
+      result = result.filter(photo => 
+        photo.color?.toLowerCase().includes(state.filters.color!.toLowerCase())
+      );
+      filterResults.colorFilter = result.length;
+    }
+
+    if (state.filters.city) {
+      result = result.filter(photo => 
+        photo.city?.toLowerCase().includes(state.filters.city!.toLowerCase())
+      );
+      filterResults.cityFilter = result.length;
+    }
+
+    if (state.filters.fuelType) {
+      result = result.filter(photo => 
+        photo.fuelType?.toLowerCase().includes(state.filters.fuelType!.toLowerCase())
+      );
+      filterResults.fuelFilter = result.length;
+    }
+
+    if (state.filters.vehicleType) {
+      result = result.filter(photo => 
+        photo.vehicleType?.toLowerCase().includes(state.filters.vehicleType!.toLowerCase())
+      );
+      filterResults.vehicleTypeFilter = result.length;
+    }
+
+    if (state.filters.modelYear) {
+      result = result.filter(photo => photo.modelYear === state.filters.modelYear);
+      filterResults.modelYearFilter = result.length;
+    }
+
+    if (state.filters.manufacturingYear) {
+      result = result.filter(photo => photo.manufacturingYear === state.filters.manufacturingYear);
+      filterResults.manufacturingYearFilter = result.length;
+    }
+
+    // Apply existing filters
     if (state.filters.searchQuery) {
       const query = state.filters.searchQuery.toLowerCase();
       result = result.filter(photo =>
