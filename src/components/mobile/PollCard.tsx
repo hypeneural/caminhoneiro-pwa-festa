@@ -2,7 +2,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle, Loader2, BarChart3 } from 'lucide-react';
+import { CheckCircle, Loader2, BarChart3, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -26,20 +26,77 @@ interface PollCardProps {
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'];
 
+// Chave para cache local
+const POLL_CACHE_KEY = 'poll-votes-cache';
+
+interface PollVoteCache {
+  [pollId: string]: {
+    hasVoted: boolean;
+    votedOptionId: string;
+    timestamp: number;
+    expiresAt?: number;
+  };
+}
+
 export function PollCard({ pollId = "truck-fest-2025", className }: PollCardProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [votedOptionId, setVotedOptionId] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
   const queryClient = useQueryClient();
 
-  // Recuperar estado do localStorage
+  // Funções para cache local
+  const getCacheData = (): PollVoteCache => {
+    try {
+      const cached = localStorage.getItem(POLL_CACHE_KEY);
+      return cached ? JSON.parse(cached) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const setCacheData = (data: PollVoteCache) => {
+    try {
+      localStorage.setItem(POLL_CACHE_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.warn('Erro ao salvar cache da enquete:', error);
+    }
+  };
+
+  const saveVoteToCache = (pollId: string, optionId: string) => {
+    const cache = getCacheData();
+    cache[pollId] = {
+      hasVoted: true,
+      votedOptionId: optionId,
+      timestamp: Date.now(),
+      expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 dias
+    };
+    setCacheData(cache);
+  };
+
+  const getVoteFromCache = (pollId: string) => {
+    const cache = getCacheData();
+    const vote = cache[pollId];
+    
+    if (!vote) return null;
+    
+    // Verificar se o voto expirou
+    if (vote.expiresAt && Date.now() > vote.expiresAt) {
+      delete cache[pollId];
+      setCacheData(cache);
+      return null;
+    }
+    
+    return vote;
+  };
+
+  // Recuperar estado do cache ao carregar
   useEffect(() => {
-    const savedVote = localStorage.getItem(`poll-vote-${pollId}`);
-    if (savedVote) {
-      const { hasVoted: voted, optionId } = JSON.parse(savedVote);
-      setHasVoted(voted);
-      setVotedOptionId(optionId);
-      setShowResults(voted);
+    const cachedVote = getVoteFromCache(pollId);
+    if (cachedVote) {
+      setHasVoted(true);
+      setVotedOptionId(cachedVote.votedOptionId);
+      setShowResults(true);
     }
   }, [pollId]);
 
@@ -65,17 +122,20 @@ export function PollCard({ pollId = "truck-fest-2025", className }: PollCardProp
   // Mutation para votar
   const voteMutation = useMutation({
     mutationFn: async (optionId: string) => {
+      setIsVoting(true);
       // Mock - substituir pela API real
       await new Promise(resolve => setTimeout(resolve, 800));
       
       // Simular erro ocasional para testar rollback
-      if (Math.random() < 0.1) {
+      if (Math.random() < 0.05) { // Reduzido para 5%
         throw new Error('Erro de rede');
       }
       
       return { success: true, optionId };
     },
     onMutate: async (optionId: string) => {
+      setIsVoting(true);
+      
       // Otimização otimista
       await queryClient.cancelQueries({ queryKey: ['poll', pollId] });
       
@@ -98,19 +158,20 @@ export function PollCard({ pollId = "truck-fest-2025", className }: PollCardProp
       return { previousPoll };
     },
     onError: (err, optionId, context) => {
+      setIsVoting(false);
+      
       // Rollback em caso de erro
       if (context?.previousPoll) {
         queryClient.setQueryData(['poll', pollId], context.previousPoll);
       }
+      
       console.error('Erro ao votar:', err);
     },
     onSuccess: (data, optionId) => {
-      // Salvar voto no localStorage
-      localStorage.setItem(`poll-vote-${pollId}`, JSON.stringify({
-        hasVoted: true,
-        optionId,
-        timestamp: Date.now()
-      }));
+      setIsVoting(false);
+      
+      // Salvar no cache local
+      saveVoteToCache(pollId, optionId);
       
       setHasVoted(true);
       setVotedOptionId(optionId);
@@ -119,7 +180,7 @@ export function PollCard({ pollId = "truck-fest-2025", className }: PollCardProp
   });
 
   const handleVote = (optionId: string) => {
-    if (hasVoted || voteMutation.isPending) return;
+    if (hasVoted || isVoting) return;
     voteMutation.mutate(optionId);
   };
 
@@ -183,20 +244,29 @@ export function PollCard({ pollId = "truck-fest-2025", className }: PollCardProp
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  whileTap={{ scale: 0.97 }}
                 >
                   <TouchFeedback
                     onClick={() => handleVote(opcao.id)}
-                    disabled={hasVoted || voteMutation.isPending}
+                    disabled={hasVoted || isVoting}
                     haptic={true}
                     className="w-full"
+                    scale={0.98}
                   >
                     <Button
                       variant="outline"
-                      className="w-full h-12 justify-start text-left hover:bg-trucker-blue/10 hover:border-trucker-blue/50 transition-all duration-200"
-                      disabled={hasVoted || voteMutation.isPending}
+                      className={cn(
+                        "w-full h-14 justify-start text-left font-medium text-base",
+                        "hover:bg-trucker-blue/10 hover:border-trucker-blue/50",
+                        "transition-all duration-300 ease-out",
+                        "active:scale-[0.98] active:bg-trucker-blue/20",
+                        isVoting && "opacity-50 cursor-not-allowed"
+                      )}
+                      disabled={hasVoted || isVoting}
                     >
-                      <span className="font-medium">{opcao.texto}</span>
+                      <span className="flex-1">{opcao.texto}</span>
+                      {isVoting && (
+                        <Loader2 className="w-4 h-4 animate-spin ml-2" />
+                      )}
                     </Button>
                   </TouchFeedback>
                 </motion.div>
@@ -224,29 +294,48 @@ export function PollCard({ pollId = "truck-fest-2025", className }: PollCardProp
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                       className={cn(
-                        "p-3 rounded-lg border-2 transition-all duration-300",
+                        "p-4 rounded-xl border-2 transition-all duration-300",
                         isVoted 
-                          ? "border-trucker-blue bg-trucker-blue/5" 
-                          : "border-border/50"
+                          ? "border-trucker-blue bg-trucker-blue/10 shadow-md" 
+                          : "border-border/50 bg-muted/20"
                       )}
                     >
-                      <div className="flex justify-between items-center mb-2">
-                        <span className={cn(
-                          "font-medium text-sm",
-                          isVoted && "text-trucker-blue"
-                        )}>
-                          {opcao.texto}
-                          {isVoted && " ✓"}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "font-semibold text-sm",
+                            isVoted && "text-trucker-blue"
+                          )}>
+                            {opcao.texto}
+                          </span>
+                          {isVoted && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            >
+                              <Check className="w-4 h-4 text-trucker-blue" />
+                            </motion.div>
+                          )}
+                        </div>
+                        <span className="text-sm font-medium text-muted-foreground">
                           {percentage}% ({opcao.votos})
                         </span>
                       </div>
-                      <Progress 
-                        value={percentage} 
-                        className="h-2"
-                        aria-label={`${opcao.texto}: ${percentage}% dos votos`}
-                      />
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: "100%" }}
+                        transition={{ delay: index * 0.1 + 0.2, duration: 0.6 }}
+                      >
+                        <Progress 
+                          value={percentage} 
+                          className={cn(
+                            "h-3",
+                            isVoted && "bg-trucker-blue/20"
+                          )}
+                          aria-label={`${opcao.texto}: ${percentage}% dos votos`}
+                        />
+                      </motion.div>
                     </motion.div>
                   );
                 })}
@@ -257,13 +346,13 @@ export function PollCard({ pollId = "truck-fest-2025", className }: PollCardProp
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="bg-muted/30 rounded-xl p-4"
+                  transition={{ delay: 0.5 }}
+                  className="bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl p-4"
                   layout
                 >
                   <Suspense fallback={
                     <div className="h-48 flex items-center justify-center">
-                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <Loader2 className="w-6 h-6 animate-spin text-trucker-blue" />
                     </div>
                   }>
                     <div className="h-48 flex items-center justify-center">
@@ -279,22 +368,27 @@ export function PollCard({ pollId = "truck-fest-2025", className }: PollCardProp
         </AnimatePresence>
 
         {/* Footer com status */}
-        <div className="flex items-center justify-between pt-4 border-t border-border/50">
+        <motion.div 
+          className="flex items-center justify-between pt-4 border-t border-border/50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {voteMutation.isPending ? (
+            {isVoting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Enviando voto...
+                <Loader2 className="w-4 h-4 animate-spin text-trucker-blue" />
+                <span className="font-medium">Enviando voto...</span>
               </>
             ) : hasVoted ? (
               <>
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                Voto registrado
+                <span className="font-medium text-green-600">Voto registrado</span>
               </>
             ) : (
               <>
                 <BarChart3 className="w-4 h-4" />
-                {poll.total} votos
+                <span>{poll.total} votos</span>
               </>
             )}
           </div>
@@ -304,12 +398,12 @@ export function PollCard({ pollId = "truck-fest-2025", className }: PollCardProp
               variant="ghost"
               size="sm"
               onClick={toggleResults}
-              className="text-trucker-blue hover:bg-trucker-blue/10"
+              className="text-trucker-blue hover:bg-trucker-blue/10 font-medium"
             >
               {showResults ? 'Ver opções' : 'Ver resultados'}
             </Button>
           )}
-        </div>
+        </motion.div>
       </CardContent>
     </Card>
   );
