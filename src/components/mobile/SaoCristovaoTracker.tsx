@@ -1,3 +1,4 @@
+
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +35,20 @@ export const SaoCristovaoTracker = () => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
   const { data, isLoading, isError, refetch, isFetching } = useTraccarData();
   const { logMapEvent } = useMapRenderer();
+
+  const handleRealtimeMapClick = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate([10, 50, 10]);
+    }
+    navigate('/rota-completa');
+  };
+
+  const handleFullTrajectoryClick = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate([10, 50, 10]);
+    }
+    navigate('/mapa');
+  };
 
   return (
     <ErrorBoundary fallback={TrackerErrorFallback}>
@@ -257,40 +272,117 @@ export const SaoCristovaoTracker = () => {
                     </div>
                   </motion.div>
 
-                  {/* Botões de ação */}
-                  <div className="grid grid-cols-2 gap-2 mb-2">
-                    <AccessibleButton 
-                      onClick={() => navigate('/rota-completa')}
-                      className="bg-trucker-blue hover:bg-trucker-blue/90 text-white"
-                      size="default"
-                      aria-label="Ver mapa em tempo real do São Cristóvão"
+                  {/* Botões de ação melhorados - Mobile First Design */}
+                  <div className="space-y-3">
+                    {/* Botão Mapa em Tempo Real - Destaque Principal */}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.4, duration: 0.3 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <motion.div
-                        className="flex items-center gap-2"
-                        whileHover={{ x: 3 }}
+                      <button
+                        onClick={handleRealtimeMapClick}
+                        className="w-full h-14 bg-gradient-to-r from-trucker-blue to-trucker-blue/90 hover:from-trucker-blue/90 hover:to-trucker-blue text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3 relative overflow-hidden group"
+                        aria-label="Ver mapa em tempo real do São Cristóvão"
                       >
-                        <FaMapMarkedAlt className="w-4 h-4" aria-hidden="true" />
-                        Mapa em Tempo Real
-                      </motion.div>
-                    </AccessibleButton>
+                        {/* Animated background pulse */}
+                        <motion.div
+                          className="absolute inset-0 bg-white/10 rounded-xl"
+                          animate={{ 
+                            scale: [1, 1.05, 1],
+                            opacity: [0, 0.3, 0]
+                          }}
+                          transition={{ 
+                            duration: 2, 
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        />
+                        
+                        {/* Icon with pulse animation */}
+                        <motion.div
+                          animate={{ 
+                            scale: [1, 1.1, 1],
+                          }}
+                          transition={{ 
+                            duration: 1.5, 
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                          className="relative z-10"
+                        >
+                          <FaMapMarkedAlt className="w-6 h-6" />
+                        </motion.div>
+                        
+                        <div className="flex flex-col items-start relative z-10">
+                          <span className="text-base font-semibold">Mapa em Tempo Real</span>
+                          <span className="text-xs text-white/80">Localização ao vivo</span>
+                        </div>
+                        
+                        {/* Shimmer effect */}
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+                          animate={{ x: [-200, 400] }}
+                          transition={{ 
+                            duration: 2, 
+                            repeat: Infinity,
+                            ease: "linear",
+                            repeatDelay: 3
+                          }}
+                        />
+                      </button>
+                    </motion.div>
 
-                    <AccessibleButton 
-                      onClick={() => navigate('/mapa')}
-                      className="bg-trucker-green hover:bg-trucker-green/90 text-white"
-                      size="default"
-                      aria-label="Ver trajeto completo do São Cristóvão"
+                    {/* Botão Ver Trajeto Completo - Secundário */}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.5, duration: 0.3 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <motion.div
-                        className="flex items-center gap-2"
-                        whileHover={{ x: 3 }}
+                      <button
+                        onClick={handleFullTrajectoryClick}
+                        className="w-full h-12 bg-gradient-to-r from-trucker-green to-trucker-green/90 hover:from-trucker-green/90 hover:to-trucker-green text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 relative overflow-hidden"
+                        aria-label="Ver trajeto completo do São Cristóvão"
                       >
-                        <FaRoute className="w-4 h-4" aria-hidden="true" />
-                        Ver Trajeto Completo
-                      </motion.div>
-                    </AccessibleButton>
+                        <motion.div
+                          animate={{ 
+                            rotate: [0, 360],
+                          }}
+                          transition={{ 
+                            duration: 8, 
+                            repeat: Infinity,
+                            ease: "linear"
+                          }}
+                        >
+                          <FaRoute className="w-5 h-5" />
+                        </motion.div>
+                        
+                        <div className="flex flex-col items-start">
+                          <span className="text-sm font-medium">Ver Trajeto Completo</span>
+                          <span className="text-xs text-white/80">Histórico de rota</span>
+                        </div>
+                        
+                        {/* Subtle glow effect */}
+                        <motion.div
+                          className="absolute inset-0 bg-white/5 rounded-xl"
+                          animate={{ 
+                            opacity: [0, 0.3, 0]
+                          }}
+                          transition={{ 
+                            duration: 3, 
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        />
+                      </button>
+                    </motion.div>
                   </div>
 
-                  {/* Botão de Navegação */}
+                  {/* Botão de Navegação - Terceiro nível */}
                   <NavigationActions
                     coordinates={{
                       latitude: data.latitude,
@@ -300,23 +392,26 @@ export const SaoCristovaoTracker = () => {
                     address={data.address || "Localização atual do São Cristóvão"}
                   >
                     <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6, duration: 0.3 }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="w-full"
                     >
                       <Button 
                         variant="outline" 
-                        className="w-full bg-trucker-red/10 hover:bg-trucker-red/20 border-trucker-red/20 text-trucker-red hover:text-trucker-red flex items-center justify-center gap-2"
+                        className="w-full h-12 bg-background/50 hover:bg-trucker-red/10 border-trucker-red/30 text-trucker-red hover:text-trucker-red transition-all duration-300 flex items-center justify-center gap-3 rounded-xl shadow-sm hover:shadow-md"
                       >
                         <motion.div
                           animate={{ 
-                            y: [0, -2, 0],
+                            y: [0, -3, 0],
                           }}
                           transition={{ duration: 2, repeat: Infinity }}
                         >
                           <MdLocationOn className="w-5 h-5" />
                         </motion.div>
-                        Abrir Localização no Maps
+                        <span className="font-medium">Abrir no Maps</span>
                       </Button>
                     </motion.div>
                   </NavigationActions>
