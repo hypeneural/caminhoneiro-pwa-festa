@@ -23,31 +23,42 @@ export function useNotifications() {
   const [readStatus, setReadStatus] = useLocalStorage<Record<string, boolean>>('notifications-read', {});
   const [lastFetch, setLastFetch] = useLocalStorage<number>('notifications-last-fetch', 0);
   const [cachedNotifications, setCachedNotifications] = useLocalStorage<NotificationAPI[]>('notifications-cache', []);
+  
+  // Refs para controle de polling
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isPollingRef = useRef(false);
+  const isFetchingRef = useRef(false);
 
-  const transformApiNotification = useCallback((apiNotification: NotificationAPI): Notification => ({
-    id: apiNotification.id.toString(),
-    title: apiNotification.title,
-    message: apiNotification.description,
-    type: apiNotification.type,
-    timestamp: new Date(apiNotification.created_at).getTime(),
-    read: readStatus[apiNotification.id.toString()] || apiNotification.is_read === 1,
-    icon: apiNotification.icon,
-    imageUrl: apiNotification.image_url,
-    linkUrl: apiNotification.link_url,
-    category: apiNotification.category
-  }), [readStatus]);
+  console.log('🔔 useNotifications: Hook inicializado');
+
+  const transformApiNotification = useCallback((apiNotification: NotificationAPI): Notification => {
+    return {
+      id: apiNotification.id.toString(),
+      title: apiNotification.title,
+      message: apiNotification.description,
+      type: apiNotification.type,
+      timestamp: new Date(apiNotification.created_at).getTime(),
+      read: readStatus[apiNotification.id.toString()] || apiNotification.is_read === 1,
+      icon: apiNotification.icon,
+      imageUrl: apiNotification.image_url,
+      linkUrl: apiNotification.link_url,
+      category: apiNotification.category
+    };
+  }, [readStatus]);
 
   const fetchNotifications = useCallback(async (useCache = true) => {
     // Previne requisições simultâneas
-    if (loading) return;
+    if (isFetchingRef.current) {
+      console.log('🔔 fetchNotifications: Requisição já em andamento, pulando...');
+      return;
+    }
     
     const now = Date.now();
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
     
     // Usa cache se disponível e ainda válido
     if (useCache && cachedNotifications.length > 0 && (now - lastFetch) < CACHE_DURATION) {
+      console.log('🔔 fetchNotifications: Usando cache local');
       const transformedNotifications = cachedNotifications
         .filter(n => n.is_active === 1)
         .map(transformApiNotification)
@@ -57,17 +68,23 @@ export function useNotifications() {
       return;
     }
 
+    isFetchingRef.current = true;
     setLoading(true);
     setError(null);
     
+    console.log('🔔 fetchNotifications: Fazendo requisição para API...');
+    
     try {
       const response = await notificationService.getNotifications();
+      console.log('🔔 fetchNotifications: Resposta recebida:', response);
+      
       const activeNotifications = response.data.filter(n => n.is_active === 1);
       
       // Atualiza cache apenas se recebeu dados válidos
       if (activeNotifications.length >= 0) {
         setCachedNotifications(activeNotifications);
         setLastFetch(now);
+        console.log('🔔 fetchNotifications: Cache atualizado com', activeNotifications.length, 'notificações');
       }
       
       // Transforma e ordena notificações
@@ -76,12 +93,14 @@ export function useNotifications() {
         .sort((a, b) => b.timestamp - a.timestamp);
       
       setNotifications(transformedNotifications);
+      console.log('🔔 fetchNotifications: Estado atualizado com', transformedNotifications.length, 'notificações');
     } catch (err) {
+      console.error('🔔 fetchNotifications: Erro:', err);
       setError('Erro ao carregar notificações');
-      console.error('Erro ao buscar notificações:', err);
       
       // Fallback para cache em caso de erro
       if (cachedNotifications.length > 0) {
+        console.log('🔔 fetchNotifications: Usando fallback do cache');
         const transformedNotifications = cachedNotifications
           .filter(n => n.is_active === 1)
           .map(transformApiNotification)
@@ -91,10 +110,13 @@ export function useNotifications() {
       }
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
     }
-  }, [loading, cachedNotifications, lastFetch, setCachedNotifications, setLastFetch, transformApiNotification]);
+  }, [cachedNotifications, lastFetch, setCachedNotifications, setLastFetch, transformApiNotification]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
+    console.log('🔔 markAsRead:', notificationId);
+    
     // Atualiza o estado local imediatamente
     setReadStatus(prev => ({ ...prev, [notificationId]: true }));
     
@@ -110,8 +132,9 @@ export function useNotifications() {
     // Tenta sincronizar com a API
     try {
       await notificationService.markAsRead(parseInt(notificationId));
+      console.log('🔔 markAsRead: Sincronizado com API');
     } catch (error) {
-      console.warn('Falha ao sincronizar leitura com API:', error);
+      console.warn('🔔 markAsRead: Falha ao sincronizar:', error);
     }
   }, [setReadStatus]);
 
@@ -121,6 +144,8 @@ export function useNotifications() {
       .map(n => n.id);
 
     if (unreadIds.length === 0) return;
+
+    console.log('🔔 markAllAsRead:', unreadIds.length, 'notificações');
 
     // Atualiza estado local
     const newReadStatus = { ...readStatus };
@@ -139,29 +164,34 @@ export function useNotifications() {
       await Promise.all(
         unreadIds.map(id => notificationService.markAsRead(parseInt(id)))
       );
+      console.log('🔔 markAllAsRead: Sincronizado com API');
     } catch (error) {
-      console.warn('Falha ao sincronizar algumas leituras com API:', error);
+      console.warn('🔔 markAllAsRead: Falha ao sincronizar:', error);
     }
   }, [notifications, readStatus, setReadStatus]);
 
   const startPolling = useCallback(() => {
     // Evita múltiplos intervalos
-    if (isPollingRef.current) return;
-    
-    isPollingRef.current = true;
-    
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
+    if (isPollingRef.current || pollingIntervalRef.current) {
+      console.log('🔔 startPolling: Polling já ativo');
+      return;
     }
     
+    console.log('🔔 startPolling: Iniciando polling a cada 60s');
+    isPollingRef.current = true;
+    
     pollingIntervalRef.current = setInterval(() => {
-      if (!loading) {
+      if (!isFetchingRef.current) {
+        console.log('🔔 Polling: Verificando novas notificações...');
         fetchNotifications(false); // Força busca na API sem cache
+      } else {
+        console.log('🔔 Polling: Pulando (requisição em andamento)');
       }
     }, 60 * 1000); // 60 segundos
-  }, [fetchNotifications, loading]);
+  }, [fetchNotifications]);
 
   const stopPolling = useCallback(() => {
+    console.log('🔔 stopPolling: Parando polling');
     isPollingRef.current = false;
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
@@ -171,22 +201,22 @@ export function useNotifications() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Busca inicial e inicia polling
+  // Efeito principal - executa apenas uma vez
   useEffect(() => {
+    console.log('🔔 useNotifications: Efeito principal executado');
+    
+    // Busca inicial
     fetchNotifications();
+    
+    // Inicia polling
     startPolling();
     
+    // Cleanup
     return () => {
+      console.log('🔔 useNotifications: Cleanup executado');
       stopPolling();
     };
-  }, []); // Array vazio para executar apenas uma vez
-
-  // Limpa polling ao desmontar
-  useEffect(() => {
-    return () => {
-      stopPolling();
-    };
-  }, [stopPolling]);
+  }, []); // Array vazio - executa apenas uma vez
 
   return {
     notifications,

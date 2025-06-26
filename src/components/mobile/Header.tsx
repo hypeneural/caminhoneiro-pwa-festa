@@ -7,9 +7,12 @@ import { useNotifications } from "@/hooks/useNotifications";
 
 export function Header() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const { unreadCount } = useNotifications();
+  const { unreadCount, loading, error } = useNotifications();
+
+  console.log('📱 Header: Renderizado com', unreadCount, 'notificações não lidas');
 
   const handleNotificationClick = () => {
+    console.log('📱 Header: Abrindo modal de notificações');
     setIsNotificationsOpen(true);
   };
 
@@ -27,8 +30,9 @@ export function Header() {
           <button 
             onClick={handleNotificationClick}
             className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted/80 transition-colors flex items-center justify-center"
+            disabled={loading}
           >
-            <Bell className="w-5 h-5 text-muted-foreground" />
+            <Bell className={`w-5 h-5 text-muted-foreground ${loading ? 'animate-pulse' : ''}`} />
           </button>
           {unreadCount > 0 && (
             <Badge 
@@ -37,6 +41,9 @@ export function Header() {
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>
+          )}
+          {error && (
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
           )}
         </div>
       </header>

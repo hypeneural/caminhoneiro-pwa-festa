@@ -36,19 +36,23 @@ export interface NotificationResponse {
 export const notificationService = {
   async getNotifications(): Promise<NotificationResponse> {
     try {
+      console.log('📡 notificationService: Fazendo requisição para /v1/notifications');
       const response = await api.get('/v1/notifications');
+      console.log('📡 notificationService: Resposta recebida:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Erro ao buscar notificações:', error);
+      console.error('📡 notificationService: Erro ao buscar notificações:', error);
       throw error;
     }
   },
 
   async markAsRead(notificationId: number): Promise<void> {
     try {
+      console.log('📡 notificationService: Marcando como lida:', notificationId);
       await api.patch(`/v1/notifications/${notificationId}/read`);
+      console.log('📡 notificationService: Marcada como lida com sucesso');
     } catch (error) {
-      console.error('Erro ao marcar notificação como lida:', error);
+      console.error('📡 notificationService: Erro ao marcar como lida:', error);
       // Não rejeitamos o erro para não quebrar a UX
     }
   }
