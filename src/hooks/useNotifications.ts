@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { notificationService, NotificationAPI } from '@/services/notificationService';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
@@ -21,6 +21,9 @@ export function useNotifications() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [readStatus, setReadStatus] = useLocalStorage<Record<string, boolean>>('notifications-read', {});
+  const [lastFetch, setLastFetch] = useLocalStorage<number>('notifications-last-fetch', 0);
+  const [cachedNotifications, setCachedNotifications] = useLocalStorage<NotificationAPI[]>('notifications-cache', []);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const transformApiNotification = (apiNotification: NotificationAPI): Notification => ({
     id: apiNotification.id.toString(),
@@ -35,14 +38,34 @@ export function useNotifications() {
     category: apiNotification.category
   });
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (useCache = true) => {
+    const now = Date.now();
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+    
+    // Usa cache se disponível e ainda válido
+    if (useCache && cachedNotifications.length > 0 && (now - lastFetch) < CACHE_DURATION) {
+      const transformedNotifications = cachedNotifications
+        .filter(n => n.is_active === 1)
+        .map(transformApiNotification)
+        .sort((a, b) => b.timestamp - a.timestamp);
+      
+      setNotifications(transformedNotifications);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     
     try {
       const response = await notificationService.getNotifications();
-      const transformedNotifications = response.data
-        .filter(n => n.is_active === 1)
+      const activeNotifications = response.data.filter(n => n.is_active === 1);
+      
+      // Atualiza cache
+      setCachedNotifications(activeNotifications);
+      setLastFetch(now);
+      
+      // Transforma e ordena notificações
+      const transformedNotifications = activeNotifications
         .map(transformApiNotification)
         .sort((a, b) => b.timestamp - a.timestamp);
       
@@ -50,10 +73,20 @@ export function useNotifications() {
     } catch (err) {
       setError('Erro ao carregar notificações');
       console.error('Erro ao buscar notificações:', err);
+      
+      // Fallback para cache em caso de erro
+      if (cachedNotifications.length > 0) {
+        const transformedNotifications = cachedNotifications
+          .filter(n => n.is_active === 1)
+          .map(transformApiNotification)
+          .sort((a, b) => b.timestamp - a.timestamp);
+        
+        setNotifications(transformedNotifications);
+      }
     } finally {
       setLoading(false);
     }
-  }, [readStatus]);
+  }, [readStatus, cachedNotifications, lastFetch, setCachedNotifications, setLastFetch]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     // Atualiza o estado local imediatamente
@@ -105,17 +138,41 @@ export function useNotifications() {
     }
   }, [notifications, readStatus, setReadStatus]);
 
+  const startPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+    
+    pollingIntervalRef.current = setInterval(() => {
+      fetchNotifications(false); // Força busca na API
+    }, 60 * 1000); // 60 segundos
+  }, [fetchNotifications]);
+
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  }, []);
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  // Busca inicial e inicia polling
   useEffect(() => {
     fetchNotifications();
-  }, [fetchNotifications]);
+    startPolling();
+    
+    return () => {
+      stopPolling();
+    };
+  }, [fetchNotifications, startPolling, stopPolling]);
 
-  // Polling para novas notificações (a cada 2 minutos)
+  // Limpa polling ao desmontar
   useEffect(() => {
-    const interval = setInterval(fetchNotifications, 2 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [fetchNotifications]);
+    return () => {
+      stopPolling();
+    };
+  }, [stopPolling]);
 
   return {
     notifications,
@@ -124,6 +181,6 @@ export function useNotifications() {
     unreadCount,
     markAsRead,
     markAllAsRead,
-    refetch: fetchNotifications
+    refetch: () => fetchNotifications(false)
   };
 }

@@ -34,9 +34,9 @@ export interface NotificationResponse {
 }
 
 export const notificationService = {
-  async getNotifications(page: number = 1): Promise<NotificationResponse> {
+  async getNotifications(): Promise<NotificationResponse> {
     try {
-      const response = await api.get(`/v1/notifications?page=${page}`);
+      const response = await api.get('/v1/notifications');
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar notificações:', error);
