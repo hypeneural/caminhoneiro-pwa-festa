@@ -1,36 +1,13 @@
+
 import { Truck, Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { NotificationsModal } from "./NotificationsModal";
-import { useApp } from "@/contexts/AppContext";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useNotifications } from "@/hooks/useNotifications";
 
 export function Header() {
-  const { state, addNotification } = useApp();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const unreadCount = state.notifications.filter(n => !n.read).length;
-
-  // Add some sample notifications on component mount
-  useEffect(() => {
-    if (state.notifications.length === 0) {
-      addNotification({
-        title: "Bem-vindo!",
-        message: "Acompanhe a Festa do Caminhoneiro 2025 em tempo real",
-        type: "info"
-      });
-      
-      addNotification({
-        title: "São Cristóvão em movimento",
-        message: "A procissão está saindo da Igreja Central",
-        type: "success"
-      });
-      
-      addNotification({
-        title: "Nova programação",
-        message: "Show especial adicionado para hoje às 20h",
-        type: "info"
-      });
-    }
-  }, [state.notifications.length, addNotification]);
+  const { unreadCount } = useNotifications();
 
   const handleNotificationClick = () => {
     setIsNotificationsOpen(true);
