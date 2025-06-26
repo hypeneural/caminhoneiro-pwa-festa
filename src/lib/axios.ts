@@ -1,8 +1,9 @@
+
 import axios from 'axios';
 
 const baseURL = import.meta.env.DEV 
   ? 'http://localhost:8080' // URL de desenvolvimento
-  : 'https://api.festadocaminhoneiro.com.br'; // URL de produção
+  : 'https://api.festadoscaminhoneiros.com.br'; // URL de produção corrigida
 
 // Instância principal do axios
 const api = axios.create({
@@ -33,18 +34,6 @@ api.interceptors.response.use(
   (error) => {
     console.error('Erro na requisição:', error);
     
-    // Se for erro de rede ou CORS, tenta fazer a requisição direta
-    if (error.code === 'ERR_NETWORK' && import.meta.env.DEV) {
-      const fallbackUrl = 'https://s03.svrdedicado.org:6860/stats?json=1';
-      
-      return axios.get(fallbackUrl, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
-    }
-
     if (error.response?.status === 401) {
       // Token expirado ou inválido
       localStorage.removeItem('auth_token');

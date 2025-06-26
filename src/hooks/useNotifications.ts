@@ -24,8 +24,9 @@ export function useNotifications() {
   const [lastFetch, setLastFetch] = useLocalStorage<number>('notifications-last-fetch', 0);
   const [cachedNotifications, setCachedNotifications] = useLocalStorage<NotificationAPI[]>('notifications-cache', []);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isPollingRef = useRef(false);
 
-  const transformApiNotification = (apiNotification: NotificationAPI): Notification => ({
+  const transformApiNotification = useCallback((apiNotification: NotificationAPI): Notification => ({
     id: apiNotification.id.toString(),
     title: apiNotification.title,
     message: apiNotification.description,
@@ -36,9 +37,12 @@ export function useNotifications() {
     imageUrl: apiNotification.image_url,
     linkUrl: apiNotification.link_url,
     category: apiNotification.category
-  });
+  }), [readStatus]);
 
   const fetchNotifications = useCallback(async (useCache = true) => {
+    // Previne requisições simultâneas
+    if (loading) return;
+    
     const now = Date.now();
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
     
@@ -60,9 +64,11 @@ export function useNotifications() {
       const response = await notificationService.getNotifications();
       const activeNotifications = response.data.filter(n => n.is_active === 1);
       
-      // Atualiza cache
-      setCachedNotifications(activeNotifications);
-      setLastFetch(now);
+      // Atualiza cache apenas se recebeu dados válidos
+      if (activeNotifications.length >= 0) {
+        setCachedNotifications(activeNotifications);
+        setLastFetch(now);
+      }
       
       // Transforma e ordena notificações
       const transformedNotifications = activeNotifications
@@ -86,7 +92,7 @@ export function useNotifications() {
     } finally {
       setLoading(false);
     }
-  }, [readStatus, cachedNotifications, lastFetch, setCachedNotifications, setLastFetch]);
+  }, [loading, cachedNotifications, lastFetch, setCachedNotifications, setLastFetch, transformApiNotification]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     // Atualiza o estado local imediatamente
@@ -139,16 +145,24 @@ export function useNotifications() {
   }, [notifications, readStatus, setReadStatus]);
 
   const startPolling = useCallback(() => {
+    // Evita múltiplos intervalos
+    if (isPollingRef.current) return;
+    
+    isPollingRef.current = true;
+    
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
     
     pollingIntervalRef.current = setInterval(() => {
-      fetchNotifications(false); // Força busca na API
+      if (!loading) {
+        fetchNotifications(false); // Força busca na API sem cache
+      }
     }, 60 * 1000); // 60 segundos
-  }, [fetchNotifications]);
+  }, [fetchNotifications, loading]);
 
   const stopPolling = useCallback(() => {
+    isPollingRef.current = false;
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
@@ -165,7 +179,7 @@ export function useNotifications() {
     return () => {
       stopPolling();
     };
-  }, [fetchNotifications, startPolling, stopPolling]);
+  }, []); // Array vazio para executar apenas uma vez
 
   // Limpa polling ao desmontar
   useEffect(() => {
