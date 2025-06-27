@@ -1,0 +1,2 @@
+
+export { SupportersGrid } from './SupportersGrid';
