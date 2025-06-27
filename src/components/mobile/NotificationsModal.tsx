@@ -1,7 +1,8 @@
-
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Bell, CheckCheck, Church, Music, MapPin, Gift, Sparkles, Utensils, CloudRain, ChevronDown, Clock, ExternalLink } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useSponsors } from "@/hooks/useSponsors";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
@@ -36,9 +37,13 @@ const typeIconColors = {
 
 export function NotificationsModal({ open, onOpenChange }: NotificationsModalProps) {
   const { notifications, loading, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { shuffledBanners } = useSponsors();
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [startY, setStartY] = useState(0);
+
+  // Filter active banners for notification modal
+  const activeBanners = shuffledBanners?.filter(banner => banner.isActive) || [];
 
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -150,6 +155,24 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
               }}
             />
           </div>
+
+          {/* Banner Carousel Header */}
+          {activeBanners.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="px-4 py-2"
+            >
+              <BannerCarousel
+                banners={activeBanners.slice(0, 3)}
+                autoplayDelay={5000}
+                showControls={false}
+                showDots={true}
+                className="rounded-xl overflow-hidden h-20"
+              />
+            </motion.div>
+          )}
           
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">

@@ -1,432 +1,260 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Share2, Bookmark, Clock, Eye, ChevronLeft, ChevronRight, Heart, MessageCircle, ExternalLink, ArrowUp } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { TouchFeedback } from "@/components/ui/touch-feedback";
-import { OptimizedImage } from "@/components/ui/optimized-image";
-import { useNavigation } from "@/hooks/useNavigation";
-import { ROUTES } from "@/constants";
-import { useState, useEffect, useRef } from "react";
 
-import { NewsItem } from "@/types/news";
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  X, 
+  ArrowLeft, 
+  ArrowRight, 
+  Share2, 
+  Heart, 
+  MessageCircle, 
+  Eye, 
+  Clock, 
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight 
+} from 'lucide-react';
+import { NewsItem } from '@/types/news';
+import { TouchFeedback } from '@/components/ui/touch-feedback';
+import { Badge } from '@/components/ui/badge';
+import { OptimizedImage } from '@/components/ui/optimized-image';
+import { BannerCarousel } from '@/components/sponsors/BannerCarousel';
+import { useSponsors } from '@/hooks/useSponsors';
+import { cn } from '@/lib/utils';
 
 interface NewsModalProps {
   news: NewsItem | null;
   isOpen: boolean;
   onClose: () => void;
   allNews: NewsItem[];
-  onNavigate?: (newsId: string) => void;
+  onNavigate: (newsId: string) => void;
 }
 
-export function NewsModal({ news, isOpen, onClose, allNews, onNavigate }: NewsModalProps) {
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startY, setStartY] = useState(0);
-  const [offsetY, setOffsetY] = useState(0);
-  const modalRef = useRef<HTMLDivElement>(null);
-  const { navigateTo } = useNavigation();
+export const NewsModal: React.FC<NewsModalProps> = ({
+  news,
+  isOpen,
+  onClose,
+  allNews,
+  onNavigate
+}) => {
+  const { shuffledBanners } = useSponsors();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  if (!news) return null;
+  // Filter active banners for news modal
+  const activeBanners = shuffledBanners?.filter(banner => banner.isActive).slice(0, 4) || [];
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    setStartY(touch.clientY);
-    setIsDragging(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    const touch = e.touches[0];
-    const currentY = touch.clientY;
-    const diff = currentY - startY;
-    
-    // Só permite arrastar para baixo quando estiver no topo
-    if (modalRef.current?.scrollTop === 0) {
-      setOffsetY(Math.max(0, diff));
+  useEffect(() => {
+    if (news && allNews.length > 0) {
+      const index = allNews.findIndex(item => item.id === news.id);
+      setCurrentIndex(index >= 0 ? index : 0);
     }
-  };
+  }, [news, allNews]);
 
-  const handleTouchEnd = () => {
-    if (offsetY > 100) {
-      onClose();
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollRef.current) {
+        setIsScrolled(scrollRef.current.scrollTop > 20);
+      }
+    };
+
+    const scrollElement = scrollRef.current;
+    if (scrollElement) {
+      scrollElement.addEventListener('scroll', handleScroll);
+      return () => scrollElement.removeEventListener('scroll', handleScroll);
     }
-    setIsDragging(false);
-    setOffsetY(0);
-  };
+  }, []);
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  if (!isOpen || !news) return null;
 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
     
     if (diffInMinutes < 1) return 'Agora';
-    if (diffInMinutes < 60) return `${diffInMinutes}m atrás`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h atrás`;
-    return `${Math.floor(diffInMinutes / 1440)}d atrás`;
-  };
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: news.title,
-          text: news.summary,
-          url: window.location.href
-        });
-      } catch (error) {
-        console.log('Error sharing:', error);
-      }
-    }
-  };
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const element = e.currentTarget;
-    const scrollTop = element.scrollTop;
-    const scrollHeight = element.scrollHeight - element.clientHeight;
-    const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
-    
-    setScrollProgress(progress);
-    setShowScrollTop(scrollTop > 300);
-  };
-
-  const scrollToTop = () => {
-    modalRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const currentIndex = allNews.findIndex(n => n.id === news.id);
-  const hasNext = currentIndex < allNews.length - 1;
-  const hasPrevious = currentIndex > 0;
-
-  const handleNext = () => {
-    if (hasNext && onNavigate) {
-      onNavigate(allNews[currentIndex + 1].id);
-    }
+    if (diffInMinutes < 60) return `${diffInMinutes}m`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
+    return `${Math.floor(diffInMinutes / 1440)}d`;
   };
 
   const handlePrevious = () => {
-    if (hasPrevious && onNavigate) {
-      onNavigate(allNews[currentIndex - 1].id);
+    if (currentIndex > 0) {
+      const prevNews = allNews[currentIndex - 1];
+      onNavigate(prevNews.id.toString());
     }
   };
 
-  const contentParagraphs = news.content ? 
-    news.content.split('\n\n') : 
-    [
-      "A Festa do Caminhoneiro 2025 promete ser a maior edição da história, com uma programação completa que vai emocionar todos os participantes. O evento, que acontece em Tijucas/SC, nos dias 25 e 26 de julho, já tem sua programação oficial divulgada.",
-      "Entre as principais atrações confirmadas estão grandes nomes do sertanejo nacional, shows especiais e diversas atividades voltadas para toda a família caminhoneira. A organização investiu pesado para garantir a melhor experiência possível.",
-      "O evento conta com estrutura completa, incluindo área de camping, praça de alimentação com pratos típicos da região, shows pirotécnicos e muito mais. A expectativa é receber mais de 30 mil pessoas durante os dois dias de festa.",
-      "As vendas de ingressos já estão abertas e podem ser adquiridas através do site oficial ou nos pontos de venda autorizados. Valores promocionais estão disponíveis para compras antecipadas.",
-      "Para mais informações sobre a programação completa, localização e outras novidades, continue acompanhando nossos canais oficiais."
-    ];
+  const handleNext = () => {
+    if (currentIndex < allNews.length - 1) {
+      const nextNews = allNews[currentIndex + 1];
+      onNavigate(nextNews.id.toString());
+    }
+  };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent 
-        side="bottom" 
-        className="h-[95vh] p-0 overflow-hidden flex flex-col rounded-t-3xl border-t-2 border-border/20"
-        style={{
-          transform: `translateY(${offsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 0.3s ease-out'
-        }}
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
       >
-        <SheetHeader className="sr-only">
-          <SheetTitle>{news.title}</SheetTitle>
-          <SheetDescription>{news.summary}</SheetDescription>
-        </SheetHeader>
-
-        {/* Progress Bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-muted z-50">
-          <motion.div
-            className="h-full bg-gradient-to-r from-trucker-blue to-trucker-green"
-            style={{ width: `${scrollProgress}%` }}
-            initial={{ width: 0 }}
-            animate={{ width: `${scrollProgress}%` }}
-            transition={{ duration: 0.1 }}
-          />
-        </div>
-
-        {/* Handle Bar */}
-        <div 
-          className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mt-3 mb-1 cursor-grab active:cursor-grabbing"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          role="button"
-          aria-label="Arraste para fechar"
-        />
-
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
-          transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-          className="h-full flex flex-col min-h-0"
-          ref={modalRef}
-          onScroll={handleScroll}
-          data-scroll-area
-          style={{ scrollbarWidth: 'thin' }}
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="absolute inset-x-0 bottom-0 bg-background rounded-t-3xl max-h-[95vh] flex flex-col overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
         >
-          {/* Header Image */}
-          <div className="relative h-64 flex-shrink-0">
-            <OptimizedImage
-              src={news.imageUrl}
-              alt={news.title}
-              className="w-full h-full object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            
-            {/* Floating Actions */}
-            <div className="absolute top-4 right-4 flex gap-2">
-              {hasPrevious && (
-                <TouchFeedback>
-                  <Button
-                    variant="secondary"
-                    size="icon"
+          {/* Header with Banner */}
+          <div className={cn(
+            "sticky top-0 z-10 bg-background/95 backdrop-blur-sm transition-all duration-200",
+            isScrolled ? "shadow-md border-b border-border/50" : ""
+          )}>
+            {/* Banner Carousel */}
+            {activeBanners.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="px-4 pt-4"
+              >
+                <BannerCarousel
+                  banners={activeBanners}
+                  autoplayDelay={6000}
+                  showControls={false}
+                  showDots={true}
+                  className="rounded-lg overflow-hidden h-16"
+                />
+              </motion.div>
+            )}
+
+            {/* Navigation Header */}
+            <div className="flex items-center justify-between p-4">
+              <TouchFeedback
+                onClick={onClose}
+                className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted/80 flex items-center justify-center"
+              >
+                <X className="w-5 h-5 text-foreground" />
+              </TouchFeedback>
+
+              <div className="flex items-center gap-2">
+                {currentIndex > 0 && (
+                  <TouchFeedback
                     onClick={handlePrevious}
-                    className="bg-black/30 hover:bg-black/50 border-0 backdrop-blur-sm"
+                    className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted/80 flex items-center justify-center"
                   >
-                    <ChevronLeft className="w-5 h-5 text-white" />
-                  </Button>
-                </TouchFeedback>
-              )}
-              {hasNext && (
-                <TouchFeedback>
-                  <Button
-                    variant="secondary"
-                    size="icon"
+                    <ChevronLeft className="w-5 h-5 text-foreground" />
+                  </TouchFeedback>
+                )}
+                
+                <span className="text-sm text-muted-foreground">
+                  {currentIndex + 1} de {allNews.length}
+                </span>
+                
+                {currentIndex < allNews.length - 1 && (
+                  <TouchFeedback
                     onClick={handleNext}
-                    className="bg-black/30 hover:bg-black/50 border-0 backdrop-blur-sm"
+                    className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted/80 flex items-center justify-center"
                   >
-                    <ChevronRight className="w-5 h-5 text-white" />
-                  </Button>
-                </TouchFeedback>
-              )}
-            </div>
+                    <ChevronRight className="w-5 h-5 text-foreground" />
+                  </TouchFeedback>
+                )}
+              </div>
 
-            {/* Category and Breaking Badge */}
-            <div className="absolute top-4 left-4 flex gap-2">
-              <Badge className="bg-trucker-red text-white font-semibold">
-                {news.category}
-              </Badge>
-              {news.breaking && (
-                <Badge className="bg-red-500 text-white font-bold animate-pulse">
-                  🚨 BREAKING
+              <TouchFeedback
+                className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted/80 flex items-center justify-center"
+              >
+                <Share2 className="w-5 h-5 text-foreground" />
+              </TouchFeedback>
+            </div>
+          </div>
+
+          {/* Scrollable Content */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto">
+            {/* Hero Image */}
+            <div className="relative aspect-video">
+              <OptimizedImage
+                src={news.imageUrl}
+                alt={news.title}
+                className="w-full h-full object-cover"
+                priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              
+              {/* Category Badge */}
+              <div className="absolute top-4 left-4">
+                <Badge className={`${news.categoryColor} text-white`}>
+                  {news.category}
                 </Badge>
-              )}
+              </div>
             </div>
 
-            {/* Title and Meta */}
-            <div className="absolute bottom-4 left-4 right-4">
-              <h1 className="text-white font-bold text-xl mb-2 leading-tight line-clamp-3">
-                {news.title}
-              </h1>
-              <div className="flex items-center justify-between text-white/80 text-sm">
-                <span>{formatTimeAgo(news.publishedAt)}</span>
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1">
+            {/* Article Content */}
+            <div className="p-6 space-y-6">
+              {/* Title and Meta */}
+              <div className="space-y-4">
+                <h1 className="text-2xl font-bold text-foreground leading-tight">
+                  {news.title}
+                </h1>
+                
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {formatTimeAgo(news.publishedAt)}
+                  </div>
+                  <div className="flex items-center gap-1">
                     <Eye className="w-4 h-4" />
                     {news.views.toLocaleString()}
-                  </span>
+                  </div>
                   {news.readTime && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {news.readTime}
-                    </span>
+                    <span>{news.readTime}</span>
                   )}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="prose prose-sm max-w-none text-foreground">
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  {news.summary}
+                </p>
+                
+                {news.content && (
+                  <div className="mt-6 space-y-4">
+                    {news.content.split('\n\n').map((paragraph, index) => (
+                      <p key={index} className="leading-relaxed">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-between pt-6 border-t border-border/50">
+                <div className="flex items-center gap-4">
+                  <TouchFeedback className="flex items-center gap-2 text-muted-foreground hover:text-red-500 transition-colors">
+                    <Heart className="w-5 h-5" />
+                    <span className="text-sm">{news.likes}</span>
+                  </TouchFeedback>
+                  
+                  <TouchFeedback className="flex items-center gap-2 text-muted-foreground hover:text-blue-500 transition-colors">
+                    <MessageCircle className="w-5 h-5" />
+                    <span className="text-sm">{news.comments || 0}</span>
+                  </TouchFeedback>
+                </div>
+
+                <div className="text-xs text-muted-foreground">
+                  {news.publishedAt.toLocaleDateString('pt-BR')}
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Content */}
-          <div 
-            className="flex-1 overflow-y-auto"
-            onScroll={handleScroll}
-            data-scroll-area
-            style={{ scrollbarWidth: 'thin' }}
-          >
-            <div className="p-6 pb-32">
-              {/* Engagement Bar */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="flex items-center justify-between p-4 bg-muted/50 rounded-2xl mb-6 backdrop-blur-sm"
-              >
-                <div className="flex items-center gap-6">
-                  <TouchFeedback>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsLiked(!isLiked)}
-                      className="flex items-center gap-2 hover:bg-red-50 hover:text-red-600 transition-colors"
-                    >
-                      <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                      {(news.likes || 0) + (isLiked ? 1 : 0)}
-                    </Button>
-                  </TouchFeedback>
-                  
-                  <TouchFeedback>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex items-center gap-2 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                    >
-                      <MessageCircle className="w-5 h-5" />
-                      {news.comments || 0}
-                    </Button>
-                  </TouchFeedback>
-                  
-                  <TouchFeedback>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleShare}
-                      className="flex items-center gap-2 hover:bg-green-50 hover:text-green-600 transition-colors"
-                    >
-                      <Share2 className="w-5 h-5" />
-                      {news.shares || 0}
-                    </Button>
-                  </TouchFeedback>
-                </div>
-                
-                <TouchFeedback>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsBookmarked(!isBookmarked)}
-                    className="hover:bg-yellow-50 hover:text-yellow-600 transition-colors"
-                  >
-                    <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-yellow-500 text-yellow-500' : ''}`} />
-                  </Button>
-                </TouchFeedback>
-              </motion.div>
-
-              {/* Author and Date */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex items-center gap-3 mb-6 p-4 bg-card rounded-2xl border border-border/50"
-              >
-                <div className="w-12 h-12 bg-gradient-to-br from-trucker-blue to-trucker-green rounded-full flex items-center justify-center text-white font-bold text-lg">
-                  {news.author.charAt(0)}
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">{news.author}</p>
-                  <p className="text-sm text-muted-foreground">{formatDate(news.publishedAt)}</p>
-                </div>
-              </motion.div>
-
-              {/* Summary */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="mb-6"
-              >
-                <p className="text-lg text-muted-foreground leading-relaxed font-medium bg-muted/30 p-4 rounded-2xl border-l-4 border-trucker-blue">
-                  {news.summary}
-                </p>
-              </motion.div>
-
-              {/* Content */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="prose prose-lg max-w-none"
-              >
-                {contentParagraphs.map((paragraph, index) => (
-                  <motion.p
-                    key={index}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 + index * 0.1 }}
-                    className="mb-6 leading-relaxed text-foreground text-base"
-                  >
-                    {paragraph}
-                  </motion.p>
-                ))}
-              </motion.div>
-
-              {/* Tags */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-                className="mt-8 p-4 bg-muted/30 rounded-2xl"
-              >
-                <h3 className="font-semibold mb-3 text-foreground">Tags Relacionadas</h3>
-                <div className="flex flex-wrap gap-2">
-                  {['festa2025', 'programacao', 'eventos', 'caminhoneiros'].map((tag) => (
-                    <TouchFeedback key={tag}>
-                      <Badge 
-                        variant="secondary" 
-                        className="cursor-pointer hover:bg-trucker-blue hover:text-white transition-colors px-3 py-1"
-                      >
-                        #{tag}
-                      </Badge>
-                    </TouchFeedback>
-                  ))}
-                </div>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Fixed Bottom CTA */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/95 to-transparent backdrop-blur-lg border-t border-border/50">
-            <TouchFeedback>
-              <Button
-                onClick={() => {
-                  onClose();
-                  navigateTo(ROUTES.NEWS);
-                }}
-                className="w-full bg-gradient-to-r from-trucker-blue to-trucker-green hover:from-trucker-blue/90 hover:to-trucker-green/90 text-white font-semibold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg"
-              >
-                <ExternalLink className="w-5 h-5" />
-                Ver Todas as Notícias
-              </Button>
-            </TouchFeedback>
-          </div>
-
-          {/* Scroll to Top Button */}
-          <AnimatePresence>
-            {showScrollTop && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="fixed bottom-24 right-6 z-50"
-              >
-                <TouchFeedback>
-                  <Button
-                    onClick={scrollToTop}
-                    size="icon"
-                    className="bg-trucker-blue hover:bg-trucker-blue/90 text-white rounded-full shadow-lg"
-                  >
-                    <ArrowUp className="w-5 h-5" />
-                  </Button>
-                </TouchFeedback>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </motion.div>
-      </SheetContent>
-    </Sheet>
+      </motion.div>
+    </AnimatePresence>
   );
-}
+};

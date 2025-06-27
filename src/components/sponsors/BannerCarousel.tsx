@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
@@ -91,14 +90,6 @@ export function BannerCarousel({
     setTimeout(() => setIsAutoplayActive(true), 3000);
   };
 
-  // Handle banner click
-  const handleBannerClick = (banner: Banner) => {
-    if (banner.linkUrl) {
-      window.open(banner.linkUrl, '_blank', 'noopener,noreferrer');
-    }
-    onBannerClick?.(banner);
-  };
-
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -112,6 +103,14 @@ export function BannerCarousel({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [goToNext, goToPrevious]);
+
+  // Handle banner click
+  const handleBannerClick = (banner: Banner) => {
+    if (banner.linkUrl) {
+      window.open(banner.linkUrl, '_blank', 'noopener,noreferrer');
+    }
+    onBannerClick?.(banner);
+  };
 
   if (banners.length === 0) {
     return null;
