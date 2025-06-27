@@ -15,7 +15,7 @@ import {
   Cross,
   Heart
 } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { TouchFeedback } from "@/components/ui/touch-feedback";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ROUTES } from "@/constants/routes";
@@ -144,47 +144,74 @@ export function MoreMenuSheet({ open, onOpenChange }: MoreMenuSheetProps) {
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side="bottom" 
-        className="h-[85vh] rounded-t-3xl border-t-2 border-trucker-blue/20 bg-gradient-to-b from-background via-background to-muted/30"
-      >
-        <SheetHeader className="text-center pb-4 border-b border-border/50">
-          <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
-          <SheetTitle className="text-xl font-bold text-foreground">
-            Menu Principal
-          </SheetTitle>
-          <p className="text-sm text-muted-foreground">
-            Explore todos os recursos da festa
-          </p>
-        </SheetHeader>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="h-[90vh] bg-gradient-to-b from-background via-background to-muted/20">
+        <DrawerHeader className="text-center pb-6 pt-2 border-b border-border/20">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <DrawerTitle className="text-2xl font-bold text-foreground mb-2">
+              Menu Principal
+            </DrawerTitle>
+            <p className="text-sm text-muted-foreground">
+              Explore todos os recursos da festa
+            </p>
+          </motion.div>
+        </DrawerHeader>
 
-        <div className="flex-1 overflow-y-auto py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8">
           {/* Main Menu Items */}
-          <div className="grid grid-cols-2 gap-3">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-2 gap-4"
+          >
             <AnimatePresence>
               {menuItems.map((item, index) => (
                 <motion.div
                   key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ 
+                    delay: 0.1 + index * 0.05,
+                    type: "spring",
+                    stiffness: 200,
+                    damping: 20
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <TouchFeedback
                     onClick={() => handleItemClick(item.route)}
-                    className={`p-4 rounded-2xl border-2 ${item.bgColor} ${item.borderColor} hover:shadow-md transition-all duration-200`}
-                    scale={0.95}
+                    className={`
+                      group relative overflow-hidden rounded-2xl 
+                      ${item.bgColor} ${item.borderColor} 
+                      border-2 p-5 transition-all duration-300
+                      hover:shadow-lg hover:shadow-${item.color.split('-')[1]}-200/25
+                      active:scale-95
+                    `}
                     haptic={true}
                   >
-                    <div className="flex flex-col items-center text-center space-y-2">
-                      <div className={`p-2 rounded-xl bg-white shadow-sm`}>
+                    {/* Gradient overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    <div className="relative flex flex-col items-center text-center space-y-3">
+                      <motion.div 
+                        className="p-3 rounded-xl bg-white shadow-sm ring-1 ring-black/5"
+                        whileHover={{ rotate: 5, scale: 1.1 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
                         <item.icon className={`w-6 h-6 ${item.color}`} />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-sm text-foreground">
+                      </motion.div>
+                      
+                      <div className="space-y-1">
+                        <h3 className="font-semibold text-sm text-foreground leading-tight">
                           {item.title}
                         </h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                           {item.description}
                         </p>
                       </div>
@@ -193,37 +220,90 @@ export function MoreMenuSheet({ open, onOpenChange }: MoreMenuSheetProps) {
                 </motion.div>
               ))}
             </AnimatePresence>
-          </div>
+          </motion.div>
+
+          {/* Divider */}
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ delay: 0.5 }}
+            className="relative"
+          >
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border/30" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-4 text-muted-foreground font-medium">
+                Mais opções
+              </span>
+            </div>
+          </motion.div>
 
           {/* Bottom Items */}
-          <div className="pt-4 border-t border-border/50">
-            <h4 className="text-sm font-medium text-muted-foreground mb-3 px-2">
-              Mais opções
-            </h4>
-            <div className="grid grid-cols-2 gap-2">
-              {bottomItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: (menuItems.length * 0.05) + (index * 0.1) }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="grid grid-cols-2 gap-3"
+          >
+            {bottomItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ 
+                  delay: 0.7 + index * 0.1,
+                  type: "spring",
+                  stiffness: 150 
+                }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <TouchFeedback
+                  onClick={() => handleItemClick(item.route)}
+                  className="
+                    group flex items-center space-x-4 p-4 rounded-xl 
+                    bg-muted/30 hover:bg-muted/60 
+                    border border-border/20 hover:border-border/40
+                    transition-all duration-200
+                    hover:shadow-md
+                  "
+                  haptic={false}
                 >
-                  <TouchFeedback
-                    onClick={() => handleItemClick(item.route)}
-                    className="flex items-center space-x-3 p-3 rounded-xl hover:bg-muted/50 transition-colors"
-                    scale={0.98}
+                  <motion.div
+                    className="
+                      w-10 h-10 rounded-lg bg-background/80 
+                      flex items-center justify-center
+                      shadow-sm ring-1 ring-black/5
+                    "
+                    whileHover={{ rotate: 5 }}
+                    transition={{ type: "spring", stiffness: 300 }}
                   >
-                    <item.icon className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">
-                      {item.title}
-                    </span>
-                  </TouchFeedback>
-                </motion.div>
-              ))}
+                    <item.icon className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </motion.div>
+                  
+                  <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                    {item.title}
+                  </span>
+                </TouchFeedback>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Footer branding */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="text-center pt-6 pb-4"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/40 text-xs text-muted-foreground">
+              <Heart className="w-3 h-3 text-red-500" />
+              <span>Festa do Caminhoneiro 2025</span>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
