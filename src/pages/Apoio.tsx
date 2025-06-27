@@ -11,11 +11,11 @@ import { useSponsors } from "@/hooks/useSponsors";
 
 export default function Apoio() {
   const { goBack } = useNavigation();
-  const { banners, sponsors, loading, error } = useSponsors();
+  const { shuffledBanners, supportSponsors, loading, error } = useSponsors();
 
   // Filter active banners and supporters
-  const activeBanners = banners?.filter(banner => banner.isActive) || [];
-  const activeSupporters = sponsors?.filter(sponsor => sponsor.isActive) || [];
+  const activeBanners = shuffledBanners?.filter(banner => banner.isActive) || [];
+  const activeSupporters = supportSponsors?.filter(sponsor => sponsor.isActive) || [];
 
   return (
     <div className="min-h-screen bg-background">
