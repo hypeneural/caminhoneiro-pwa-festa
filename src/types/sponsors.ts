@@ -1,30 +1,24 @@
-
 export interface Banner {
-  id: string;
+  id: number;
   title: string;
+  description: string | null;
+  imageUrlWebp: string;
   imageUrl: string;
-  imageUrlWebp?: string;
-  linkUrl: string;
-  altText: string;
-  isActive: boolean;
-  priority: 'high' | 'medium' | 'low';
-  category: 'patrocinador' | 'apoiador' | 'promocional';
-  dimensions: {
-    width: number;
-    height: number;
-  };
-  fallbackColor?: string;
+  linkUrl: string | null;
+  target: '_blank' | '_self';
+  priority: number;
+  altText?: string;
+  position: number;
 }
 
 export interface SponsorLogo {
-  id: string;
+  id: number;
   companyName: string;
+  logoUrlWebp: string;
   logoUrl: string;
-  logoUrlWebp?: string;
   websiteUrl: string;
-  category: 'diamante' | 'ouro' | 'prata' | 'bronze' | 'apoiador';
-  isActive: boolean;
-  altText: string;
+  packageType: 1 | 2; // 1 = Destaque, 2 = Apoiador
+  priority: number;
 }
 
 export interface BannerPosition {
@@ -41,3 +35,25 @@ export interface SponsorsData {
   positions: BannerPosition[];
   lastUpdated: string;
 }
+
+interface ApiMeta {
+  total_registros_filtrados: number;
+  pagina_atual: number;
+  registros_por_pagina: number;
+  total_paginas: number;
+  filtros_aplicados: Record<string, string>;
+  links: {
+    self: string;
+    proxima_pagina?: string;
+  };
+}
+
+interface ApiResponse<T> {
+  status: string;
+  message: string;
+  meta: ApiMeta;
+  data: T[];
+}
+
+export type BannerResponse = ApiResponse<Banner>;
+export type SponsorResponse = ApiResponse<SponsorLogo>;

@@ -17,73 +17,29 @@ interface IntersectionObserverEntry {
   time: number;
 }
 
-export function useIntersectionObserver<T extends Element = HTMLDivElement>(
-  options: UseIntersectionObserverOptions = {}
-) {
-  const {
-    threshold = 0.1,
-    rootMargin = '50px',
-    triggerOnce = false,
-    skip = false
-  } = options;
-
-  const [entry, setEntry] = useState<IntersectionObserverEntry | null>(null);
-  const [isIntersecting, setIsIntersecting] = useState(false);
+export function useIntersectionObserver<T extends Element>(
+  options: IntersectionObserverInit = { threshold: 0 }
+): [React.RefObject<T>, boolean] {
   const elementRef = useRef<T>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
-  const observe = useCallback(() => {
-    if (skip || !elementRef.current) return;
-
+  useEffect(() => {
     const element = elementRef.current;
-    
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
+    if (!element) return;
 
-    observerRef.current = new IntersectionObserver(
-      ([entry]) => {
-        setEntry(entry as any);
-        setIsIntersecting(entry.isIntersecting);
-        
-        if (triggerOnce && entry.isIntersecting) {
-          observerRef.current?.disconnect();
-        }
-      },
-      {
-        threshold,
-        rootMargin,
-      }
-    );
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsVisible(entry.isIntersecting);
+    }, options);
 
-    observerRef.current.observe(element);
-  }, [threshold, rootMargin, triggerOnce, skip]);
+    observer.observe(element);
 
-  const unobserve = useCallback(() => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-      observerRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => {
-    observe();
-    return unobserve;
-  }, [observe, unobserve]);
-
-  useEffect(() => {
     return () => {
-      unobserve();
+      observer.unobserve(element);
+      observer.disconnect();
     };
-  }, [unobserve]);
+  }, [options]);
 
-  return {
-    ref: elementRef,
-    entry,
-    isIntersecting,
-    observe,
-    unobserve,
-  };
+  return [elementRef, isVisible];
 }
 
 // Hook for multiple zones (visible, buffer, prefetch)

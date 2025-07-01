@@ -1,7 +1,8 @@
-
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Banner, SponsorLogo, SponsorsData } from '@/types/sponsors';
-import { mockSponsorsData } from '@/data/sponsorsData';
+import { advertisementService } from '@/services/api/advertisementService';
+import { API } from '@/constants/api';
+import axios from '@/lib/axios';
 
 // Utility function to shuffle array
 const shuffleArray = <T>(array: T[]): T[] => {
@@ -21,18 +22,21 @@ const chunkArray = <T>(array: T[], size: number): T[][] => {
 };
 
 export const useSponsors = () => {
-  const [sponsorsData, setSponsorsData] = useState<SponsorsData>(mockSponsorsData);
+  const [sponsorsData, setSponsorsData] = useState<SponsorsData>({
+    banners: [],
+    sponsors: [],
+    positions: [],
+    lastUpdated: new Date().toISOString()
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastShuffleTime, setLastShuffleTime] = useState(Date.now());
 
-  // Separate banners by category
+  // Separate banners by package type
   const bannersByCategory = useMemo(() => {
-    const activeBanners = sponsorsData.banners.filter(banner => banner.isActive);
-    
     return {
-      destaque: activeBanners.filter(banner => banner.category === 'patrocinador'),
-      apoio: activeBanners.filter(banner => banner.category === 'apoiador' || banner.category === 'promocional')
+      destaque: sponsorsData.banners.filter(banner => banner.priority === 1),
+      apoio: sponsorsData.banners.filter(banner => banner.priority === 2)
     };
   }, [sponsorsData.banners, lastShuffleTime]);
 
@@ -43,8 +47,7 @@ export const useSponsors = () => {
 
   // Memoized sponsor logos (combining all support categories for carousel display)
   const supportSponsors = useMemo(() => {
-    const activeSponsors = sponsorsData.sponsors.filter(sponsor => sponsor.isActive);
-    return activeSponsors.filter(s => s.category === 'apoiador' || s.category === 'bronze');
+    return sponsorsData.sponsors.filter(s => s.packageType === 2);
   }, [sponsorsData.sponsors]);
 
   // Distribute 15 banners across 4 strategic positions
@@ -87,20 +90,48 @@ export const useSponsors = () => {
     setLastShuffleTime(Date.now());
   }, []);
 
-  // Function to fetch sponsors data from API (future implementation)
+  // Function to fetch sponsors data from API
   const fetchSponsorsData = useCallback(async () => {
     setLoading(true);
     setError(null);
     
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/sponsors');
-      // const data = await response.json();
-      // setSponsorsData(data);
-      
-      // For now, simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setSponsorsData(mockSponsorsData);
+      const [bannersResponse, sponsorsResponse] = await Promise.all([
+        advertisementService.getBanners({
+          position_group: API.POSITION_GROUPS.HOME,
+          limit: API.DEFAULTS.BANNERS_LIMIT
+        }),
+        advertisementService.getSponsors({
+          active: true,
+          limit: API.DEFAULTS.SPONSORS_LIMIT
+        })
+      ]);
+
+      setSponsorsData({
+        banners: bannersResponse.data.map(banner => ({
+          id: banner.id,
+          title: banner.title,
+          description: banner.description,
+          imageUrl: banner.imageUrl,
+          imageUrlWebp: banner.imageUrlWebp,
+          linkUrl: banner.linkUrl,
+          target: banner.target,
+          priority: banner.priority,
+          altText: banner.altText
+        })),
+        sponsors: sponsorsResponse.data.map(sponsor => ({
+          id: sponsor.id,
+          companyName: sponsor.companyName,
+          logoUrl: sponsor.logoUrl,
+          logoUrlWebp: sponsor.logoUrlWebp,
+          websiteUrl: sponsor.websiteUrl,
+          packageType: sponsor.packageType,
+          priority: sponsor.priority,
+          altText: sponsor.altText
+        })),
+        positions: [], // Will be populated when positions API is available
+        lastUpdated: new Date().toISOString()
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar dados dos patrocinadores');
       console.error('Error fetching sponsors data:', err);
@@ -109,20 +140,34 @@ export const useSponsors = () => {
     }
   }, []);
 
-  // Function to track banner click for analytics - FIXED SIGNATURE
-  const trackBannerClick = useCallback((banner: Banner, position: string) => {
+  // Function to track banner click for analytics
+  const trackBannerClick = useCallback(async (banner: Banner, position: string) => {
     console.log(`Banner clicked: ${banner.id} at position: ${position}`);
-    
-    // Future implementation could send to analytics service
-    // analytics.track('banner_click', { bannerId: banner.id, position, timestamp: Date.now() });
+    try {
+      // Track click event through API
+      await axios.post(API.ENDPOINTS.ANALYTICS.BANNER_CLICK, {
+        banner_id: banner.id,
+        position,
+        timestamp: Date.now()
+      });
+    } catch (err) {
+      console.error('Error tracking banner click:', err);
+    }
   }, []);
 
   // Function to track sponsor click for analytics
-  const trackSponsorClick = useCallback((sponsorId: string, category: string) => {
+  const trackSponsorClick = useCallback(async (sponsorId: string, category: string) => {
     console.log(`Sponsor clicked: ${sponsorId} category: ${category}`);
-    
-    // Future implementation
-    // analytics.track('sponsor_click', { sponsorId, category, timestamp: Date.now() });
+    try {
+      // Track click event through API
+      await axios.post(API.ENDPOINTS.ANALYTICS.SPONSOR_CLICK, {
+        sponsor_id: sponsorId,
+        category,
+        timestamp: Date.now()
+      });
+    } catch (err) {
+      console.error('Error tracking sponsor click:', err);
+    }
   }, []);
 
   // Initialize data on mount

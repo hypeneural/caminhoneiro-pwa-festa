@@ -1,44 +1,67 @@
-
 import axios from 'axios';
+import { API } from '@/constants/api';
 
-const baseURL = import.meta.env.DEV 
-  ? 'http://localhost:8080' // URL de desenvolvimento
-  : 'https://api.festadoscaminhoneiros.com.br'; // URL de produção corrigida
-
-// Instância principal do axios
 const api = axios.create({
-  baseURL,
+  baseURL: API.BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
+  // Configurações para lidar com CORS
+  withCredentials: false
 });
 
-// Interceptor para adicionar token de autenticação
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+// Interceptor para tratamento de erros
+api.interceptors.response.use(
+  response => response,
+  error => {
+    // Erros específicos da API
+    if (error.response) {
+      const { status } = error.response;
+
+      switch (status) {
+        case 401:
+          console.error('Erro de autenticação');
+          break;
+        case 403:
+          console.error('Acesso não autorizado');
+          break;
+        case 404:
+          console.error('Recurso não encontrado');
+          break;
+        case 429:
+          console.error('Muitas requisições');
+          break;
+        case 500:
+          console.error('Erro interno do servidor');
+          break;
+        default:
+          console.error(`Erro na requisição: ${error.message}`);
+      }
+    } 
+    // Erros de rede/timeout
+    else if (error.request) {
+      console.error('Erro de rede:', error.message);
+    } 
+    // Outros erros
+    else {
+      console.error('Erro:', error.message);
     }
-    return config;
-  },
-  (error) => {
+
     return Promise.reject(error);
   }
 );
 
-// Interceptor para tratamento de erros
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('Erro na requisição:', error);
+// Interceptor para adicionar headers comuns
+api.interceptors.request.use(
+  config => {
+    // Remove headers problemáticos
+    delete config.headers['Cache-Control'];
+    delete config.headers['Pragma'];
     
-    if (error.response?.status === 401) {
-      // Token expirado ou inválido
-      localStorage.removeItem('auth_token');
-      window.location.href = '/login';
-    }
+    return config;
+  },
+  error => {
     return Promise.reject(error);
   }
 );

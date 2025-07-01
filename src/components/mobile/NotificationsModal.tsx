@@ -5,13 +5,17 @@ import { useSponsors } from "@/hooks/useSponsors";
 import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { Notification } from "@/services/api/notificationService";
+import { Banner } from "@/types/sponsors";
 
 interface NotificationsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const iconMap = {
+type IconType = typeof Church | typeof Music | typeof MapPin | typeof Gift | typeof Sparkles | typeof Utensils | typeof CloudRain | typeof Bell;
+
+const iconMap: Record<string, IconType> = {
   church: Church,
   music: Music,
   'map-pin': MapPin,
@@ -19,6 +23,7 @@ const iconMap = {
   sparkles: Sparkles,
   utensils: Utensils,
   'cloud-rain': CloudRain,
+  bell: Bell,
 };
 
 const typeColors = {
@@ -36,16 +41,21 @@ const typeIconColors = {
 };
 
 export function NotificationsModal({ open, onOpenChange }: NotificationsModalProps) {
-  const { notifications, loading, unreadCount, markAsRead, markAllAsRead } = useNotifications();
-  const { shuffledBanners } = useSponsors();
+  const { notifications, unreadCount, isLoading, error, markAsRead, markAllAsRead } = useNotifications();
+  const { sponsorsData } = useSponsors();
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [startY, setStartY] = useState(0);
+  const [localNotifications, setNotifications] = useState(notifications);
+
+  useEffect(() => {
+    setNotifications(notifications);
+  }, [notifications]);
 
   // Filter active banners for notification modal
-  const activeBanners = shuffledBanners?.filter(banner => banner.isActive) || [];
+  const activeBanners = sponsorsData.banners.filter(banner => banner.priority === 1);
 
-  const formatTime = (timestamp: number) => {
+  const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
@@ -85,15 +95,16 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
     setDragOffset(0);
   };
 
-  const handleNotificationClick = (notificationId: string, linkUrl?: string) => {
-    markAsRead(notificationId);
-    
-    if (linkUrl) {
-      if (linkUrl.startsWith('http')) {
-        window.open(linkUrl, '_blank');
-      } else {
-        window.location.href = linkUrl;
-      }
+  const handleNotificationClick = async (notificationId: number) => {
+    try {
+      await markAsRead(notificationId);
+      // Atualiza o estado local imediatamente para melhor UX
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+      );
+    } catch (error) {
+      console.error('Erro ao marcar notificação como lida:', error);
+      // Não mostra erro ao usuário, apenas mantém o estado atual
     }
   };
 
@@ -169,7 +180,7 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
                 autoplayDelay={5000}
                 showControls={false}
                 showDots={true}
-                className="rounded-xl overflow-hidden h-20"
+                className="rounded-xl overflow-hidden h-32 md:h-40"
               />
             </motion.div>
           )}
@@ -220,7 +231,7 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
           
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
-            {loading && notifications.length === 0 ? (
+            {isLoading && notifications.length === 0 ? (
               <div className="space-y-4 p-6">
                 {[...Array(4)].map((_, i) => (
                   <motion.div 
@@ -241,7 +252,8 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
             ) : notifications.length > 0 ? (
               <div className="space-y-3 p-6">
                 {notifications.map((notification, index) => {
-                  const IconComponent = notification.icon ? iconMap[notification.icon] : Bell;
+                  // Map notification type to icon
+                  let IconComponent = iconMap[notification.type] || Bell;
                   
                   return (
                     <motion.div
@@ -249,113 +261,64 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
                       initial={{ opacity: 0, y: 20, scale: 0.95 }}
                       animate={{ 
                         opacity: 1, 
-                        y: 0,
+                        y: 0, 
                         scale: 1,
                         transition: { 
                           delay: index * 0.05,
-                          type: "spring",
-                          damping: 20,
-                          stiffness: 300
+                          duration: 0.3
                         }
                       }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleNotificationClick(notification.id, notification.linkUrl)}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      onClick={() => handleNotificationClick(notification.id)}
                       className={cn(
-                        "flex items-start gap-4 p-5 rounded-3xl cursor-pointer transition-all duration-300 border-2 relative overflow-hidden shadow-sm hover:shadow-md",
-                        !notification.read 
-                          ? 'bg-gradient-to-r from-trucker-blue/5 to-blue-50/50 border-trucker-blue/20 shadow-lg' 
-                          : 'bg-white border-gray-100 hover:bg-gray-50',
-                        notification.linkUrl && 'active:bg-trucker-blue/10'
+                        "flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all",
+                        "hover:shadow-lg hover:scale-[1.02]",
+                        !notification.read && "bg-blue-50/50",
+                        typeColors[notification.type]
                       )}
                     >
-                      {/* Glow effect para não lidas */}
-                      {!notification.read && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-trucker-blue/5 to-transparent opacity-50" />
-                      )}
+                      <div className={cn(
+                        "w-14 h-14 rounded-2xl flex items-center justify-center",
+                        "bg-gradient-to-br shadow-lg",
+                        notification.type === 'success' && "from-green-500 to-green-600",
+                        notification.type === 'warning' && "from-orange-500 to-orange-600",
+                        notification.type === 'error' && "from-red-500 to-red-600",
+                        (!notification.type || notification.type === 'info') && "from-blue-500 to-blue-600"
+                      )}>
+                        <IconComponent className="w-7 h-7 text-white" />
+                      </div>
                       
-                      {/* Unread indicator */}
-                      {!notification.read && (
-                        <motion.div 
-                          className="absolute top-5 right-5 w-3 h-3 bg-trucker-blue rounded-full"
-                          animate={{ scale: [1, 1.2, 1] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        />
-                      )}
-                      
-                      {/* Icon */}
-                      <motion.div 
-                        className={cn(
-                          "w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm",
-                          typeColors[notification.type] || typeColors.info
-                        )}
-                        whileHover={{ rotate: 5 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                      >
-                        <IconComponent className={cn(
-                          "w-7 h-7",
-                          typeIconColors[notification.type] || typeIconColors.info
-                        )} />
-                      </motion.div>
-                      
-                      {/* Content */}
-                      <div className="flex-1 min-w-0 relative">
-                        <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between gap-2">
                           <h3 className={cn(
-                            "font-bold text-base leading-tight",
-                            !notification.read ? 'text-gray-900' : 'text-gray-700'
+                            "font-semibold",
+                            !notification.read && "font-bold",
+                            typeIconColors[notification.type]
                           )}>
                             {notification.title}
                           </h3>
-                          <div className="flex items-center gap-1 text-xs text-gray-400 font-medium flex-shrink-0">
-                            <Clock className="w-3 h-3" />
-                            {formatTime(notification.timestamp)}
-                          </div>
+                          <span className="text-xs text-gray-500 whitespace-nowrap mt-1">
+                            {formatTime(notification.created_at)}
+                          </span>
                         </div>
                         
-                        <p className="text-sm text-gray-600 leading-relaxed mb-3 line-clamp-3">
+                        <p className={cn(
+                          "text-sm mt-1",
+                          !notification.read ? "text-gray-800" : "text-gray-600"
+                        )}>
                           {notification.message}
                         </p>
-                        
-                        <div className="flex items-center justify-between">
-                          {notification.category && (
-                            <span className="inline-block px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded-full">
-                              {notification.category}
-                            </span>
-                          )}
-                          
-                          {notification.linkUrl && (
-                            <div className="flex items-center gap-1 text-trucker-blue text-xs font-semibold">
-                              <span>Toque para abrir</span>
-                              <ExternalLink className="w-3 h-3" />
-                            </div>
-                          )}
-                        </div>
                       </div>
                     </motion.div>
                   );
                 })}
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-20 px-6"
-              >
-                <motion.div 
-                  className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner"
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                >
-                  <Bell className="w-12 h-12 text-gray-400" />
-                </motion.div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  Nenhuma notificação
-                </h3>
-                <p className="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">
-                  Você está em dia! Quando houver novidades importantes, elas aparecerão aqui.
-                </p>
-              </motion.div>
+              <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+                <Bell className="w-12 h-12 mb-4 text-gray-400" />
+                <p className="text-lg font-medium">Nenhuma notificação</p>
+                <p className="text-sm">Você está em dia!</p>
+              </div>
             )}
           </div>
         </motion.div>

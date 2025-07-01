@@ -11,11 +11,12 @@ import { PWAInstaller } from "@/components/PWAInstaller";
 import { ProgramPreview } from "@/components/mobile/ProgramPreview";
 import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
 import { SponsorCarousel } from "@/components/sponsors/SponsorCarousel";
-import { AdBannerGroup } from "@/components/sponsors/AdBanner";
-import { useSponsors } from "@/hooks/useSponsors";
+import { SponsorGrid } from "@/components/sponsors/SponsorGrid";
 import { usePrefetch } from "@/hooks/usePrefetch";
 import { useEffect, useRef } from "react";
 import { PollCard } from "@/components/mobile/PollCard";
+import { useAdvertisements } from '@/hooks/useAdvertisements';
+import { useNavigate } from 'react-router-dom';
 
 // Interface para as props das seções
 interface SectionProps {
@@ -38,17 +39,19 @@ const Section = ({ children, className = "", delay = 0 }: SectionProps) => (
 
 const Index = () => {
   const { recordVisit, prefetchPredicted } = usePrefetch();
-  const {
-    shuffledBanners,
-    distributedBanners,
-    supportSponsors,
-    getBannersForPosition,
-    trackBannerClick,
-    trackSponsorClick,
-    loading: sponsorsLoading,
-    getTotalPositions
-  } = useSponsors();
   const hasRecorded = useRef(false);
+  const navigate = useNavigate();
+
+  const {
+    bannersByPosition = {},
+    sponsors,
+    isLoading,
+    error
+  } = useAdvertisements({
+    position: 'home',
+    bannersLimit: 15,
+    sponsorsLimit: 6
+  });
 
   // Record page visit and prefetch predicted routes
   useEffect(() => {
@@ -57,7 +60,6 @@ const Index = () => {
       hasRecorded.current = true;
     }
     
-    // Prefetch likely next routes after a delay
     const timer = setTimeout(() => {
       prefetchPredicted();
     }, 2000);
@@ -65,153 +67,178 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, [recordVisit, prefetchPredicted]);
 
-  // Get total number of positions with banners
-  const totalPositions = getTotalPositions();
+  useEffect(() => {
+    const isFirstVisit = !localStorage.getItem('visited');
+    if (isFirstVisit) {
+      navigate('/historia');
+      localStorage.setItem('visited', 'true');
+    }
+  }, [navigate]);
 
-  console.log('Total banner positions:', totalPositions);
-  console.log('Distributed banners:', distributedBanners);
-  console.log('Support sponsors count:', supportSponsors.length);
+  const hasBannersInPosition = (position: number) => {
+    return Array.isArray(bannersByPosition[position]) && bannersByPosition[position].length > 0;
+  };
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px] text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <Header />
       
-      {/* Main content with proper spacing for fixed elements */}
       <main className="pt-16 pb-20">
-        {/* Stories Section - First */}
-        <Section delay={0} className="mb-4">
+        {/* Seção 1: Stories */}
+        <Section delay={0.1} className="mb-4">
           <Stories />
         </Section>
 
-        {/* POSIÇÃO 1: Após Stories - Alta Visibilidade (4 banners) */}
-        {getBannersForPosition('pos-1').length > 0 && (
-          <Section delay={0.05} className="px-4">
-            <BannerCarousel
-              banners={getBannersForPosition('pos-1')}
-              onBannerClick={(banner) => trackBannerClick(banner, 'after-stories')}
-              className="mb-4"
-              autoplayDelay={6000}
+        {/* Banner Carousel 1 */}
+        {!isLoading && hasBannersInPosition(1) && (
+          <Section delay={0.15} className="px-4 mb-6">
+            <BannerCarousel 
+              banners={bannersByPosition[1]} 
+              autoplayDelay={5000}
+              showControls={true}
+              showDots={true}
             />
           </Section>
         )}
 
-        {/* Countdown Timer + Program Preview */}
-        <Section delay={0.1} className="px-4">
-          <div className="space-y-4">
-            <CountdownTimer />
-            <ProgramPreview />
-          </div>
+        {/* Seção 2: Countdown e Programação */}
+        <Section delay={0.2} className="px-4 mb-6">
+          <CountdownTimer />
+        </Section>
+        
+        <Section delay={0.25} className="px-4 mb-6">
+          <ProgramPreview />
         </Section>
 
-        {/* ENQUETE - Posicionada entre Countdown e São Cristóvão */}
-        <Section delay={0.12} className="px-4">
+        {/* Banner Carousel 2 */}
+        {!isLoading && hasBannersInPosition(2) && (
+          <Section delay={0.3} className="px-4 mb-6">
+            <BannerCarousel 
+              banners={bannersByPosition[2]} 
+              autoplayDelay={4500}
+              showControls={true}
+              showDots={true}
+            />
+          </Section>
+        )}
+
+        {/* Seção 3: Enquete */}
+        <Section delay={0.35} className="px-4 mb-6">
           <PollCard />
         </Section>
 
-        {/* São Cristóvão Tracker */}
-        <Section delay={0.15} className="px-4">
+        {/* Banner Carousel 3 */}
+        {!isLoading && hasBannersInPosition(3) && (
+          <Section delay={0.4} className="px-4 mb-6">
+            <BannerCarousel 
+              banners={bannersByPosition[3]} 
+              autoplayDelay={4000}
+              showControls={true}
+              showDots={true}
+            />
+          </Section>
+        )}
+
+        {/* Seção 4: São Cristóvão Tracker */}
+        <Section delay={0.45} className="px-4 mb-6">
           <SaoCristovaoTracker />
         </Section>
 
-        {/* POSIÇÃO 2: Entre Tracker e News - Meio do Feed (4 banners)  */}
-        {getBannersForPosition('pos-2').length > 0 && (
-          <Section delay={0.2} className="px-4">
-            <BannerCarousel
-              banners={getBannersForPosition('pos-2')}
-              onBannerClick={(banner) => trackBannerClick(banner, 'tracker-news')}
-              className="mb-4"
+        {/* Banner Carousel 4 */}
+        {!isLoading && hasBannersInPosition(4) && (
+          <Section delay={0.5} className="px-4 mb-6">
+            <BannerCarousel 
+              banners={bannersByPosition[4]} 
               autoplayDelay={5500}
+              showControls={true}
+              showDots={true}
             />
           </Section>
         )}
 
-        {/* News Carousel */}
-        <Section delay={0.25} className="px-4">
+        {/* Seção 5: Notícias */}
+        <Section delay={0.55} className="px-4 mb-6">
           <NewsCarousel />
         </Section>
 
-        {/* Photo Carousel */}
-        <Section delay={0.3}>
+        {/* Banner Carousel 5 */}
+        {!isLoading && hasBannersInPosition(5) && (
+          <Section delay={0.6} className="px-4 mb-6">
+            <BannerCarousel 
+              banners={bannersByPosition[5]} 
+              autoplayDelay={4200}
+              showControls={true}
+              showDots={true}
+            />
+          </Section>
+        )}
+
+        {/* Seção 6: Fotos */}
+        <Section delay={0.65} className="mb-6">
           <PhotoCarousel />
         </Section>
 
-        {/* POSIÇÃO 3: Entre Photo e Quick Access - Final do Conteúdo (4 banners) */}
-        {getBannersForPosition('pos-3').length > 0 && (
-          <Section delay={0.35} className="px-4">
-            <BannerCarousel
-              banners={getBannersForPosition('pos-3')}
-              onBannerClick={(banner) => trackBannerClick(banner, 'photo-quick')}
-              className="mb-4"
-              autoplayDelay={5000}
+        {/* Banner Carousel 6 */}
+        {!isLoading && hasBannersInPosition(6) && (
+          <Section delay={0.7} className="px-4 mb-6">
+            <BannerCarousel 
+              banners={bannersByPosition[6]} 
+              autoplayDelay={4800}
+              showControls={true}
+              showDots={true}
             />
           </Section>
         )}
 
-        {/* Quick Access Menu */}
-        <Section delay={0.4} className="px-4">
+        {/* Seção 7: Acesso Rápido */}
+        <Section delay={0.75} className="px-4 mb-6">
           <QuickAccess />
         </Section>
 
-        {/* POSIÇÃO 4: Antes dos Créditos - Última Impressão (3 banners) */}
-        {getBannersForPosition('pos-4').length > 0 && (
-          <Section delay={0.45} className="px-4">
-            <BannerCarousel
-              banners={getBannersForPosition('pos-4')}
-              onBannerClick={(banner) => trackBannerClick(banner, 'before-credits')}
-              className="mb-4"
-              autoplayDelay={4500}
+        {/* Banner Carousel 7 */}
+        {!isLoading && hasBannersInPosition(7) && (
+          <Section delay={0.8} className="px-4 mb-6">
+            <BannerCarousel 
+              banners={bannersByPosition[7]} 
+              autoplayDelay={5200}
+              showControls={true}
+              showDots={true}
             />
           </Section>
         )}
 
-        {/* Support Sponsors Carousel - 2x2 Grid com 15 logos */}
-        {!sponsorsLoading && supportSponsors.length > 0 && (
-          <Section delay={0.5} className="px-4">
-            <SponsorCarousel
-              sponsors={supportSponsors}
-              title="Nossos Apoiadores"
-              onSponsorClick={(sponsor) => trackSponsorClick(sponsor.id, sponsor.category)}
-              itemsPerPage={6} // 3x2 grid para mostrar 6 por página
-              autoplayDelay={4000}
+        {/* Seção 8: Patrocinadores */}
+        {!isLoading && sponsors.length > 0 && (
+          <Section delay={0.85} className="mt-8 mb-6">
+            <SponsorCarousel sponsors={sponsors} autoplayDelay={3000} />
+          </Section>
+        )}
+
+        {/* Banner Carousel 8 (Final) */}
+        {!isLoading && hasBannersInPosition(8) && (
+          <Section delay={0.9} className="px-4 mb-8">
+            <BannerCarousel 
+              banners={bannersByPosition[8]} 
+              autoplayDelay={4600}
+              showControls={true}
+              showDots={true}
             />
           </Section>
         )}
 
-        {/* Debug Info - Remove in production */}
-        {process.env.NODE_ENV === 'development' && (
-          <Section delay={0.55} className="px-4">
-            <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-              <p>Debug: {totalPositions} posições com banners ativos</p>
-              <p>Total banners: {shuffledBanners.length}</p>
-              <p>Apoiadores: {supportSponsors.length}</p>
-              <p>Posição 1: {getBannersForPosition('pos-1').length} banners</p>
-              <p>Posição 2: {getBannersForPosition('pos-2').length} banners</p>
-              <p>Posição 3: {getBannersForPosition('pos-3').length} banners</p>
-              <p>Posição 4: {getBannersForPosition('pos-4').length} banners</p>
-            </div>
-          </Section>
-        )}
-
-        {/* Créditos */}
-        <Section delay={0.6} className="px-4 text-center text-sm text-foreground/70">
-          <div className="space-y-1">
-            <p>Tecnologia criada por: Anderson Marques Vieira (Hype Neural)</p>
-            <p>Fotografias e Vídeos por: Estúdio Evydência</p>
-          </div>
-        </Section>
-
-        {/* Bottom spacing for safe area */}
-        <div className="h-8" />
+        <BottomNavigation />
+        <PWAInstaller />
       </main>
-
-      {/* Fixed Navigation Elements */}
-      <BottomNavigation />
-      
-      {/* PWA Features */}
-      <PWAInstaller />
     </div>
   );
-};
+}
 
 export default Index;
