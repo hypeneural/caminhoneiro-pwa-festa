@@ -39,7 +39,7 @@ export function SponsorGrid({
   const [autoplayPaused, setAutoplayPaused] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [containerRef, isVisible] = useIntersectionObserver<HTMLDivElement>();
+  const { ref: containerRef, isIntersecting: isVisible } = useIntersectionObserver<HTMLDivElement>();
 
   // Auto-rotation
   useEffect(() => {

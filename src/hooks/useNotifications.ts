@@ -6,6 +6,7 @@ interface UseNotificationsReturn {
   notifications: Notification[];
   unreadCount: number;
   isLoading: boolean;
+  loading: boolean; // Alias para compatibilidade
   error: string | null;
   markAsRead: (id: number) => Promise<void>;
   markAllAsRead: () => Promise<void>;

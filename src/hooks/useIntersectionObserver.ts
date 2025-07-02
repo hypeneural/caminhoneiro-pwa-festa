@@ -19,7 +19,7 @@ interface IntersectionObserverEntry {
 
 export function useIntersectionObserver<T extends Element>(
   options: IntersectionObserverInit = { threshold: 0 }
-): [React.RefObject<T>, boolean] {
+): { ref: React.RefObject<T>; isIntersecting: boolean } {
   const elementRef = useRef<T>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -39,7 +39,7 @@ export function useIntersectionObserver<T extends Element>(
     };
   }, [options]);
 
-  return [elementRef, isVisible];
+  return { ref: elementRef, isIntersecting: isVisible };
 }
 
 // Hook for multiple zones (visible, buffer, prefetch)
@@ -57,7 +57,6 @@ export function useAdvancedIntersectionObserver<T extends Element = HTMLDivEleme
   const prefetchZone = useIntersectionObserver<T>({
     threshold: 0,
     rootMargin: '300px',
-    triggerOnce: true,
   });
 
   return {

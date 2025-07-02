@@ -154,7 +154,7 @@ export function VirtualCarousel<T>({
 
   return (
     <div
-      ref={intersectionRef}
+      ref={intersectionRef as React.RefObject<HTMLDivElement>}
       className={cn("relative", className)}
       onKeyDown={handleKeyDown}
       tabIndex={0}
