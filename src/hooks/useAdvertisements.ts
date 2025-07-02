@@ -46,7 +46,7 @@ export function useAdvertisements({
       const [bannersResponse, sponsorsResponse] = await Promise.all([
         advertisementService.getBanners({
           position_group: position,
-          limit: Math.max(bannersLimit, 15), // Garante pelo menos 15 banners para a home
+          limit: Math.max(bannersLimit, 25), // Garante pelo menos 25 banners para cobrir 12 posições
           page: 1
         }),
         advertisementService.getSponsors({
@@ -60,14 +60,14 @@ export function useAdvertisements({
       const bannersByPos: Record<number, Banner[]> = {};
       
       // Inicializa todas as posições possíveis com arrays vazios
-      for (let i = 1; i <= 8; i++) {
+      for (let i = 1; i <= 12; i++) {
         bannersByPos[i] = [];
       }
 
       // Distribui os banners nas posições
       bannersResponse.data.forEach(banner => {
         const pos = banner.position || 1;
-        if (pos >= 1 && pos <= 8) { // Valida a posição
+        if (pos >= 1 && pos <= 12) { // Valida a posição (expandido para 12)
           bannersByPos[pos].push(banner);
         }
       });

@@ -10,6 +10,7 @@ import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { PWAInstaller } from "@/components/PWAInstaller";
 import { ProgramPreview } from "@/components/mobile/ProgramPreview";
 import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { CompactBannerCarousel } from "@/components/sponsors/CompactBannerCarousel";
 import { SponsorCarousel } from "@/components/sponsors/SponsorCarousel";
 import { SponsorGrid } from "@/components/sponsors/SponsorGrid";
 import { usePrefetch } from "@/hooks/usePrefetch";
@@ -118,6 +119,16 @@ const Index = () => {
           <ProgramPreview />
         </Section>
 
+        {/* Compact Banner 9 - Entre Programação e Enquete */}
+        {!isLoading && hasBannersInPosition(9) && (
+          <Section delay={0.27} className="px-4 mb-4">
+            <CompactBannerCarousel 
+              banners={bannersByPosition[9]} 
+              autoplayDelay={3500}
+            />
+          </Section>
+        )}
+
         {/* Banner Carousel 2 */}
         {!isLoading && hasBannersInPosition(2) && (
           <Section delay={0.3} className="px-4 mb-6">
@@ -151,6 +162,16 @@ const Index = () => {
         <Section delay={0.45} className="px-4 mb-6">
           <SaoCristovaoTracker />
         </Section>
+
+        {/* Compact Banner 10 - Após São Cristóvão Tracker */}
+        {!isLoading && hasBannersInPosition(10) && (
+          <Section delay={0.47} className="px-4 mb-4">
+            <CompactBannerCarousel 
+              banners={bannersByPosition[10]} 
+              autoplayDelay={3800}
+            />
+          </Section>
+        )}
 
         {/* Banner Carousel 4 */}
         {!isLoading && hasBannersInPosition(4) && (
@@ -186,6 +207,16 @@ const Index = () => {
           <PhotoCarousel />
         </Section>
 
+        {/* Compact Banner 11 - Após Fotos */}
+        {!isLoading && hasBannersInPosition(11) && (
+          <Section delay={0.67} className="px-4 mb-4">
+            <CompactBannerCarousel 
+              banners={bannersByPosition[11]} 
+              autoplayDelay={4100}
+            />
+          </Section>
+        )}
+
         {/* Banner Carousel 6 */}
         {!isLoading && hasBannersInPosition(6) && (
           <Section delay={0.7} className="px-4 mb-6">
@@ -202,6 +233,16 @@ const Index = () => {
         <Section delay={0.75} className="px-4 mb-6">
           <QuickAccess />
         </Section>
+
+        {/* Compact Banner 12 - Após Acesso Rápido */}
+        {!isLoading && hasBannersInPosition(12) && (
+          <Section delay={0.77} className="px-4 mb-4">
+            <CompactBannerCarousel 
+              banners={bannersByPosition[12]} 
+              autoplayDelay={3600}
+            />
+          </Section>
+        )}
 
         {/* Banner Carousel 7 */}
         {!isLoading && hasBannersInPosition(7) && (
