@@ -50,9 +50,13 @@ const Index = () => {
     error
   } = useAdvertisements({
     position: 'home',
-    bannersLimit: 15,
+    bannersLimit: 25,
     sponsorsLimit: 6
   });
+
+  console.log('🏠 Index: bannersByPosition =', bannersByPosition);
+  console.log('🏠 Index: isLoading =', isLoading);
+  console.log('🏠 Index: error =', error);
 
   // Record page visit and prefetch predicted routes
   useEffect(() => {
@@ -77,7 +81,9 @@ const Index = () => {
   }, [navigate]);
 
   const hasBannersInPosition = (position: number) => {
-    return Array.isArray(bannersByPosition[position]) && bannersByPosition[position].length > 0;
+    const hasbanners = Array.isArray(bannersByPosition[position]) && bannersByPosition[position].length > 0;
+    console.log(`🎯 Index: Position ${position} has banners:`, hasbanners, bannersByPosition[position]);
+    return hasbanners;
   };
 
   if (error) {

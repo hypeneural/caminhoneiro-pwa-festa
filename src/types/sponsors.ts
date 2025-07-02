@@ -32,6 +32,8 @@ export interface Banner {
   priority: number;
   altText?: string;
   position: number;
+  category?: string;
+  isActive?: boolean;
 }
 
 export interface SponsorLogo {
@@ -43,6 +45,8 @@ export interface SponsorLogo {
   packageType: 1 | 2; // 1 = Destaque, 2 = Apoiador
   priority: number;
   altText?: string;
+  category?: string;
+  isActive?: boolean;
 }
 
 export interface BannerPosition {

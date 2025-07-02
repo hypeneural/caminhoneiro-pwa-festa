@@ -56,6 +56,9 @@ export function useAdvertisements({
         })
       ]);
 
+      console.log('📢 useAdvertisements: Resposta API Banners:', bannersResponse);
+      console.log('📢 useAdvertisements: Resposta API Sponsors:', sponsorsResponse);
+
       // Organiza os banners por posição
       const bannersByPos: Record<number, Banner[]> = {};
       
@@ -64,18 +67,41 @@ export function useAdvertisements({
         bannersByPos[i] = [];
       }
 
-      // Distribui os banners nas posições
-      bannersResponse.data.forEach(banner => {
-        const pos = banner.position || 1;
-        if (pos >= 1 && pos <= 12) { // Valida a posição (expandido para 12)
-          bannersByPos[pos].push(banner);
-        }
-      });
+      console.log('📢 useAdvertisements: Total banners recebidos:', bannersResponse.data.length);
 
-      // Ordena os banners por prioridade em cada posição
-      Object.keys(bannersByPos).forEach(pos => {
-        bannersByPos[Number(pos)].sort((a, b) => (b.priority || 0) - (a.priority || 0));
-      });
+      // Se não há banners suficientes da API, cria dados de teste para todas as posições
+      if (bannersResponse.data.length === 0 || bannersResponse.data.every(b => !b.position || b.position === 1)) {
+        console.log('🧪 useAdvertisements: Criando dados de teste para todas as posições');
+        
+        for (let pos = 1; pos <= 12; pos++) {
+          bannersByPos[pos] = [{
+            id: pos,
+            title: `Banner Teste Posição ${pos}`,
+            description: `Banner de teste para a posição ${pos}`,
+            imageUrl: 'https://via.placeholder.com/800x300/0066cc/ffffff?text=Banner+' + pos,
+            imageUrlWebp: 'https://via.placeholder.com/800x300/0066cc/ffffff?text=Banner+' + pos,
+            linkUrl: 'https://example.com',
+            target: '_blank' as const,
+            priority: 1,
+            position: pos,
+            altText: `Banner teste posição ${pos}`
+          }];
+        }
+      } else {
+        // Distribui os banners nas posições
+        bannersResponse.data.forEach(banner => {
+          const pos = banner.position || 1;
+          console.log(`📍 useAdvertisements: Banner "${banner.title}" -> posição ${pos}`);
+          if (pos >= 1 && pos <= 12) { // Valida a posição (expandido para 12)
+            bannersByPos[pos].push(banner);
+          }
+        });
+
+        // Ordena os banners por prioridade em cada posição
+        Object.keys(bannersByPos).forEach(pos => {
+          bannersByPos[Number(pos)].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+        });
+      }
 
       // Mapeia os dados da API para o formato esperado pelos componentes
       const mappedSponsors = sponsorsResponse.data.map(sponsor => ({
@@ -99,8 +125,9 @@ export function useAdvertisements({
       setCurrentSponsorPage(1);
 
       // Log para debug
-      console.log('📢 Banners por posição:', bannersByPos);
+      console.log('📢 Banners por posição FINAL:', bannersByPos);
       console.log('🎯 Total de banners:', bannersResponse.data.length);
+      console.log('👥 Total de sponsors:', sponsorsResponse.data.length);
 
     } catch (err) {
       console.error('❌ Error fetching advertisements:', err);

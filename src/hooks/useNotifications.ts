@@ -91,8 +91,9 @@ export function useNotifications(): UseNotificationsReturn {
     notifications,
     unreadCount,
     isLoading,
+    loading: isLoading, // Alias para compatibilidade
     error,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
   };
 }
