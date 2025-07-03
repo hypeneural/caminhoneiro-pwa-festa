@@ -67,7 +67,7 @@ export function AdBanner({
             alt={banner.altText}
             fallbackSrc={banner.imageUrl}
             className="w-full h-full object-cover"
-            priority={banner.priority === 'high'}
+            priority={banner.priority > 5}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
           />
           
@@ -93,7 +93,7 @@ export function AdBanner({
           )}
 
           {/* Priority indicator */}
-          {banner.priority === 'high' && (
+          {banner.priority > 5 && (
             <div className="absolute top-2 left-2">
               <div className="w-2 h-2 bg-trucker-yellow rounded-full animate-pulse" />
             </div>

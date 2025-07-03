@@ -4,6 +4,7 @@ export const API = {
   ENDPOINTS: {
     BANNERS: '/advertisements/banners',
     SPONSORS: '/advertisements/sponsors',
+    WEATHER: '/weather',
     NOTIFICATIONS: {
       LIST: '/notifications',
       MARK_READ: (id: number) => `/notifications/${id}/read`,
@@ -35,7 +36,9 @@ export const API = {
 
   CACHE: {
     STALE_TIME: 5 * 60 * 1000, // 5 minutos
-    CACHE_TIME: 10 * 60 * 1000 // 10 minutos
+    CACHE_TIME: 10 * 60 * 1000, // 10 minutos
+    WEATHER_STALE_TIME: 6 * 60 * 60 * 1000, // 6 horas
+    WEATHER_CACHE_TIME: 12 * 60 * 60 * 1000 // 12 horas
   },
 
   // Configurações de desenvolvimento

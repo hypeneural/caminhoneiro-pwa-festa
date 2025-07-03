@@ -117,6 +117,7 @@ export const useSponsors = () => {
           linkUrl: banner.linkUrl,
           target: banner.target,
           priority: banner.priority,
+          position: banner.position,
           altText: banner.altText
         })),
         sponsors: sponsorsResponse.data.map(sponsor => ({

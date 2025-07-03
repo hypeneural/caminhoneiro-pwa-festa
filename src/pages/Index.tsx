@@ -16,6 +16,7 @@ import { SponsorGrid } from "@/components/sponsors/SponsorGrid";
 import { usePrefetch } from "@/hooks/usePrefetch";
 import { useEffect, useRef } from "react";
 import { PollCard } from "@/components/mobile/PollCard";
+import { WeatherSection } from "@/components/weather/WeatherSection";
 import { useAdvertisements } from '@/hooks/useAdvertisements';
 import { useNavigate } from 'react-router-dom';
 
@@ -147,8 +148,13 @@ const Index = () => {
           </Section>
         )}
 
-        {/* Seção 3: Enquete */}
-        <Section delay={0.35} className="px-4 mb-6">
+        {/* Seção 3: Previsão do Tempo */}
+        <Section delay={0.33} className="px-4 mb-6">
+          <WeatherSection />
+        </Section>
+
+        {/* Seção 4: Enquete */}
+        <Section delay={0.37} className="px-4 mb-6">
           <PollCard />
         </Section>
 
