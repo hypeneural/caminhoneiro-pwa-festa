@@ -1,72 +1,33 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { X, ChevronLeft, ChevronRight, Share2, Clock, Eye, Heart, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, 
-  ArrowLeft, 
-  ArrowRight, 
-  Share2, 
-  Heart, 
-  MessageCircle, 
-  Eye, 
-  Clock, 
-  ExternalLink,
-  ChevronLeft,
-  ChevronRight 
-} from 'lucide-react';
-import { NewsItem } from '@/types/news';
+import { cn } from '@/lib/utils';
 import { TouchFeedback } from '@/components/ui/touch-feedback';
 import { Badge } from '@/components/ui/badge';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { BannerCarousel } from '@/components/sponsors/BannerCarousel';
-import { useSponsors } from '@/hooks/useSponsors';
-import { cn } from '@/lib/utils';
+import { useAdvertisements } from '@/hooks/useAdvertisements';
+import { NewsItem } from '@/types/news';
 
 interface NewsModalProps {
   news: NewsItem | null;
   isOpen: boolean;
   onClose: () => void;
-  allNews: NewsItem[];
-  onNavigate: (newsId: string) => void;
+  allNews?: NewsItem[];
+  onNavigate?: (newsId: string) => void;
 }
 
 export const NewsModal: React.FC<NewsModalProps> = ({
   news,
   isOpen,
   onClose,
-  allNews,
+  allNews = [],
   onNavigate
 }) => {
-  const { shuffledBanners } = useSponsors();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Filter active banners for news modal
-  const activeBanners = shuffledBanners?.filter(banner => banner.isActive).slice(0, 4) || [];
-
-  useEffect(() => {
-    if (news && allNews.length > 0) {
-      const index = allNews.findIndex(item => item.id === news.id);
-      setCurrentIndex(index >= 0 ? index : 0);
-    }
-  }, [news, allNews]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (scrollRef.current) {
-        setIsScrolled(scrollRef.current.scrollTop > 20);
-      }
-    };
-
-    const scrollElement = scrollRef.current;
-    if (scrollElement) {
-      scrollElement.addEventListener('scroll', handleScroll);
-      return () => scrollElement.removeEventListener('scroll', handleScroll);
-    }
-  }, []);
-
-  if (!isOpen || !news) return null;
+  const { activeBanners } = useAdvertisements();
+  const currentIndex = news && allNews.length > 0 ? allNews.findIndex(n => n.id === news.id) : -1;
+  const showNavigation = allNews.length > 0 && onNavigate;
 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
@@ -79,56 +40,59 @@ export const NewsModal: React.FC<NewsModalProps> = ({
   };
 
   const handlePrevious = () => {
-    if (currentIndex > 0) {
+    if (showNavigation && currentIndex > 0) {
       const prevNews = allNews[currentIndex - 1];
-      onNavigate(prevNews.id.toString());
+      onNavigate(prevNews.id);
     }
   };
 
   const handleNext = () => {
-    if (currentIndex < allNews.length - 1) {
+    if (showNavigation && currentIndex < allNews.length - 1) {
       const nextNews = allNews[currentIndex + 1];
-      onNavigate(nextNews.id.toString());
+      onNavigate(nextNews.id);
     }
   };
 
+  const handleShare = async () => {
+    if (!news) return;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: news.title,
+          text: news.summary,
+          url: window.location.origin + '/noticias/' + news.slug
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    }
+  };
+
+  if (!news) return null;
+
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="absolute inset-x-0 bottom-0 bg-background rounded-t-3xl max-h-[95vh] flex flex-col overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header with Banner */}
-          <div className={cn(
-            "sticky top-0 z-10 bg-background/95 backdrop-blur-sm transition-all duration-200",
-            isScrolled ? "shadow-md border-b border-border/50" : ""
-          )}>
+    <Dialog.Root open={isOpen} onOpenChange={onClose}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 flex h-[95vh] flex-col rounded-t-3xl bg-background p-0 shadow-lg animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full">
+          {/* Drag Handle */}
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-muted-foreground/20 rounded-full" />
+
+          {/* Fixed Header with Banner */}
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm transition-all duration-200">
             {/* Banner Carousel */}
             {activeBanners.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="px-4 pt-4"
-              >
+              <div className="h-16 px-4 pt-2">
                 <BannerCarousel
                   banners={activeBanners}
                   autoplayDelay={6000}
                   showControls={false}
                   showDots={true}
-                  className="rounded-lg overflow-hidden h-16"
+                  compact={true}
+                  className="rounded-lg overflow-hidden h-14"
                 />
-              </motion.div>
+              </div>
             )}
 
             {/* Navigation Header */}
@@ -140,31 +104,34 @@ export const NewsModal: React.FC<NewsModalProps> = ({
                 <X className="w-5 h-5 text-foreground" />
               </TouchFeedback>
 
-              <div className="flex items-center gap-2">
-                {currentIndex > 0 && (
-                  <TouchFeedback
-                    onClick={handlePrevious}
-                    className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted/80 flex items-center justify-center"
-                  >
-                    <ChevronLeft className="w-5 h-5 text-foreground" />
-                  </TouchFeedback>
-                )}
-                
-                <span className="text-sm text-muted-foreground">
-                  {currentIndex + 1} de {allNews.length}
-                </span>
-                
-                {currentIndex < allNews.length - 1 && (
-                  <TouchFeedback
-                    onClick={handleNext}
-                    className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted/80 flex items-center justify-center"
-                  >
-                    <ChevronRight className="w-5 h-5 text-foreground" />
-                  </TouchFeedback>
-                )}
-              </div>
+              {showNavigation && (
+                <div className="flex items-center gap-2">
+                  {currentIndex > 0 && (
+                    <TouchFeedback
+                      onClick={handlePrevious}
+                      className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted/80 flex items-center justify-center"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-foreground" />
+                    </TouchFeedback>
+                  )}
+                  
+                  <span className="text-sm text-muted-foreground">
+                    {currentIndex + 1} de {allNews.length}
+                  </span>
+                  
+                  {currentIndex < allNews.length - 1 && (
+                    <TouchFeedback
+                      onClick={handleNext}
+                      className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted/80 flex items-center justify-center"
+                    >
+                      <ChevronRight className="w-5 h-5 text-foreground" />
+                    </TouchFeedback>
+                  )}
+                </div>
+              )}
 
               <TouchFeedback
+                onClick={handleShare}
                 className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted/80 flex items-center justify-center"
               >
                 <Share2 className="w-5 h-5 text-foreground" />
@@ -173,7 +140,7 @@ export const NewsModal: React.FC<NewsModalProps> = ({
           </div>
 
           {/* Scrollable Content */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto overscroll-contain">
             {/* Hero Image */}
             <div className="relative aspect-video">
               <OptimizedImage
@@ -197,64 +164,50 @@ export const NewsModal: React.FC<NewsModalProps> = ({
             <div className="p-6 space-y-6">
               {/* Title and Meta */}
               <div className="space-y-4">
-                <h1 className="text-2xl font-bold text-foreground leading-tight">
+                <Dialog.Title className="text-2xl font-bold text-foreground leading-tight">
                   {news.title}
-                </h1>
+                </Dialog.Title>
                 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
                     {formatTimeAgo(news.publishedAt)}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Eye className="w-4 h-4" />
-                    {news.views.toLocaleString()}
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1">
+                      <Eye className="w-4 h-4" />
+                      {news.views.toLocaleString()}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Heart className="w-4 h-4" />
+                      {news.likes.toLocaleString()}
+                    </span>
+                    {news.comments !== undefined && (
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="w-4 h-4" />
+                        {news.comments.toLocaleString()}
+                      </span>
+                    )}
                   </div>
-                  {news.readTime && (
-                    <span>{news.readTime}</span>
-                  )}
                 </div>
               </div>
+
+              {/* Summary */}
+              <Dialog.Description className="text-muted-foreground text-sm leading-relaxed">
+                {news.summary}
+              </Dialog.Description>
 
               {/* Content */}
-              <div className="prose prose-sm max-w-none text-foreground">
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  {news.summary}
-                </p>
-                
-                {news.content && (
-                  <div className="mt-6 space-y-4">
-                    {news.content.split('\n\n').map((paragraph, index) => (
-                      <p key={index} className="leading-relaxed">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center justify-between pt-6 border-t border-border/50">
-                <div className="flex items-center gap-4">
-                  <TouchFeedback className="flex items-center gap-2 text-muted-foreground hover:text-red-500 transition-colors">
-                    <Heart className="w-5 h-5" />
-                    <span className="text-sm">{news.likes}</span>
-                  </TouchFeedback>
-                  
-                  <TouchFeedback className="flex items-center gap-2 text-muted-foreground hover:text-blue-500 transition-colors">
-                    <MessageCircle className="w-5 h-5" />
-                    <span className="text-sm">{news.comments || 0}</span>
-                  </TouchFeedback>
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  {news.publishedAt.toLocaleDateString('pt-BR')}
-                </div>
-              </div>
+              {news.content && (
+                <div 
+                  className="prose prose-sm prose-trucker max-w-none"
+                  dangerouslySetInnerHTML={{ __html: news.content }}
+                />
+              )}
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };

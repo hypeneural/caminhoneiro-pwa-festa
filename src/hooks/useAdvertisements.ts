@@ -11,6 +11,7 @@ interface UseAdvertisementsOptions {
 
 interface UseAdvertisementsReturn {
   banners: Banner[];
+  activeBanners: Banner[];
   bannersByPosition: Record<number, Banner[]>;
   sponsors: SponsorLogo[];
   isLoading: boolean;
@@ -69,39 +70,54 @@ export function useAdvertisements({
 
       console.log('📢 useAdvertisements: Total banners recebidos:', bannersResponse.data.length);
 
-      // Se não há banners suficientes da API, cria dados de teste para todas as posições
-      if (bannersResponse.data.length === 0 || bannersResponse.data.every(b => !b.position || b.position === 1)) {
-        console.log('🧪 useAdvertisements: Criando dados de teste para todas as posições');
+      // Distribui os banners nas posições de forma inteligente
+      if (bannersResponse.data.length > 0) {
+        // Ordena os banners por prioridade primeiro
+        const sortedBanners = [...bannersResponse.data].sort((a, b) => (b.priority || 0) - (a.priority || 0));
         
-        for (let pos = 1; pos <= 12; pos++) {
-          bannersByPos[pos] = [{
-            id: pos,
-            title: `Banner Teste Posição ${pos}`,
-            description: `Banner de teste para a posição ${pos}`,
-            imageUrl: 'https://via.placeholder.com/800x300/0066cc/ffffff?text=Banner+' + pos,
-            imageUrlWebp: 'https://via.placeholder.com/800x300/0066cc/ffffff?text=Banner+' + pos,
-            linkUrl: 'https://example.com',
-            target: '_blank' as const,
-            priority: 1,
-            position: pos,
-            altText: `Banner teste posição ${pos}`
-          }];
-        }
-      } else {
-        // Distribui os banners nas posições
-        bannersResponse.data.forEach(banner => {
-          const pos = banner.position || 1;
-          console.log(`📍 useAdvertisements: Banner "${banner.title}" -> posição ${pos}`);
-          if (pos >= 1 && pos <= 12) { // Valida a posição (expandido para 12)
-            bannersByPos[pos].push(banner);
+        // Distribui os banners em posições estratégicas
+        sortedBanners.forEach((banner, index) => {
+          // Se o banner já tem uma posição definida, respeita
+          if (banner.position && banner.position >= 1 && banner.position <= 12) {
+            bannersByPos[banner.position].push(banner);
+          } else {
+            // Distribui os banners de forma equilibrada
+            // Posições principais: 1, 2, 3, 4 (banners grandes)
+            // Posições secundárias: 9, 10, 11, 12 (banners compactos)
+            // Posições complementares: 5, 6 (banners grandes após conteúdo)
+            const position = calculateBannerPosition(index, sortedBanners.length);
+            bannersByPos[position].push({
+              ...banner,
+              position
+            });
           }
         });
 
-        // Ordena os banners por prioridade em cada posição
-        Object.keys(bannersByPos).forEach(pos => {
-          bannersByPos[Number(pos)].sort((a, b) => (b.priority || 0) - (a.priority || 0));
-        });
+        // Garante que cada posição tenha pelo menos um banner
+        for (let pos = 1; pos <= 12; pos++) {
+          if (bannersByPos[pos].length === 0) {
+            // Pega um banner de uma posição que tenha mais de um
+            const positionWithExtraBanner = Object.entries(bannersByPos)
+              .find(([_, banners]) => banners.length > 1);
+            
+            if (positionWithExtraBanner) {
+              const [_, banners] = positionWithExtraBanner;
+              const banner = banners.pop();
+              if (banner) {
+                bannersByPos[pos].push({
+                  ...banner,
+                  position: pos
+                });
+              }
+            }
+          }
+        }
       }
+
+      // Ordena os banners por prioridade em cada posição
+      Object.keys(bannersByPos).forEach(pos => {
+        bannersByPos[Number(pos)].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+      });
 
       // Mapeia os dados da API para o formato esperado pelos componentes
       const mappedSponsors = sponsorsResponse.data.map(sponsor => ({
@@ -206,6 +222,7 @@ export function useAdvertisements({
 
   return {
     banners,
+    activeBanners: banners.filter(banner => banner.isActive).slice(0, 4),
     bannersByPosition,
     sponsors,
     isLoading,
@@ -216,4 +233,16 @@ export function useAdvertisements({
     loadMoreBanners,
     loadMoreSponsors
   };
+}
+
+// Função auxiliar para calcular a posição ideal do banner
+function calculateBannerPosition(index: number, totalBanners: number): number {
+  // Posições principais (1-4) para os primeiros banners de alta prioridade
+  if (index < 4) return index + 1;
+  
+  // Posições compactas (9-12) para banners de média prioridade
+  if (index < 8) return index + 5;
+  
+  // Posições complementares (5-6) para os demais banners
+  return ((index - 8) % 2) + 5;
 } 

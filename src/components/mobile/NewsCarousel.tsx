@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Newspaper, TrendingUp, Flame, Zap } from "lucide-react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { Newspaper, TrendingUp, Flame, Zap, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ErrorBoundary, CarouselErrorFallback } from "@/components/ui/error-boundary";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { CarouselSkeleton } from "@/components/ui/skeleton";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { TouchFeedback } from "@/components/ui/touch-feedback";
@@ -34,28 +34,32 @@ const FeaturedNewsCard = React.memo(({ news, onClick }: { news: NewsItem; onClic
     return `${Math.floor(diffInMinutes / 1440)}d`;
   };
 
+  const handleClick = () => {
+    console.log('📰 FeaturedNewsCard: Click event triggered');
+    onClick();
+  };
+
   return (
-    <TouchFeedback>
+    <TouchFeedback onClick={handleClick}>
       <Card 
-        className="overflow-hidden bg-card shadow-lg border-border/50 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
-        onClick={onClick}
+        className="relative overflow-hidden aspect-[16/9] bg-card cursor-pointer hover:shadow-lg transition-all duration-200"
         role="article"
         aria-label={`Notícia em destaque: ${news.title}`}
       >
-        <div className="relative h-48">
+        <div className="relative w-full h-full">
           <OptimizedImage
             src={news.imageUrl}
             alt={news.title}
             className="w-full h-full object-cover"
             priority
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          
-          <div className="absolute top-3 left-3 flex gap-2">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+          <div className="absolute top-3 left-3 flex items-center gap-2">
             <Badge 
-              className={`${news.categoryColor} text-white text-xs font-semibold flex items-center gap-1`}
+              className={`${news.categoryColor} text-white text-xs`}
             >
-              {getBadgeIcon()}
               {news.category}
             </Badge>
             {news.breaking && (
@@ -75,9 +79,6 @@ const FeaturedNewsCard = React.memo(({ news, onClick }: { news: NewsItem; onClic
                 <span className="flex items-center gap-1">
                   👁️ {news.views.toLocaleString()}
                 </span>
-                {news.readTime && (
-                  <span>{news.readTime}</span>
-                )}
               </div>
             </div>
           </div>
@@ -94,11 +95,15 @@ const SecondaryNewsCard = React.memo(({ news, onClick }: { news: NewsItem; onCli
     return null;
   };
 
+  const handleClick = () => {
+    console.log('📰 SecondaryNewsCard: Click event triggered');
+    onClick();
+  };
+
   return (
-    <TouchFeedback>
+    <TouchFeedback onClick={handleClick}>
       <Card 
         className="overflow-hidden bg-card shadow-md border-border/50 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.01]"
-        onClick={onClick}
         role="article"
         aria-label={`Notícia: ${news.title}`}
       >
@@ -139,26 +144,59 @@ const SecondaryNewsCard = React.memo(({ news, onClick }: { news: NewsItem; onCli
   );
 });
 
+const NewsErrorFallback = ({ error, resetError }: { error?: Error; resetError?: () => void }) => (
+  <div className="p-4 text-center space-y-3">
+    <AlertTriangle className="w-8 h-8 mx-auto text-muted-foreground" />
+    <div>
+      <p className="text-sm font-medium text-foreground">
+        Erro ao carregar notícias
+      </p>
+      <p className="text-xs text-muted-foreground">
+        {error?.message || 'Tente novamente mais tarde'}
+      </p>
+    </div>
+    {resetError && (
+      <Button size="sm" variant="outline" onClick={resetError}>
+        Tentar Novamente
+      </Button>
+    )}
+  </div>
+);
+
 export const NewsCarousel = React.memo(() => {
-  const { latestNews, featuredNews, loading } = useNews();
+  const { latestNews, featuredNews, loading, error, refresh } = useNews();
   const { navigateTo } = useNavigation();
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   const mainNews = featuredNews[0] || latestNews[0];
   const secondaryNews = latestNews.slice(1, 4);
 
   const handleNewsClick = (news: NewsItem) => {
     setSelectedNews(news);
+    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
+    setIsModalOpen(false);
     setSelectedNews(null);
   };
 
+  const handleNavigateNews = (newsId: string) => {
+    const news = latestNews.find(n => n.id === newsId);
+    if (news) {
+      setSelectedNews(news);
+    }
+  };
+
+  if (error) {
+    return <NewsErrorFallback error={new Error(error)} />;
+  }
+
   return (
-    <ErrorBoundary fallback={CarouselErrorFallback}>
+    <ErrorBoundary fallback={NewsErrorFallback}>
       <section className="mb-6" aria-labelledby="news-section">
-        {loading ? (
+        {loading && latestNews.length === 0 ? (
           <div aria-label="Carregando notícias">
             <div className="flex items-center justify-between px-4 mb-4">
               <div className="flex items-center gap-3">
@@ -191,80 +229,50 @@ export const NewsCarousel = React.memo(() => {
                 <div className="w-8 h-8 bg-gradient-to-br from-trucker-red to-trucker-orange rounded-xl flex items-center justify-center shadow-lg">
                   <Newspaper className="w-5 h-5 text-white" aria-hidden="true" />
                 </div>
-                <div>
-                  <h2 id="news-section" className="text-xl font-bold text-foreground">
-                    {APP_TEXTS.SECTION_NEWS}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">Últimas atualizações</p>
-                </div>
+                <h2 className="text-lg font-semibold" id="news-section">
+                  Últimas Notícias
+                </h2>
               </div>
-              <AccessibleButton 
-                variant="ghost" 
-                size="sm" 
-                className="text-trucker-blue hover:text-trucker-blue/80 font-medium"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => navigateTo(ROUTES.NEWS)}
-                aria-label="Ver todas as notícias"
+                className="text-muted-foreground hover:text-foreground"
               >
-                {APP_TEXTS.ACTION_SEE_ALL}
-              </AccessibleButton>
+                Ver mais
+              </Button>
             </div>
 
-            <div className="px-4 space-y-4">
-              {/* Featured News */}
-              {mainNews && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <FeaturedNewsCard 
-                    news={mainNews} 
-                    onClick={() => handleNewsClick(mainNews)}
+            {/* Main News */}
+            {mainNews && (
+              <div className="px-4 mb-4">
+                <FeaturedNewsCard news={mainNews} onClick={() => handleNewsClick(mainNews)} />
+              </div>
+            )}
+
+            {/* Secondary News */}
+            {secondaryNews.length > 0 && (
+              <div className="px-4 space-y-3">
+                {secondaryNews.map((news) => (
+                  <SecondaryNewsCard
+                    key={news.id}
+                    news={news}
+                    onClick={() => handleNewsClick(news)}
                   />
-                </motion.div>
-              )}
+                ))}
+              </div>
+            )}
 
-              {/* Secondary News */}
-              {secondaryNews.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 }}
-                  className="space-y-3"
-                >
-                  {secondaryNews.map((news, index) => (
-                    <motion.div
-                      key={news.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ 
-                        duration: 0.3, 
-                        delay: 0.2 + index * 0.1 
-                      }}
-                    >
-                      <SecondaryNewsCard 
-                        news={news} 
-                        onClick={() => handleNewsClick(news)}
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-            </div>
+            {/* News Modal */}
+            <NewsModal
+              news={selectedNews}
+              isOpen={isModalOpen}
+              onClose={handleCloseModal}
+              allNews={latestNews}
+              onNavigate={handleNavigateNews}
+            />
           </>
         )}
-
-        {/* News Detail Modal */}
-        <NewsModal
-          news={selectedNews}
-          isOpen={!!selectedNews}
-          onClose={handleCloseModal}
-          allNews={latestNews}
-          onNavigate={(newsId) => {
-            const news = latestNews.find(n => n.id === newsId.toString());
-            if (news) setSelectedNews(news);
-          }}
-        />
       </section>
     </ErrorBoundary>
   );

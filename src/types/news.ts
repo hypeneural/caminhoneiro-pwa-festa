@@ -1,36 +1,54 @@
 export interface NewsItem {
   id: string;
   title: string;
+  slug: string;
   summary: string;
   content?: string;
   imageUrl: string;
   publishedAt: Date;
   category: string;
   categoryColor: string;
+  categoryId: string;
   author: string;
-  slug: string;
+  featured: boolean;
+  status: 'published' | 'draft' | 'archived';
+  createdAt: Date;
+  updatedAt: Date;
+  // UI specific fields
   views: number;
   likes: number;
-  shares?: number;
   comments?: number;
-  readTime?: string;
   tags: string[];
-  featured: boolean;
   breaking?: boolean;
   trending?: boolean;
   hot?: boolean;
-  priority?: 'low' | 'medium' | 'high';
-  updatedAt?: Date;
-  status?: 'draft' | 'published' | 'archived';
 }
 
-export interface NewsCategory {
-  id: string;
-  name: string;
-  slug: string;
-  color: string;
-  description?: string;
-  count?: number;
+export interface NewsResponse {
+  status: string;
+  message: string;
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+  data: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    summary: string;
+    content: string;
+    image_url: string;
+    category_id: string;
+    author: string;
+    featured: number;
+    status: 'published' | 'draft';
+    published_at: string;
+    created_at: string;
+    updated_at: string;
+    category_name: string;
+    category_color: string;
+  }>;
 }
 
 export interface NewsFilters {
@@ -48,14 +66,7 @@ export interface NewsFilters {
 
 export interface NewsState {
   items: NewsItem[];
-  categories: NewsCategory[];
-  filters: NewsFilters;
   loading: boolean;
   error: string | null;
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    hasMore: boolean;
-  };
+  hasMore: boolean;
 }

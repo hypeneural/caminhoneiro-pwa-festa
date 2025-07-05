@@ -132,6 +132,8 @@ const Index = () => {
             <CompactBannerCarousel 
               banners={bannersByPosition[9]} 
               autoplayDelay={3500}
+              showControls={false}
+              showDots={true}
             />
           </Section>
         )}
@@ -181,6 +183,8 @@ const Index = () => {
             <CompactBannerCarousel 
               banners={bannersByPosition[10]} 
               autoplayDelay={3800}
+              showControls={false}
+              showDots={true}
             />
           </Section>
         )}
@@ -202,9 +206,9 @@ const Index = () => {
           <NewsCarousel />
         </Section>
 
-        {/* Banner Carousel 5 */}
+        {/* Banner Carousel 5 - Após Notícias */}
         {!isLoading && hasBannersInPosition(5) && (
-          <Section delay={0.6} className="px-4 mb-6">
+          <Section delay={0.57} className="px-4 mb-6">
             <BannerCarousel 
               banners={bannersByPosition[5]} 
               autoplayDelay={4200}
@@ -215,23 +219,30 @@ const Index = () => {
         )}
 
         {/* Seção 6: Fotos */}
-        <Section delay={0.65} className="mb-6">
+        <Section delay={0.6} className="px-4 mb-6">
           <PhotoCarousel />
         </Section>
 
-        {/* Compact Banner 11 - Após Fotos */}
+        {/* Compact Banner 11 - Entre Fotos e Acesso Rápido */}
         {!isLoading && hasBannersInPosition(11) && (
-          <Section delay={0.67} className="px-4 mb-4">
+          <Section delay={0.62} className="px-4 mb-4">
             <CompactBannerCarousel 
               banners={bannersByPosition[11]} 
-              autoplayDelay={4100}
+              autoplayDelay={3600}
+              showControls={false}
+              showDots={true}
             />
           </Section>
         )}
 
-        {/* Banner Carousel 6 */}
+        {/* Seção 7: Acesso Rápido */}
+        <Section delay={0.65} className="px-4 mb-6">
+          <QuickAccess />
+        </Section>
+
+        {/* Banner Carousel 6 - Após Acesso Rápido */}
         {!isLoading && hasBannersInPosition(6) && (
-          <Section delay={0.7} className="px-4 mb-6">
+          <Section delay={0.67} className="px-4 mb-6">
             <BannerCarousel 
               banners={bannersByPosition[6]} 
               autoplayDelay={4800}
@@ -241,57 +252,37 @@ const Index = () => {
           </Section>
         )}
 
-        {/* Seção 7: Acesso Rápido */}
-        <Section delay={0.75} className="px-4 mb-6">
-          <QuickAccess />
-        </Section>
-
-        {/* Compact Banner 12 - Após Acesso Rápido */}
-        {!isLoading && hasBannersInPosition(12) && (
-          <Section delay={0.77} className="px-4 mb-4">
-            <CompactBannerCarousel 
-              banners={bannersByPosition[12]} 
-              autoplayDelay={3600}
-            />
-          </Section>
-        )}
-
-        {/* Banner Carousel 7 */}
-        {!isLoading && hasBannersInPosition(7) && (
-          <Section delay={0.8} className="px-4 mb-6">
-            <BannerCarousel 
-              banners={bannersByPosition[7]} 
-              autoplayDelay={5200}
-              showControls={true}
-              showDots={true}
-            />
-          </Section>
-        )}
-
         {/* Seção 8: Patrocinadores */}
         {!isLoading && sponsors.length > 0 && (
-          <Section delay={0.85} className="mt-8 mb-6">
-            <SponsorCarousel sponsors={sponsors} autoplayDelay={3000} />
+          <Section delay={0.7} className="px-4 mb-6">
+            <SponsorCarousel sponsors={sponsors} />
           </Section>
         )}
 
-        {/* Banner Carousel 8 (Final) */}
-        {!isLoading && hasBannersInPosition(8) && (
-          <Section delay={0.9} className="px-4 mb-8">
-            <BannerCarousel 
-              banners={bannersByPosition[8]} 
-              autoplayDelay={4600}
-              showControls={true}
+        {/* Compact Banner 12 - Final da Página */}
+        {!isLoading && hasBannersInPosition(12) && (
+          <Section delay={0.72} className="px-4 mb-4">
+            <CompactBannerCarousel 
+              banners={bannersByPosition[12]} 
+              autoplayDelay={4000}
+              showControls={false}
               showDots={true}
             />
           </Section>
         )}
 
-        <BottomNavigation />
-        <PWAInstaller />
+        {/* Grid de Patrocinadores */}
+        {!isLoading && sponsors.length > 0 && (
+          <Section delay={0.75} className="px-4">
+            <SponsorGrid sponsors={sponsors} />
+          </Section>
+        )}
       </main>
+
+      <BottomNavigation />
+      <PWAInstaller />
     </div>
   );
-}
+};
 
 export default Index;

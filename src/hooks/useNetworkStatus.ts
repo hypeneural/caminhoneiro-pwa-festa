@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 
 export function useNetworkStatus() {
@@ -17,5 +16,5 @@ export function useNetworkStatus() {
     };
   }, []);
 
-  return isOnline;
+  return { isOnline };
 }

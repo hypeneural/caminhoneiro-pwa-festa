@@ -13,6 +13,7 @@ interface BannerCarouselProps {
   showControls?: boolean;
   showDots?: boolean;
   onBannerClick?: (banner: Banner) => void;
+  compact?: boolean;
 }
 
 export function BannerCarousel({
@@ -21,7 +22,8 @@ export function BannerCarousel({
   className,
   showControls = true,
   showDots = true,
-  onBannerClick
+  onBannerClick,
+  compact = false
 }: BannerCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoplayActive, setIsAutoplayActive] = useState(true);
@@ -128,7 +130,10 @@ export function BannerCarousel({
     >
       {/* Banner Container */}
       <div 
-        className="relative w-full aspect-[3/1] sm:aspect-[16/5]"
+        className={cn(
+          "relative w-full",
+          compact ? "aspect-[6/1]" : "aspect-[3/1] sm:aspect-[16/5]"
+        )}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -162,11 +167,13 @@ export function BannerCarousel({
               </div>
 
               {/* Banner info overlay */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 sm:p-4">
-                <h3 className="text-white font-semibold text-sm sm:text-base truncate">
-                  {banners[currentIndex].title}
-                </h3>
-              </div>
+              {!compact && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 sm:p-4">
+                  <h3 className="text-white font-semibold text-sm sm:text-base truncate">
+                    {banners[currentIndex].title}
+                  </h3>
+                </div>
+              )}
             </TouchFeedback>
           </motion.div>
         </AnimatePresence>
@@ -177,34 +184,48 @@ export function BannerCarousel({
         <>
           <button
             onClick={goToPrevious}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all duration-200 backdrop-blur-sm"
+            className={cn(
+              "absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all duration-200 backdrop-blur-sm",
+              compact ? "w-6 h-6" : "w-8 h-8 sm:w-10 sm:h-10"
+            )}
             aria-label="Banner anterior"
           >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ChevronLeft className={cn(
+              compact ? "w-3 h-3" : "w-4 h-4 sm:w-5 sm:h-5"
+            )} />
           </button>
           
           <button
             onClick={goToNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all duration-200 backdrop-blur-sm"
+            className={cn(
+              "absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all duration-200 backdrop-blur-sm",
+              compact ? "w-6 h-6" : "w-8 h-8 sm:w-10 sm:h-10"
+            )}
             aria-label="Próximo banner"
           >
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ChevronRight className={cn(
+              compact ? "w-3 h-3" : "w-4 h-4 sm:w-5 sm:h-5"
+            )} />
           </button>
         </>
       )}
 
       {/* Dots Indicator */}
       {showDots && banners.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+        <div className={cn(
+          "absolute left-1/2 -translate-x-1/2 flex gap-1.5",
+          compact ? "bottom-0.5" : "bottom-2"
+        )}>
           {banners.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
               className={cn(
-                "w-2 h-2 rounded-full transition-all duration-200",
+                "transition-all duration-200",
+                compact ? "w-1.5 h-1.5" : "w-2 h-2",
                 index === currentIndex
-                  ? "bg-white w-6"
-                  : "bg-white/50 hover:bg-white/80"
+                  ? "bg-white rounded-full"
+                  : "bg-white/50 hover:bg-white/80 rounded-full"
               )}
               aria-label={`Ir para banner ${index + 1}`}
             />
