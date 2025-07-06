@@ -164,12 +164,12 @@ const NewsErrorFallback = ({ error, resetError }: { error?: Error; resetError?: 
 );
 
 export const NewsCarousel = React.memo(() => {
-  const { latestNews, featuredNews, loading, error, refresh } = useNews();
+  const { items: latestNews, loading, error, refresh } = useNews({ filters: { limit: 5 } });
   const { navigateTo } = useNavigation();
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  const mainNews = featuredNews[0] || latestNews[0];
+  const mainNews = latestNews[0];
   const secondaryNews = latestNews.slice(1, 4);
 
   const handleNewsClick = (news: NewsItem) => {

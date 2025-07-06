@@ -17,8 +17,10 @@ export interface NewsItem {
   // UI specific fields
   views: number;
   likes: number;
+  shares?: number;
   comments?: number;
   tags: string[];
+  readTime?: string;
   breaking?: boolean;
   trending?: boolean;
   hot?: boolean;
@@ -53,15 +55,29 @@ export interface NewsResponse {
 
 export interface NewsFilters {
   category?: string;
-  featured?: boolean;
   search?: string;
-  dateRange?: {
-    start: Date;
-    end: Date;
-  };
-  tags?: string[];
-  sortBy?: 'publishedAt' | 'views' | 'likes' | 'title';
-  sortOrder?: 'asc' | 'desc';
+  status?: 'published' | 'draft' | 'archived';
+  featured?: boolean;
+  date_from?: string;
+  date_to?: string;
+  page?: number;
+  limit?: number;
+  sort?: string;
+  order?: 'ASC' | 'DESC';
+}
+
+export interface NewsCategory {
+  id: string;
+  name: string;
+  slug: string;
+  color: string;
+}
+
+export interface NewsCategoriesResponse {
+  status: string;
+  message: string | null;
+  meta: any[];
+  data: NewsCategory[];
 }
 
 export interface NewsState {

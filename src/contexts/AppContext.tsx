@@ -24,7 +24,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const isOnline = useNetworkStatus();
+  const { isOnline } = useNetworkStatus();
   const [syncQueue, setSyncQueue] = useLocalStorage<AppState['syncQueue']>('syncQueue', []);
   const [currentTab, setCurrentTab] = useState('home');
 

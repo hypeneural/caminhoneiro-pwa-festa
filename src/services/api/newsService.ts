@@ -1,26 +1,49 @@
 import axios from '@/lib/axios';
-import { NewsItem, NewsResponse } from '@/types/news';
+import { NewsItem, NewsResponse, NewsFilters, NewsCategory, NewsCategoriesResponse } from '@/types/news';
 import { API } from '@/constants/api';
 
 const BASE_URL = API.BASE_URL;
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
 
-let newsCache: {
-  data: NewsItem[];
-  meta: any;
+// Separate cache for different endpoints
+let newsCache: Map<string, {
+  data: any;
+  meta?: any;
   timestamp: number;
-} | null = null;
+}> = new Map();
+
+const generateCacheKey = (endpoint: string, params?: any): string => {
+  if (!params) return endpoint;
+  const sortedParams = Object.keys(params).sort().reduce((result, key) => {
+    result[key] = params[key];
+    return result;
+  }, {} as any);
+  return `${endpoint}_${JSON.stringify(sortedParams)}`;
+};
 
 export const newsService = {
-  async getNews(limit: number = 5) {
+  async getNews(filters: NewsFilters = {}) {
+    const cacheKey = generateCacheKey('news', filters);
+    const cached = newsCache.get(cacheKey);
+    
     // Check cache first
-    if (newsCache && Date.now() - newsCache.timestamp < CACHE_DURATION) {
-      return newsCache;
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached;
     }
 
     try {
-      const response = await axios.get<NewsResponse>(`${BASE_URL}/news`, {
-        params: { limit }
+      // Set default values
+      const params = {
+        status: 'published',
+        limit: 10,
+        page: 1,
+        sort: 'published_at',
+        order: 'DESC',
+        ...filters
+      };
+
+      const response = await axios.get<NewsResponse>(`${BASE_URL}/v1/news`, {
+        params
       });
 
       const transformedData = {
@@ -30,38 +53,106 @@ export const newsService = {
       };
 
       // Update cache
-      newsCache = transformedData;
+      newsCache.set(cacheKey, transformedData);
       return transformedData;
     } catch (error) {
       console.error('Error fetching news:', error);
+      // Return cached data if available, even if expired
+      if (cached) {
+        console.warn('Using expired cache due to network error');
+        return cached;
+      }
+      throw error;
+    }
+  },
+
+  async getNewsById(id: string) {
+    const cacheKey = generateCacheKey(`news/${id}`);
+    const cached = newsCache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+
+    try {
+      const response = await axios.get<NewsResponse>(`${BASE_URL}/v1/news/${id}`);
+      const transformedData = transformNewsItem(response.data.data[0]);
+      
+      newsCache.set(cacheKey, {
+        data: transformedData,
+        timestamp: Date.now()
+      });
+      
+      return transformedData;
+    } catch (error) {
+      console.error('Error fetching news by id:', error);
+      if (cached) {
+        return cached.data;
+      }
+      throw error;
+    }
+  },
+
+  async getFeaturedNews(): Promise<NewsItem[]> {
+    const cacheKey = generateCacheKey('news/featured');
+    const cached = newsCache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+
+    try {
+      const response = await axios.get<NewsResponse>(`${BASE_URL}/v1/news/featured`);
+      const transformedData = response.data.data.map(transformNewsItem);
+      
+      newsCache.set(cacheKey, {
+        data: transformedData,
+        timestamp: Date.now()
+      });
+      
+      return transformedData;
+    } catch (error) {
+      console.error('Error fetching featured news:', error);
+      if (cached) {
+        return cached.data;
+      }
+      throw error;
+    }
+  },
+
+  async getCategories(): Promise<NewsCategory[]> {
+    const cacheKey = generateCacheKey('news/categories');
+    const cached = newsCache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+
+    try {
+      const response = await axios.get<NewsCategoriesResponse>(`${BASE_URL}/v1/news/categories`);
+      const categoriesData = response.data.data;
+      
+      newsCache.set(cacheKey, {
+        data: categoriesData,
+        timestamp: Date.now()
+      });
+      
+      return categoriesData;
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      if (cached) {
+        return cached.data;
+      }
       throw error;
     }
   },
 
   clearCache() {
-    newsCache = null;
+    newsCache.clear();
   },
 
-  async getNewsById(id: string) {
-    try {
-      const response = await axios.get<NewsResponse>(`${BASE_URL}/news/${id}`);
-      return transformNewsItem(response.data.data[0]);
-    } catch (error) {
-      console.error('Error fetching news by id:', error);
-      throw error;
-    }
-  },
-
-  // Buscar notícias em destaque
-  getFeaturedNews: async (): Promise<NewsItem[]> => {
-    const response = await axios.get('/news/featured');
-    return response.data;
-  },
-
-  // Buscar notícias por categoria
-  getNewsByCategory: async (category: string): Promise<NewsItem[]> => {
-    const response = await axios.get(`/news/category/${category}`);
-    return response.data;
+  clearCacheByKey(key: string) {
+    newsCache.delete(key);
   }
 };
 

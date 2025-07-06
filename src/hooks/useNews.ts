@@ -1,19 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
-import { NewsItem, NewsState } from '@/types/news';
+import { NewsItem, NewsState, NewsFilters } from '@/types/news';
 import newsService from '@/services/api/newsService';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
-export const useNews = (initialLimit: number = 5) => {
+interface UseNewsParams {
+  filters?: NewsFilters;
+  initialLoad?: boolean;
+}
+
+export const useNews = ({ filters = {}, initialLoad = true }: UseNewsParams = {}) => {
   const [state, setState] = useState<NewsState>({
     items: [],
-    loading: true,
+    loading: initialLoad,
     error: null,
-    hasMore: false
+    hasMore: true
   });
 
   const { isOnline } = useNetworkStatus();
 
-  const fetchNews = useCallback(async () => {
+  const fetchNews = useCallback(async (newFilters?: NewsFilters, append = false) => {
     if (!isOnline) {
       setState(prev => ({ ...prev, loading: false }));
       return;
@@ -21,21 +26,22 @@ export const useNews = (initialLimit: number = 5) => {
 
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      console.log('Fetching news...');
       
-      const response = await newsService.getNews(initialLimit);
-      console.log('News response:', response);
+      const finalFilters = { ...filters, ...newFilters };
+      const response = await newsService.getNews(finalFilters);
 
       if (!response?.data) {
         throw new Error('Dados inválidos recebidos da API');
       }
 
-      setState({
-        items: response.data,
+      setState(prev => ({
+        items: append ? [...prev.items, ...response.data] : response.data,
         loading: false,
         error: null,
-        hasMore: false
-      });
+        hasMore: response.data.length === (finalFilters.limit || 10)
+      }));
+
+      return response;
     } catch (error) {
       console.error('Error in useNews:', error);
       setState(prev => ({
@@ -44,24 +50,72 @@ export const useNews = (initialLimit: number = 5) => {
         error: error instanceof Error ? error.message : 'Erro ao carregar notícias'
       }));
     }
-  }, [isOnline, initialLimit]);
+  }, [isOnline, filters]);
+
+  const loadMore = useCallback(async () => {
+    if (!state.hasMore || state.loading) return;
+    
+    const currentPage = Math.ceil(state.items.length / (filters.limit || 10)) + 1;
+    await fetchNews({ ...filters, page: currentPage }, true);
+  }, [state.hasMore, state.loading, state.items.length, filters, fetchNews]);
+
+  const refresh = useCallback(() => {
+    setState(prev => ({ ...prev, items: [] }));
+    return fetchNews();
+  }, [fetchNews]);
 
   // Initial load
   useEffect(() => {
-    fetchNews();
-  }, [fetchNews]);
-
-  // Get featured news
-  const featuredNews = state.items.filter(item => item.featured);
-
-  // Get latest news
-  const latestNews = state.items;
+    if (initialLoad) {
+      fetchNews();
+    }
+  }, [fetchNews, initialLoad]);
 
   return {
-    latestNews,
-    featuredNews,
+    items: state.items,
     loading: state.loading,
     error: state.error,
-    refresh: fetchNews
+    hasMore: state.hasMore,
+    refresh,
+    loadMore,
+    fetchNews
+  };
+};
+
+// Hook específico para notícias em destaque
+export const useFeaturedNews = () => {
+  const [featuredNews, setFeaturedNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { isOnline } = useNetworkStatus();
+
+  const fetchFeaturedNews = useCallback(async () => {
+    if (!isOnline) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await newsService.getFeaturedNews();
+      setFeaturedNews(data);
+    } catch (err) {
+      console.error('Error fetching featured news:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao carregar notícias em destaque');
+    } finally {
+      setLoading(false);
+    }
+  }, [isOnline]);
+
+  useEffect(() => {
+    fetchFeaturedNews();
+  }, [fetchFeaturedNews]);
+
+  return {
+    featuredNews,
+    loading,
+    error,
+    refresh: fetchFeaturedNews
   };
 };
