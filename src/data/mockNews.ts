@@ -9,7 +9,8 @@ export const mockNews: NewsItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&q=80&w=400",
     publishedAt: new Date('2025-06-15T09:30:00'),
     category: "Breaking News",
-    categoryColor: "bg-red-500",
+    categoryColor: "#ef4444",
+    categoryId: "1",
     author: "Redação Festa Caminhoneiro",
     slug: "breaking-mudanca-programacao",
     views: 2847,
@@ -19,8 +20,10 @@ export const mockNews: NewsItem[] = [
     readTime: "3 min",
     tags: ["breaking", "programação", "mudanças", "inscrições"],
     featured: true,
-    breaking: true,
-    priority: "high"
+    status: 'published' as const,
+    createdAt: new Date('2025-06-15T08:00:00'),
+    updatedAt: new Date('2025-06-15T09:30:00'),
+    breaking: true
   },
   {
     id: "2", 
@@ -30,7 +33,8 @@ export const mockNews: NewsItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?auto=format&fit=crop&q=80&w=400",
     publishedAt: new Date('2025-06-14T14:20:00'),
     category: "Programação",
-    categoryColor: "bg-trucker-orange",
+    categoryColor: "#f97316",
+    categoryId: "2",
     author: "Equipe Cultural",
     slug: "lineup-completo-confirmado",
     views: 1923,
@@ -40,6 +44,9 @@ export const mockNews: NewsItem[] = [
     readTime: "5 min",
     tags: ["shows", "música", "sertanejo", "artistas"],
     featured: true,
+    status: 'published' as const,
+    createdAt: new Date('2025-06-14T12:00:00'),
+    updatedAt: new Date('2025-06-14T14:20:00'),
     trending: true
   },
   {
@@ -50,7 +57,8 @@ export const mockNews: NewsItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1485833077593-4278bba3f11f?auto=format&fit=crop&q=80&w=400",
     publishedAt: new Date('2025-06-13T11:45:00'),
     category: "Religioso",
-    categoryColor: "bg-trucker-blue",
+    categoryColor: "#3b82f6",
+    categoryId: "3",
     author: "Padre João Santos",
     slug: "sao-cristovao-historia-devocao",
     views: 1456,
@@ -59,7 +67,10 @@ export const mockNews: NewsItem[] = [
     comments: 34,
     readTime: "4 min",
     tags: ["são cristóvão", "religião", "procissão", "história"],
-    featured: false
+    featured: false,
+    status: 'published' as const,
+    createdAt: new Date('2025-06-13T10:00:00'),
+    updatedAt: new Date('2025-06-13T11:45:00')
   },
   {
     id: "4",
@@ -69,7 +80,8 @@ export const mockNews: NewsItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=400",
     publishedAt: new Date('2025-06-12T16:10:00'),
     category: "Evento", 
-    categoryColor: "bg-trucker-red",
+    categoryColor: "#dc2626",
+    categoryId: "4",
     author: "Assessoria de Imprensa",
     slug: "expectativa-publico-recorde",
     views: 2134,
@@ -79,6 +91,9 @@ export const mockNews: NewsItem[] = [
     readTime: "2 min",
     tags: ["público", "números", "recorde", "expectativa"],
     featured: false,
+    status: 'published' as const,
+    createdAt: new Date('2025-06-12T15:00:00'),
+    updatedAt: new Date('2025-06-12T16:10:00'),
     hot: true
   },
   {
@@ -89,7 +104,8 @@ export const mockNews: NewsItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&q=80&w=400",
     publishedAt: new Date('2025-06-11T10:30:00'),
     category: "Segurança",
-    categoryColor: "bg-green-600",
+    categoryColor: "#16a34a",
+    categoryId: "5",
     author: "Coordenação de Segurança",
     slug: "seguranca-reforcada-tecnologia",
     views: 987,
@@ -98,7 +114,10 @@ export const mockNews: NewsItem[] = [
     comments: 23,
     readTime: "3 min",
     tags: ["segurança", "tecnologia", "monitoramento"],
-    featured: false
+    featured: false,
+    status: 'published' as const,
+    createdAt: new Date('2025-06-11T09:00:00'),
+    updatedAt: new Date('2025-06-11T10:30:00')
   },
   {
     id: "6",
@@ -108,7 +127,8 @@ export const mockNews: NewsItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80&w=400",
     publishedAt: new Date('2025-06-10T13:15:00'),
     category: "Gastronomia",
-    categoryColor: "bg-orange-500",
+    categoryColor: "#f97316",
+    categoryId: "6",
     author: "Equipe Gastronômica",
     slug: "gastronomia-sabores-regionais",
     views: 1245,
@@ -117,6 +137,9 @@ export const mockNews: NewsItem[] = [
     comments: 45,
     readTime: "3 min",
     tags: ["gastronomia", "food trucks", "culinária", "regional"],
-    featured: false
+    featured: false,
+    status: 'published' as const,
+    createdAt: new Date('2025-06-10T12:00:00'),
+    updatedAt: new Date('2025-06-10T13:15:00')
   }
 ];
