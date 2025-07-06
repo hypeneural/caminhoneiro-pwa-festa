@@ -10,6 +10,7 @@ let newsCache: Map<string, {
   data: any;
   meta?: any;
   timestamp: number;
+  error?: string;
 }> = new Map();
 
 const generateCacheKey = (endpoint: string, params?: any): string => {
@@ -42,8 +43,11 @@ export const newsService = {
         ...filters
       };
 
-      const response = await axios.get<NewsResponse>(`${BASE_URL}/v1/news`, {
-        params
+      console.log('Fetching news with URL:', `${BASE_URL}/news`);
+      
+      const response = await axios.get<NewsResponse>(`${BASE_URL}/news`, {
+        params,
+        timeout: 10000 // 10 seconds timeout
       });
 
       const transformedData = {
@@ -55,14 +59,27 @@ export const newsService = {
       // Update cache
       newsCache.set(cacheKey, transformedData);
       return transformedData;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching news:', error);
+      
       // Return cached data if available, even if expired
       if (cached) {
         console.warn('Using expired cache due to network error');
         return cached;
       }
-      throw error;
+      
+      // Don't throw error to prevent infinite loops
+      // Return empty data structure instead
+      const fallbackData = {
+        data: [],
+        meta: { total: 0, page: 1, limit: 10 },
+        timestamp: Date.now(),
+        error: error.response?.status === 404 ? 'Endpoint não encontrado' : 'Erro de conexão'
+      };
+      
+      // Cache the error response briefly to prevent repeated requests
+      newsCache.set(cacheKey, fallbackData);
+      return fallbackData;
     }
   },
 
@@ -75,7 +92,9 @@ export const newsService = {
     }
 
     try {
-      const response = await axios.get<NewsResponse>(`${BASE_URL}/v1/news/${id}`);
+      const response = await axios.get<NewsResponse>(`${BASE_URL}/news/${id}`, {
+        timeout: 10000
+      });
       const transformedData = transformNewsItem(response.data.data[0]);
       
       newsCache.set(cacheKey, {
@@ -84,12 +103,14 @@ export const newsService = {
       });
       
       return transformedData;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching news by id:', error);
       if (cached) {
         return cached.data;
       }
-      throw error;
+      
+      // Return null instead of throwing to prevent crashes
+      return null;
     }
   },
 
@@ -102,7 +123,9 @@ export const newsService = {
     }
 
     try {
-      const response = await axios.get<NewsResponse>(`${BASE_URL}/v1/news/featured`);
+      const response = await axios.get<NewsResponse>(`${BASE_URL}/news/featured`, {
+        timeout: 10000
+      });
       const transformedData = response.data.data.map(transformNewsItem);
       
       newsCache.set(cacheKey, {
@@ -111,12 +134,14 @@ export const newsService = {
       });
       
       return transformedData;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching featured news:', error);
       if (cached) {
         return cached.data;
       }
-      throw error;
+      
+      // Return empty array instead of throwing
+      return [];
     }
   },
 
@@ -129,7 +154,9 @@ export const newsService = {
     }
 
     try {
-      const response = await axios.get<NewsCategoriesResponse>(`${BASE_URL}/v1/news/categories`);
+      const response = await axios.get<NewsCategoriesResponse>(`${BASE_URL}/news/categories`, {
+        timeout: 10000
+      });
       const categoriesData = response.data.data;
       
       newsCache.set(cacheKey, {
@@ -138,12 +165,16 @@ export const newsService = {
       });
       
       return categoriesData;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching categories:', error);
       if (cached) {
         return cached.data;
       }
-      throw error;
+      
+      // Return default categories to prevent UI breaks
+      return [
+        { id: '1', name: 'Geral', slug: 'geral', color: '#3b82f6' }
+      ];
     }
   },
 
@@ -153,6 +184,18 @@ export const newsService = {
 
   clearCacheByKey(key: string) {
     newsCache.delete(key);
+  },
+
+  // Health check method
+  async healthCheck(): Promise<boolean> {
+    try {
+      const response = await axios.get(`${BASE_URL}/health`, {
+        timeout: 5000
+      });
+      return response.status === 200;
+    } catch {
+      return false;
+    }
   }
 };
 

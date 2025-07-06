@@ -34,11 +34,22 @@ export const useNews = ({ filters = {}, initialLoad = true }: UseNewsParams = {}
         throw new Error('Dados inválidos recebidos da API');
       }
 
+      // Check if response has error (from service fallback)
+      if ('error' in response && response.error) {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          error: response.error,
+          hasMore: false
+        }));
+        return response;
+      }
+
       setState(prev => ({
         items: append ? [...prev.items, ...response.data] : response.data,
         loading: false,
         error: null,
-        hasMore: response.data.length === (finalFilters.limit || 10)
+        hasMore: response.data.length === (finalFilters.limit || 10) && response.data.length > 0
       }));
 
       return response;
@@ -47,7 +58,8 @@ export const useNews = ({ filters = {}, initialLoad = true }: UseNewsParams = {}
       setState(prev => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Erro ao carregar notícias'
+        error: error instanceof Error ? error.message : 'Erro ao carregar notícias',
+        hasMore: false
       }));
     }
   }, [isOnline, filters]);
@@ -69,7 +81,7 @@ export const useNews = ({ filters = {}, initialLoad = true }: UseNewsParams = {}
     if (initialLoad) {
       fetchNews();
     }
-  }, [fetchNews, initialLoad]);
+  }, [initialLoad]);
 
   return {
     items: state.items,
@@ -99,10 +111,12 @@ export const useFeaturedNews = () => {
       setLoading(true);
       setError(null);
       const data = await newsService.getFeaturedNews();
-      setFeaturedNews(data);
+      setFeaturedNews(data || []);
     } catch (err) {
       console.error('Error fetching featured news:', err);
       setError(err instanceof Error ? err.message : 'Erro ao carregar notícias em destaque');
+      // Set empty array to prevent crashes
+      setFeaturedNews([]);
     } finally {
       setLoading(false);
     }

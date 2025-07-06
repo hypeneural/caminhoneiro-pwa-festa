@@ -25,7 +25,6 @@ const Noticias = () => {
   const loadingRef = useRef<HTMLDivElement>(null);
   const { isOnline } = useNetworkStatus();
   
-  // Main news with filters
   const { 
     items: news, 
     loading, 
@@ -39,7 +38,8 @@ const Noticias = () => {
   // Featured news
   const { 
     featuredNews, 
-    loading: featuredLoading 
+    loading: featuredLoading,
+    error: featuredError 
   } = useFeaturedNews();
 
   // Handle filter changes
@@ -140,7 +140,7 @@ const Noticias = () => {
           />
 
           {/* Featured News Section */}
-          {featuredNews && featuredNews.length > 0 && (
+          {featuredNews && featuredNews.length > 0 && !featuredError && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
