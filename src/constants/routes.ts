@@ -9,6 +9,7 @@ export const ROUTES = {
   VIDEOS: '/videos',
   HISTORY: '/historia',
   NEWS: '/noticias',
+  PODCAST: '/podcast',
   COMPLETE_ROUTE: '/rota-completa',
   ROUTE: '/rota',
   CAMERAS: '/cameras',

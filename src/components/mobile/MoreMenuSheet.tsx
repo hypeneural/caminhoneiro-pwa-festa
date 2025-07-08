@@ -13,7 +13,8 @@ import {
   Settings,
   HelpCircle,
   Cross,
-  Heart
+  Heart,
+  Mic
 } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { TouchFeedback } from "@/components/ui/touch-feedback";
@@ -45,6 +46,16 @@ const menuItems = [
     color: 'text-blue-500',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200'
+  },
+  {
+    id: 'podcast',
+    title: 'Podcast',
+    description: 'Nossos podcasts exclusivos',
+    icon: Mic,
+    route: ROUTES.PODCAST,
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50',
+    borderColor: 'border-purple-200'
   },
   {
     id: 'historia',

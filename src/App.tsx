@@ -18,6 +18,7 @@ import Radio from "./pages/Radio";
 import Videos from "./pages/Videos";
 import Historia from "./pages/Historia";
 import Noticias from "./pages/Noticias";
+import Podcast from "./pages/Podcast";
 import RotaCompleta from "./pages/RotaCompleta";
 import Cameras from "./pages/Cameras";
 import About from "./pages/About";
@@ -106,6 +107,7 @@ const App = () => {
               <Route path="/videos" element={<Videos />} />
               <Route path="/historia" element={<Historia />} />
               <Route path="/noticias" element={<Noticias />} />
+              <Route path="/podcast" element={<Podcast />} />
               <Route path="/rota-completa" element={<RotaCompleta />} />
               <Route path="/rota" element={<RotaCompleta />} />
               <Route path="/cameras" element={<Cameras />} />

@@ -1,5 +1,5 @@
 import { QuickAccessItem } from '@/types/quickAccess';
-import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText, Shield, Users, Heart, ChefHat, Phone } from "lucide-react";
+import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText, Shield, Users, Heart, ChefHat, Phone, Mic } from "lucide-react";
 
 export const quickAccessItems: QuickAccessItem[] = [
   // Primeira Linha
@@ -89,6 +89,18 @@ export const quickAccessItems: QuickAccessItem[] = [
     description: "Assista aos vídeos do evento",
     isActive: true
   },
+  {
+    id: "podcast",
+    title: "Podcast",
+    icon: Mic,
+    color: "text-purple-600",
+    bgColor: "bg-purple-50 dark:bg-purple-900/20",
+    route: "/podcast",
+    category: "media",
+    priority: 8,
+    description: "Ouça nossos podcasts exclusivos",
+    isActive: true
+  },
   
   // Terceira Linha
   {
@@ -99,7 +111,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-pink-50 dark:bg-pink-900/20",
     route: "/cameras",
     category: "media",
-    priority: 8,
+    priority: 9,
     description: "Transmissão ao vivo das câmeras",
     isActive: true
   },
@@ -111,7 +123,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-cyan-50 dark:bg-cyan-900/20",
     route: "/stories",
     category: "media",
-    priority: 9,
+    priority: 10,
     description: "Veja os stories do evento",
     isActive: true
   },
@@ -123,7 +135,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-blue-50 dark:bg-blue-900/20",
     route: "/noticias",
     category: "info",
-    priority: 10,
+    priority: 11,
     description: "Últimas notícias do evento",
     isActive: true
   },
@@ -137,7 +149,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
     route: "/rota-completa",
     category: "navigation",
-    priority: 11,
+    priority: 12,
     description: "Veja o percurso da procissão",
     isActive: true
   },
@@ -149,7 +161,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-green-50 dark:bg-green-900/20",
     route: "/faq",
     category: "info",
-    priority: 12,
+    priority: 13,
     description: "Perguntas frequentes",
     isActive: true
   },
@@ -161,7 +173,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
     route: "/historia",
     category: "info",
-    priority: 13,
+    priority: 14,
     description: "Conheça a história da festa",
     isActive: true
   },
@@ -173,7 +185,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-blue-50 dark:bg-blue-900/20",
     route: "/contato-igreja",
     category: "info",
-    priority: 14,
+    priority: 15,
     description: "Entre em contato com a Paróquia",
     isActive: true
   }

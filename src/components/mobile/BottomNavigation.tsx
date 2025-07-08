@@ -62,6 +62,7 @@ const navigationTabs: BottomNavTab[] = [
 const moreMenuRoutes = [
   "/radio",
   "/videos", 
+  "/podcast",
   "/historia",
   "/noticias",
   "/rota-completa",
