@@ -1,191 +1,45 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, ArrowRight, MapPin, Radio, Video, Bell, Share2, X, ChevronUp } from "lucide-react";
+import { Calendar, Clock, ArrowRight, MapPin, Video, Bell, Share2, X, Church, Coffee, Truck, Gift, Music, Utensils } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Event, getEventsByDay, getNextEvent, getEventStatus, getEventTypeConfig } from "@/data/programacao";
+import { useCountdown } from "@/hooks/useCountdown";
 
-interface Event {
-  id: number;
-  time: string;
-  title: string;
-  location: string;
-  type: string;
-  date: string;
-  hasCamera?: boolean;
-  hasRoute?: boolean;
-  isLive?: boolean;
-  description?: string;
-  duration?: number;
-}
-
-interface TimeUntilEvent {
-  hours: number;
-  minutes: number;
-  seconds: number;
-  isToday: boolean;
-  isPast: boolean;
-}
-
-// Mock data with realistic times for testing
-const now = new Date();
-const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-const saturdayEvents: Event[] = [
-  {
-    id: 1,
-    time: "18:00",
-    title: "Missa dos Festeiros e Comunidade em Geral",
-    location: "Capela Santa Teresinha",
-    type: "religioso",
-    date: "19/07/2025",
-    hasCamera: true,
-    hasRoute: false,
-    description: "Missa especial dedicada aos festeiros e comunidade, seguida de completo serviço de bar e cozinha, galeto com acompanhamentos e música com DJ Jr. Oliver.",
-    duration: 90
-  }
-];
-
-const sundayEvents: Event[] = [
-  {
-    id: 2,
-    time: "07:30",
-    title: "Café da Manhã",
-    location: "Área de Alimentação",
-    type: "alimentacao",
-    date: "20/07/2025",
-    hasCamera: false,
-    hasRoute: false,
-    description: "Venda do café da manhã para os participantes.",
-    duration: 90
-  },
-  {
-    id: 3,
-    time: "09:00",
-    title: "Procissão Automotiva",
-    location: "Capela Santa Teresinha",
-    type: "procissao",
-    date: "20/07/2025",
-    hasRoute: true,
-    hasCamera: true,
-    isLive: false,
-    description: "Saída da Capela Santa Teresinha, com bênção dos veículos e caminhões no retorno, em frente à Capela.",
-    duration: 180
-  },
-  {
-    id: 4,
-    time: "11:00",
-    title: "Entrega do Kit Festeiro e Almoço Festivo",
-    location: "Área Central do Evento",
-    type: "alimentacao",
-    date: "20/07/2025",
-    hasCamera: false,
-    hasRoute: false,
-    description: "Entrega do Kit Festeiro e almoço festivo com completo serviço de bar e cozinha.",
-    duration: 120
-  },
-  {
-    id: 5,
-    time: "15:00",
-    title: "Tarde Dançante com Alciney e Sandro",
-    location: "Palco Principal",
-    type: "entretenimento",
-    date: "20/07/2025",
-    hasCamera: true,
-    hasRoute: false,
-    description: "Apresentação musical com Alciney e Sandro para animar a tarde.",
-    duration: 180
-  }
-];
+// Componente de ícone dinâmico
+const DynamicIcon = ({ iconName, className }: { iconName: string; className?: string }) => {
+  const icons = {
+    Church,
+    Coffee, 
+    Truck,
+    Gift,
+    Music,
+    Utensils,
+    Calendar,
+    Clock,
+    MapPin
+  } as const;
+  
+  const Icon = icons[iconName as keyof typeof icons] || Calendar;
+  return <Icon className={className} />;
+};
 
 export const ProgramPreview = () => {
-  const [selectedDay, setSelectedDay] = useState<'saturday' | 'sunday'>('sunday');
+  const [selectedDay, setSelectedDay] = useState<'saturday' | 'sunday'>('saturday'); // Aba padrão é sábado
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [timeUntil, setTimeUntil] = useState<TimeUntilEvent | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const { toast } = useToast();
 
-  // Auto-detect current day
-  useEffect(() => {
-    const now = new Date();
-    const day = now.getDay();
-    if (day === 6) setSelectedDay('saturday'); // Saturday
-    else if (day === 0) setSelectedDay('sunday'); // Sunday
-  }, []);
-
   const getCurrentEvents = () => {
-    return selectedDay === 'saturday' ? saturdayEvents : sundayEvents;
+    return getEventsByDay(selectedDay);
   };
 
-  const getEventDateTime = (event: Event) => {
-    const [hours, minutes] = event.time.split(':').map(Number);
-    const eventDate = new Date();
-    eventDate.setHours(hours, minutes, 0, 0);
-    return eventDate;
-  };
-
-  const getEventStatus = (event: Event) => {
-    const eventDate = getEventDateTime(event);
-    const eventEnd = new Date(eventDate.getTime() + (event.duration || 120) * 60 * 1000);
-    
-    if (currentTime < eventDate) return 'upcoming';
-    if (currentTime >= eventDate && currentTime <= eventEnd) return 'current';
-    return 'past';
-  };
-
-  const getNextEvent = useCallback(() => {
-    const events = getCurrentEvents();
-    
-    // Find next upcoming event
-    for (const event of events) {
-      const eventDate = getEventDateTime(event);
-      if (eventDate > currentTime) {
-        return { event, date: eventDate };
-      }
-    }
-    
-    // If no upcoming events today, return first event
-    return events[0] ? { event: events[0], date: getEventDateTime(events[0]) } : null;
-  }, [selectedDay, currentTime]);
-
-  const calculateTimeUntil = useCallback((targetDate: Date): TimeUntilEvent => {
-    const diff = targetDate.getTime() - currentTime.getTime();
-    const isToday = targetDate.toDateString() === currentTime.toDateString();
-    const isPast = diff < 0;
-    
-    if (isPast) {
-      return { hours: 0, minutes: 0, seconds: 0, isToday, isPast };
-    }
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
-    return { hours, minutes, seconds, isToday, isPast };
-  }, [currentTime]);
-
-  const getEventTypeColor = (type: string) => {
-    switch (type) {
-      case 'religioso': return 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400';
-      case 'procissao': return 'text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400';
-      case 'alimentacao': return 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400';
-      case 'entretenimento': return 'text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400';
-      default: return 'text-muted-foreground bg-muted';
-    }
-  };
-
-  const getEventTypeGradient = (type: string) => {
-    switch (type) {
-      case 'religioso': return 'from-blue-500/10 to-blue-600/20';
-      case 'procissao': return 'from-red-500/10 to-red-600/20';
-      case 'alimentacao': return 'from-orange-500/10 to-orange-600/20';
-      case 'entretenimento': return 'from-green-500/10 to-green-600/20';
-      default: return 'from-muted/10 to-muted/20';
-    }
-  };
+  const nextEvent = getNextEvent();
+  const countdown = useCountdown(nextEvent?.date || new Date());
 
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
@@ -221,24 +75,7 @@ export const ProgramPreview = () => {
     });
   };
 
-  const nextEvent = getNextEvent();
   const upcomingEvents = getCurrentEvents().slice(0, 4);
-
-  // Update countdown for next event
-  useEffect(() => {
-    const updateCountdown = () => {
-      if (nextEvent) {
-        const timeData = calculateTimeUntil(nextEvent.date);
-        if (JSON.stringify(timeData) !== JSON.stringify(timeUntil)) {
-          setTimeUntil(timeData);
-        }
-      }
-    };
-
-    updateCountdown();
-    const timer = setInterval(updateCountdown, 1000);
-    return () => clearInterval(timer);
-  }, [nextEvent, calculateTimeUntil, timeUntil]);
 
   // Real-time clock update
   useEffect(() => {
@@ -247,15 +84,6 @@ export const ProgramPreview = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  // Get next event
-  useEffect(() => {
-    const result = getNextEvent();
-    if (result) {
-      // Não vamos mais selecionar o evento automaticamente
-      // setSelectedEvent(result.event);
-    }
-  }, [getNextEvent, currentTime]);
 
   return (
     <>
@@ -334,19 +162,26 @@ export const ProgramPreview = () => {
             className="mb-6"
           >
             <Card 
-              className={`relative overflow-hidden border-0 shadow-xl bg-gradient-to-br ${getEventTypeGradient(nextEvent.event.type)} backdrop-blur-sm cursor-pointer hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]`}
+              className={`relative overflow-hidden border-0 shadow-xl bg-gradient-to-br ${getEventTypeConfig(nextEvent.event.type).gradient} backdrop-blur-sm cursor-pointer hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]`}
               onClick={() => handleEventClick(nextEvent.event)}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
               <div className="relative p-6">
                 <div className="flex items-start justify-between mb-4">
                   <Badge 
-                    className={`${getEventTypeColor(nextEvent.event.type)} font-semibold px-3 py-1 text-xs`}
+                    className={`${getEventTypeConfig(nextEvent.event.type).color} font-semibold px-3 py-1 text-xs`}
                     variant="secondary"
                   >
                     {getEventStatus(nextEvent.event) === 'current' ? '🔴 AO VIVO' : '⏰ PRÓXIMO'}
                   </Badge>
                   <div className="flex gap-2">
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center"
+                    >
+                      <DynamicIcon iconName={nextEvent.event.icon} className="w-5 h-5 text-primary" />
+                    </motion.div>
                     {nextEvent.event.hasCamera && (
                       <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
                         <Video className="w-4 h-4 text-red-500" />
@@ -365,9 +200,10 @@ export const ProgramPreview = () => {
                     <div className="text-3xl font-black bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent">
                       {nextEvent.event.time}
                     </div>
-                    {timeUntil && !timeUntil.isPast && (
+                    {countdown.isActive && !countdown.isPast && (
                       <div className="text-xs font-medium text-muted-foreground mt-1 bg-muted/50 rounded-full px-2 py-1">
-                        em {timeUntil.hours}h {timeUntil.minutes}m
+                        {countdown.days > 0 ? `${countdown.days}d ` : ''}
+                        {countdown.hours}h {countdown.minutes}m
                       </div>
                     )}
                   </div>
@@ -407,6 +243,13 @@ export const ProgramPreview = () => {
               >
                 <div className="p-4">
                   <div className="flex items-center gap-4">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      className="w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/20 rounded-xl flex items-center justify-center"
+                    >
+                      <DynamicIcon iconName={event.icon} className="w-5 h-5 text-primary" />
+                    </motion.div>
+                    
                     <div className="text-center min-w-[60px]">
                       <div className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
                         {event.time}
@@ -421,7 +264,7 @@ export const ProgramPreview = () => {
                         {event.title}
                       </h4>
                       <Badge 
-                        className={`${getEventTypeColor(event.type)} text-xs`}
+                        className={`${getEventTypeConfig(event.type).color} text-xs`}
                         variant="secondary"
                       >
                         {event.location}
@@ -482,7 +325,7 @@ export const ProgramPreview = () => {
                   <DialogHeader className="text-left space-y-3">
                     <div className="flex items-start justify-between">
                       <Badge 
-                        className={`${getEventTypeColor(selectedEvent.type)} font-semibold`}
+                        className={`${getEventTypeConfig(selectedEvent.type).color} font-semibold`}
                         variant="secondary"
                       >
                         {selectedEvent.type.charAt(0).toUpperCase() + selectedEvent.type.slice(1)}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion";
-import { Calendar as CalendarIcon, Clock, RefreshCw, Thermometer, Users, Car, Trophy, Truck } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Calendar as CalendarIcon, Clock, RefreshCw, Thermometer, Users, Car, Trophy, Truck, Church, Coffee, Gift, Music, Utensils, Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,104 +9,36 @@ import { CountdownBadge } from "@/components/mobile/CountdownBadge";
 import { EventCard } from "@/components/mobile/EventCard";
 import { PullToRefresh } from "@/components/mobile/PullToRefresh";
 import { NavigationActions } from "@/components/ui/navigation-actions";
+import { Event, getEventsByDay, getNextEvent, getEventStatus, getEventTypeConfig } from "@/data/programacao";
+import { useCountdown } from "@/hooks/useCountdown";
+
+// Componente de ícone dinâmico
+const DynamicIcon = ({ iconName, className }: { iconName: string; className?: string }) => {
+  const icons = {
+    Church,
+    Coffee, 
+    Truck,
+    Gift,
+    Music,
+    Utensils,
+    CalendarIcon,
+    Clock
+  } as const;
+  
+  const Icon = icons[iconName as keyof typeof icons] || CalendarIcon;
+  return <Icon className={className} />;
+};
 
 const Schedule = () => {
-  const [selectedDay, setSelectedDay] = useState<'saturday' | 'sunday'>('saturday');
+  const [selectedDay, setSelectedDay] = useState<'saturday' | 'sunday'>('saturday'); // Aba padrão é sábado
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const saturdayEvents = [
-    {
-      id: 1,
-      time: "18:00",
-      title: "Missa dos Festeiros e Comunidade em Geral",
-      location: "Capela Santa Teresinha",
-      address: "Rua Santa Teresinha, 123 - Centro, Tijucas - SC",
-      type: "religioso",
-      date: "19/07/2025",
-      description: "Missa especial dedicada aos festeiros e comunidade, seguida de completo serviço de bar e cozinha, galeto com acompanhamentos e música com DJ Jr. Oliver.",
-      hasCamera: true,
-      hasRoute: false
-    }
-  ];
-
-  const sundayEvents = [
-    {
-      id: 2,
-      time: "07:30",
-      title: "Café da Manhã",
-      location: "Área de Alimentação",
-      address: "Praça Central - Centro, Tijucas - SC",
-      type: "alimentacao",
-      date: "20/07/2025",
-      description: "Venda do café da manhã para os participantes.",
-      hasCamera: false,
-      hasRoute: false
-    },
-    {
-      id: 3,
-      time: "09:00",
-      title: "Procissão Automotiva",
-      location: "Capela Santa Teresinha",
-      address: "Rua Santa Teresinha, 123 - Centro, Tijucas - SC",
-      type: "procissao",
-      date: "20/07/2025",
-      description: "Saída da Capela Santa Teresinha, com bênção dos veículos e caminhões no retorno, em frente à Capela.",
-      hasRoute: true,
-      hasCamera: true,
-      isLive: false
-    },
-    {
-      id: 4,
-      time: "11:00",
-      title: "Entrega do Kit Festeiro e Almoço Festivo",
-      location: "Área Central do Evento",
-      address: "Praça Central - Centro, Tijucas - SC",
-      type: "alimentacao",
-      date: "20/07/2025",
-      description: "Entrega do Kit Festeiro e almoço festivo com completo serviço de bar e cozinha.",
-      hasCamera: false,
-      hasRoute: false
-    },
-    {
-      id: 5,
-      time: "15:00",
-      title: "Tarde Dançante com Alciney e Sandro",
-      location: "Palco Principal",
-      address: "Praça Central - Centro, Tijucas - SC",
-      type: "entretenimento",
-      date: "20/07/2025",
-      description: "Apresentação musical com Alciney e Sandro para animar a tarde.",
-      hasCamera: true,
-      hasRoute: false
-    }
-  ];
-
   const getCurrentEvents = () => {
-    return selectedDay === 'saturday' ? saturdayEvents : sundayEvents;
+    return getEventsByDay(selectedDay);
   };
 
-  const getEventStatus = (event: any) => {
-    const now = new Date();
-    const eventDate = new Date(`2025-07-${selectedDay === 'saturday' ? '19' : '20'}T${event.time}:00`);
-    const eventEnd = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours duration
-    
-    if (now < eventDate) return 'upcoming';
-    if (now >= eventDate && now <= eventEnd) return 'current';
-    return 'past';
-  };
-
-  const getNextEvent = () => {
-    const allEvents = [...saturdayEvents, ...sundayEvents];
-    const now = new Date();
-    
-    for (const event of allEvents) {
-      const eventDate = new Date(`2025-07-${event.date.includes('19') ? '19' : '20'}T${event.time}:00`);
-      if (eventDate > now) {
-        return { event, date: eventDate };
-      }
-    }
-    return null;
-  };
+  const nextEvent = getNextEvent();
+  const countdown = useCountdown(nextEvent?.date || new Date());
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -130,7 +62,7 @@ const Schedule = () => {
     }
   };
 
-  const nextEvent = getNextEvent();
+  const nextEventData = nextEvent;
 
   return (
     <div className="min-h-screen bg-background">
@@ -142,17 +74,21 @@ const Schedule = () => {
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         {/* Top section with countdown */}
-        {nextEvent && (
+        {nextEventData && (
           <div className="bg-gradient-to-r from-trucker-blue to-trucker-blue/80 text-trucker-blue-foreground px-4 py-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                <span className="text-sm font-medium">Próximo: {nextEvent.event.title}</span>
+                <span className="text-sm font-medium">Próximo: {nextEventData.event.title}</span>
               </div>
-              <CountdownBadge 
-                targetDate={nextEvent.date} 
-                eventName={nextEvent.event.title} 
-              />
+              <div className="text-xs font-medium bg-white/20 rounded-full px-2 py-1">
+                {countdown.isActive && !countdown.isPast && (
+                  <>
+                    {countdown.days > 0 ? `${countdown.days}d ` : ''}
+                    {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -178,28 +114,38 @@ const Schedule = () => {
             </Button>
           </div>
 
-          {/* Day selector */}
-          <div className="flex bg-muted rounded-lg p-1">
-            <button
-              onClick={() => setSelectedDay('saturday')}
-              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                selectedDay === 'saturday'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Sáb 19/07
-            </button>
-            <button
-              onClick={() => setSelectedDay('sunday')}
-              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                selectedDay === 'sunday'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Dom 20/07
-            </button>
+          {/* Day selector with tabs */}
+          <div className="relative bg-muted/50 backdrop-blur rounded-2xl p-1">
+            <div className="flex relative">
+              <motion.div
+                className="absolute inset-y-1 bg-background rounded-xl shadow-md"
+                animate={{
+                  x: selectedDay === 'saturday' ? 0 : '100%',
+                  width: '50%'
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+              <button
+                onClick={() => setSelectedDay('saturday')}
+                className={`relative z-10 flex-1 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                  selectedDay === 'saturday'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Sáb 19/07
+              </button>
+              <button
+                onClick={() => setSelectedDay('sunday')}
+                className={`relative z-10 flex-1 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                  selectedDay === 'sunday'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Dom 20/07
+              </button>
+            </div>
           </div>
         </div>
       </motion.header>
@@ -271,24 +217,91 @@ const Schedule = () => {
 
             {/* Events timeline with enhanced design */}
             <div className="space-y-4 relative">
-              {/* Enhanced timeline line */}
-              <motion.div 
-                className="absolute left-9 top-0 bottom-0 w-0.5 bg-gradient-to-b from-trucker-blue/50 via-border to-trucker-blue/50"
-                initial={{ scaleY: 0 }}
-                animate={{ scaleY: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              />
-              
-              <AnimatePresence mode="wait">
-                {getCurrentEvents().map((event, index) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    index={index}
-                    status={getEventStatus(event)}
-                  />
-                ))}
-              </AnimatePresence>
+            {/* Enhanced timeline line */}
+            <motion.div 
+              className="absolute left-9 top-0 bottom-0 w-0.5 bg-gradient-to-b from-trucker-blue/50 via-border to-trucker-blue/50"
+              initial={{ scaleY: 0 }}
+              animate={{ scaleY: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            />
+            
+            <AnimatePresence mode="wait">
+              {getCurrentEvents().map((event, index) => (
+                <motion.div
+                  key={event.id}
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  className="relative pl-16"
+                >
+                  {/* Timeline dot with icon */}
+                  <motion.div
+                    className={`absolute left-6 w-6 h-6 rounded-full border-2 border-background shadow-lg flex items-center justify-center ${
+                      getEventStatus(event) === 'current' 
+                        ? 'bg-green-500 animate-pulse' 
+                        : getEventStatus(event) === 'past'
+                        ? 'bg-muted'
+                        : 'bg-primary'
+                    }`}
+                    whileHover={{ scale: 1.2 }}
+                  >
+                    <DynamicIcon iconName={event.icon} className="w-3 h-3 text-white" />
+                  </motion.div>
+
+                  <Card 
+                    className={`relative overflow-hidden ${getEventTypeConfig(event.type).border} bg-gradient-to-br ${getEventTypeConfig(event.type).gradient} hover:shadow-lg transition-all duration-300 group cursor-pointer`}
+                  >
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            className={`w-12 h-12 rounded-xl flex items-center justify-center ${getEventTypeConfig(event.type).color.replace('text-', 'bg-').replace(' bg-', '/20 text-')}`}
+                          >
+                            <DynamicIcon iconName={event.icon} className="w-6 h-6" />
+                          </motion.div>
+                          <div>
+                            <div className="text-2xl font-bold text-foreground">{event.time}</div>
+                            <Badge 
+                              className={`${getEventTypeConfig(event.type).color} text-xs mt-1`}
+                              variant="secondary"
+                            >
+                              {getEventStatus(event) === 'current' ? '🔴 AO VIVO' : 
+                               getEventStatus(event) === 'past' ? '✅ FINALIZADO' : '⏰ PROGRAMADO'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          {event.hasCamera && (
+                            <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
+                              <Video className="w-4 h-4 text-red-500" />
+                            </div>
+                          )}
+                          {event.hasRoute && (
+                            <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
+                              <Car className="w-4 h-4 text-green-500" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
+                        {event.title}
+                      </h3>
+                      
+                      <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                        {event.description}
+                      </p>
+
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Car className="w-4 h-4" />
+                        <span>{event.location}</span>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
             </div>
 
             {/* Enhanced Info cards */}
