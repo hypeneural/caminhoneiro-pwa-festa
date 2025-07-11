@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Header } from "@/components/mobile/Header";
-import { Stories } from "@/components/mobile/Stories";
 import { SaoCristovaoTracker } from "@/components/mobile/SaoCristovaoTracker";
 import { CountdownTimer } from "@/components/mobile/CountdownTimer";
 import { NewsCarousel } from "@/components/mobile/NewsCarousel";
@@ -100,11 +99,6 @@ const Index = () => {
       <Header />
       
       <main className="pt-16 pb-20">
-        {/* Seção 1: Stories */}
-        <Section delay={0.1} className="mb-4">
-          <Stories />
-        </Section>
-
         {/* Banner Carousel 1 */}
         {!isLoading && hasBannersInPosition(1) && (
           <Section delay={0.15} className="px-4 mb-6">
