@@ -18,6 +18,7 @@ import { PollCard } from "@/components/mobile/PollCard";
 import { WeatherSection } from "@/components/weather/WeatherSection";
 import { useAdvertisements } from '@/hooks/useAdvertisements';
 import { useNavigate } from 'react-router-dom';
+import { ShortsCarousel } from "@/components/shorts/ShortsCarousel";
 
 // Interface para as props das seções
 interface SectionProps {
@@ -144,12 +145,17 @@ const Index = () => {
           </Section>
         )}
 
-        {/* Seção 3: Previsão do Tempo */}
+        {/* Seção 3: Shorts do YouTube */}
+        <Section delay={0.3} className="mb-6">
+          <ShortsCarousel />
+        </Section>
+
+        {/* Seção 4: Previsão do Tempo */}
         <Section delay={0.33} className="px-4 mb-6">
           <WeatherSection />
         </Section>
 
-        {/* Seção 4: Enquete */}
+        {/* Seção 5: Enquete */}
         <Section delay={0.37} className="px-4 mb-6">
           <PollCard />
         </Section>
