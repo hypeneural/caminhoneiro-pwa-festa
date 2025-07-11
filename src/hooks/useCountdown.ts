@@ -26,13 +26,18 @@ export const useCountdown = (targetDate: Date): CountdownTime => {
       const difference = target - now;
 
       if (difference < 0) {
-        setTime({
-          days: 0,
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-          isActive: false,
-          isPast: true
+        setTime(prev => {
+          if (!prev.isPast) {
+            return {
+              days: 0,
+              hours: 0,
+              minutes: 0,
+              seconds: 0,
+              isActive: false,
+              isPast: true
+            };
+          }
+          return prev;
         });
         return;
       }
@@ -42,13 +47,19 @@ export const useCountdown = (targetDate: Date): CountdownTime => {
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-      setTime({
-        days,
-        hours,
-        minutes,
-        seconds,
-        isActive: true,
-        isPast: false
+      setTime(prev => {
+        // Only update if values actually changed
+        if (prev.days !== days || prev.hours !== hours || prev.minutes !== minutes || prev.seconds !== seconds) {
+          return {
+            days,
+            hours,
+            minutes,
+            seconds,
+            isActive: true,
+            isPast: false
+          };
+        }
+        return prev;
       });
     };
 
@@ -56,7 +67,7 @@ export const useCountdown = (targetDate: Date): CountdownTime => {
     const interval = setInterval(updateCountdown, 1000);
 
     return () => clearInterval(interval);
-  }, [targetDate]);
+  }, [targetDate.getTime()]); // Use getTime() for stable dependency
 
   return time;
 };
