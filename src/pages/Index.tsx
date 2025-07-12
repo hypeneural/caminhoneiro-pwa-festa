@@ -8,7 +8,6 @@ import { useEffect, useRef } from "react";
 import { useAdvertisements } from '@/hooks/useAdvertisements';
 import { useNavigate } from 'react-router-dom';
 import { Section } from "@/components/layout/Section";
-import { BannerSections } from "@/components/home/BannerSections";
 import { ContentSections } from "@/components/home/ContentSections";
 
 const Index = () => {
@@ -66,14 +65,11 @@ const Index = () => {
       <Header />
       
       <main className="pt-16 pb-20">
-        {/* Banner Carousel 1 - Top */}
-        <BannerSections 
+        {/* Main Content com banners distribuídos */}
+        <ContentSections 
           bannersByPosition={bannersByPosition}
           isLoading={isLoading}
         />
-
-        {/* Main Content */}
-        <ContentSections />
 
         {/* Seção Final: Patrocinadores */}
         {!isLoading && sponsors.length > 0 && (
