@@ -1,67 +1,99 @@
-import { motion } from "framer-motion";
-import { ChefHat } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Grid2X2, List, SlidersHorizontal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { APIMenuCategory } from '@/services/api/menuService';
+import { cn } from '@/lib/utils';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { memo } from 'react';
+import * as Fa from 'react-icons/fa';
 
-export function MenuHeader() {
-  return (
-    <motion.header
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-trucker-red to-trucker-red/80 text-trucker-red-foreground relative overflow-hidden"
-    >
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0 bg-repeat" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }} />
-      </div>
-
-      <div className="relative px-4 py-6 space-y-4">
-        {/* Header Principal */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-trucker-red-foreground/20 rounded-2xl flex items-center justify-center">
-            <ChefHat className="w-6 h-6 text-trucker-red-foreground" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">Cardápio da Festa</h1>
-            <p className="text-trucker-red-foreground/80 text-sm">
-              Sabores Tradicionais que Movem o Coração
-            </p>
-          </div>
-        </div>
-
-        {/* Badge de Destaque */}
-        <div className="flex flex-wrap gap-2">
-          <Badge className="bg-success text-success-foreground border-0 px-3 py-1">
-            Preços Especiais para a Festa
-          </Badge>
-          <Badge variant="outline" className="border-trucker-red-foreground/30 text-trucker-red-foreground bg-trucker-red-foreground/10">
-            Tradição Rodoviária
-          </Badge>
-        </div>
-
-        {/* Descrição */}
-        <p className="text-trucker-red-foreground/90 text-sm leading-relaxed">
-          Descubra os sabores únicos que alimentam os heróis da estrada. Nossa culinária regional 
-          une tradição familiar com o tempero especial da hospitalidade mineira.
-        </p>
-
-        {/* Stats */}
-        <div className="flex items-center gap-6 text-sm text-trucker-red-foreground/80">
-          <div className="flex items-center gap-1">
-            <span className="font-semibold text-trucker-red-foreground">50+</span>
-            <span>Pratos</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="font-semibold text-trucker-red-foreground">15</span>
-            <span>Fornecedores</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="font-semibold text-trucker-red-foreground">4.7</span>
-            <span>Avaliação</span>
-          </div>
-        </div>
-      </div>
-    </motion.header>
-  );
+interface MenuHeaderProps {
+  categories: APIMenuCategory[];
+  activeCategory: number | null;
+  searchTerm: string;
+  viewMode: 'grid' | 'list';
+  onSearchChange: (value: string) => void;
+  onCategoryChange: (id: number | null) => void;
+  onViewModeToggle: () => void;
+  onOpenFilters: () => void;
 }
+
+const CategoryIcon = memo(({ iconName }: { iconName: string }) => {
+  const IconComponent = (Fa as any)[iconName];
+  return IconComponent ? <IconComponent className="w-4 h-4 opacity-75" /> : null;
+});
+
+CategoryIcon.displayName = 'CategoryIcon';
+
+export const MenuHeader = memo(function MenuHeader({
+  categories,
+  activeCategory,
+  searchTerm,
+  viewMode,
+  onSearchChange,
+  onCategoryChange,
+  onViewModeToggle,
+  onOpenFilters
+}: MenuHeaderProps) {
+  return (
+    <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b">
+      {/* Search and Actions */}
+      <div className="flex items-center gap-2 p-3 pb-2">
+        <Input
+          type="search"
+          placeholder="Buscar no cardápio..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="flex-1"
+        />
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onViewModeToggle}
+          className="shrink-0"
+        >
+          {viewMode === 'grid' ? (
+            <Grid2X2 className="h-4 w-4" />
+          ) : (
+            <List className="h-4 w-4" />
+          )}
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onOpenFilters}
+          className="shrink-0"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Categories */}
+      <ScrollArea className="w-full pb-2" type="scroll">
+        <div className="flex px-3 gap-2">
+          <Button
+            variant={activeCategory === null ? "default" : "outline"}
+            size="sm"
+            onClick={() => onCategoryChange(null)}
+            className="shrink-0 h-9"
+          >
+            Todos
+          </Button>
+          {categories.map((category) => (
+            <Button
+              key={category.id}
+              variant={activeCategory === category.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => onCategoryChange(category.id)}
+              className="shrink-0 h-9 gap-2"
+            >
+              <CategoryIcon iconName={category.icon_url} />
+              {category.name}
+            </Button>
+          ))}
+        </div>
+        <ScrollBar orientation="horizontal" className="invisible" />
+      </ScrollArea>
+    </div>
+  );
+});

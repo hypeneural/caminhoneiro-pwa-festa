@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
 import { appShell } from "@/services/app-shell";
 import { cacheManager } from "@/services/advanced-cache";
@@ -84,49 +84,43 @@ const App = () => {
   }, []);
 
   return (
-  <QueryClientProvider client={queryClient}>
-    <AppProvider>
-      <TooltipProvider>
-        <ErrorBoundary 
-          FallbackComponent={DefaultErrorFallback}
-          onError={(error, errorInfo) => {
-            console.error('App Error:', error, errorInfo);
-          }}
-        >
-          <Toaster />
-          <Sonner />
-          <PWAInstaller />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/galeria" element={<Gallery />} />
-              <Route path="/stories" element={<Stories />} />
-              <Route path="/mapa" element={<Map />} />
-              <Route path="/programacao" element={<Schedule />} />
-              <Route path="/radio" element={<Radio />} />
-              <Route path="/videos" element={<Videos />} />
-              <Route path="/historia" element={<Historia />} />
-              <Route path="/noticias" element={<Noticias />} />
-              <Route path="/podcast" element={<Podcast />} />
-              <Route path="/rota-completa" element={<RotaCompleta />} />
-              <Route path="/rota" element={<RotaCompleta />} />
-              <Route path="/cameras" element={<Cameras />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/sao-cristovao" element={<SaoCristovao />} />
-              <Route path="/menu" element={<Menu />} />
-              <Route path="/mais" element={<More />} />
-              <Route path="/apoio" element={<Apoio />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </ErrorBoundary>
-      </TooltipProvider>
-    </AppProvider>
-  </QueryClientProvider>
+    <>
+      <ErrorBoundary 
+        FallbackComponent={DefaultErrorFallback}
+        onError={(error, errorInfo) => {
+          console.error('App Error:', error, errorInfo);
+        }}
+      >
+        <Toaster />
+        <Sonner />
+        <PWAInstaller />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/galeria" element={<Gallery />} />
+          <Route path="/stories" element={<Stories />} />
+          <Route path="/mapa" element={<Map />} />
+          <Route path="/programacao" element={<Schedule />} />
+          <Route path="/radio" element={<Radio />} />
+          <Route path="/videos" element={<Videos />} />
+          <Route path="/historia" element={<Historia />} />
+          <Route path="/noticias" element={<Noticias />} />
+          <Route path="/podcast" element={<Podcast />} />
+          <Route path="/rota-completa" element={<RotaCompleta />} />
+          <Route path="/rota" element={<RotaCompleta />} />
+          <Route path="/cameras" element={<Cameras />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/sao-cristovao" element={<SaoCristovao />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/mais" element={<More />} />
+          <Route path="/apoio" element={<Apoio />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </ErrorBoundary>
+    </>
   );
 };
 

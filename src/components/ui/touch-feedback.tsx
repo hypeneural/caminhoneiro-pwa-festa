@@ -1,71 +1,41 @@
 
 import React, { useState } from 'react';
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { motion, HTMLMotionProps } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
-interface TouchFeedbackProps {
+interface TouchFeedbackProps extends Omit<HTMLMotionProps<"div">, "whileTap" | "transition"> {
   children: React.ReactNode;
   className?: string;
-  disabled?: boolean;
-  onClick?: () => void;
   scale?: number;
   haptic?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 export function TouchFeedback({ 
   children, 
-  className = '', 
-  disabled = false, 
-  onClick,
+  className, 
   scale = 0.97,
-  haptic = false
+  haptic,
+  onClick,
+  ...props 
 }: TouchFeedbackProps) {
-  const [isPressed, setIsPressed] = useState(false);
-
-  const handleTouchStart = () => {
-    if (disabled) return;
-    setIsPressed(true);
-    
-    // Only try to vibrate if haptic is enabled and browser supports it
-    if (haptic) {
-      try {
-        if (navigator.vibrate && document.hasFocus()) {
-          navigator.vibrate(10);
-        }
-      } catch (error) {
-        // Ignore vibration errors silently
-      }
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (disabled) return;
-    setIsPressed(false);
-  };
-
   const handleClick = (e: React.MouseEvent) => {
-    if (disabled) return;
-    onClick?.();
+    if (haptic && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+    onClick?.(e);
   };
 
   return (
-    <div
-      className={`
-        transition-transform duration-100 active:scale-[${scale}]
-        ${isPressed ? `scale-[${scale}]` : 'scale-100'}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        ${className}
-      `}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
+    <motion.div
+      whileTap={{ scale }}
+      transition={{ duration: 0.1 }}
+      className={cn('touch-none', className)}
       onClick={handleClick}
-      role="button"
-      tabIndex={disabled ? -1 : 0}
-      aria-disabled={disabled}
+      {...props}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }
 

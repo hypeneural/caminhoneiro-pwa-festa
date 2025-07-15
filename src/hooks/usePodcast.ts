@@ -1,93 +1,85 @@
-import { useState, useEffect, useCallback } from 'react';
-import { PodcastItem, PodcastState, PodcastFilters } from '@/types/podcast';
-import podcastService from '@/services/api/podcastService';
-import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { useState, useEffect } from 'react';
+import axios from '@/lib/axios';
+import { PodcastItem } from '@/types/podcast';
 
-interface UsePodcastParams {
-  filters?: PodcastFilters;
+interface UsePodcastProps {
+  filters: {
+    limit: number;
+    page: number;
+    sort: string;
+    order: 'ASC' | 'DESC';
+  };
   initialLoad?: boolean;
 }
 
-export const usePodcast = ({ filters = {}, initialLoad = true }: UsePodcastParams = {}) => {
-  const [state, setState] = useState<PodcastState>({
-    items: [],
-    loading: initialLoad,
-    error: null,
-    hasMore: true
-  });
+interface PodcastResponse {
+  status: string;
+  message: string;
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+  data: PodcastItem[];
+}
 
-  const { isOnline } = useNetworkStatus();
+export function usePodcast({ filters, initialLoad = true }: UsePodcastProps) {
+  const [items, setItems] = useState<PodcastItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [meta, setMeta] = useState<PodcastResponse['meta'] | null>(null);
 
-  const fetchPodcasts = useCallback(async (newFilters?: PodcastFilters, append = false) => {
-    if (!isOnline) {
-      setState(prev => ({ ...prev, loading: false }));
-      return;
-    }
-
+  const fetchPodcasts = async (params = filters) => {
     try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
+      setLoading(true);
+      setError(null);
+
+      const response = await axios.get<PodcastResponse>('/podcast', { params });
       
-      const finalFilters = { ...filters, ...newFilters };
-      const response = await podcastService.getPodcasts(finalFilters);
-
-      if (!response?.data) {
-        throw new Error('Dados inválidos recebidos da API');
+      if (response.data.status === 'success') {
+        const { data, meta } = response.data;
+        setItems(prev => params.page === 1 ? data : [...prev, ...data]);
+        setMeta(meta);
+        setHasMore(meta.page * meta.limit < meta.total);
+      } else {
+        setError('Erro ao carregar podcasts');
       }
-
-      if ('error' in response && response.error) {
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: response.error,
-          hasMore: false
-        }));
-        return response;
-      }
-
-      setState(prev => ({
-        items: append ? [...prev.items, ...response.data] : response.data,
-        loading: false,
-        error: null,
-        hasMore: response.data.length === (finalFilters.limit || 10) && response.data.length > 0
-      }));
-
-      return response;
-    } catch (error) {
-      console.error('Error in usePodcast:', error);
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: error instanceof Error ? error.message : 'Erro ao carregar podcasts',
-        hasMore: false
-      }));
+    } catch (err) {
+      setError('Erro ao carregar podcasts');
+      console.error('Error fetching podcasts:', err);
+    } finally {
+      setLoading(false);
     }
-  }, [isOnline, filters]);
+  };
 
-  const loadMore = useCallback(async () => {
-    if (!state.hasMore || state.loading) return;
-    
-    const currentPage = Math.ceil(state.items.length / (filters.limit || 10)) + 1;
-    await fetchPodcasts({ ...filters, page: currentPage }, true);
-  }, [state.hasMore, state.loading, state.items.length, filters, fetchPodcasts]);
+  const loadMore = async () => {
+    if (!loading && hasMore) {
+      await fetchPodcasts({
+        ...filters,
+        page: (meta?.page || 1) + 1
+      });
+    }
+  };
 
-  const refresh = useCallback(() => {
-    setState(prev => ({ ...prev, items: [] }));
-    return fetchPodcasts();
-  }, [fetchPodcasts]);
+  const refresh = async () => {
+    await fetchPodcasts({ ...filters, page: 1 });
+  };
 
   useEffect(() => {
     if (initialLoad) {
       fetchPodcasts();
     }
-  }, [initialLoad]);
+  }, [filters.sort, filters.order, filters.limit, initialLoad]);
 
   return {
-    items: state.items,
-    loading: state.loading,
-    error: state.error,
-    hasMore: state.hasMore,
-    refresh,
+    items,
+    loading,
+    error,
+    hasMore,
+    meta,
     loadMore,
+    refresh,
     fetchPodcasts
   };
-};
+}

@@ -10,6 +10,8 @@ import { QuickAccess } from "@/components/mobile/QuickAccess";
 import { ShortsCarousel } from "@/components/shorts/ShortsCarousel";
 import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
 import { CompactBannerCarousel } from "@/components/sponsors/CompactBannerCarousel";
+import { PodcastCarousel } from "@/components/podcast/PodcastCarousel";
+import { usePodcast } from "@/hooks/usePodcast";
 
 interface ContentSectionsProps {
   bannersByPosition: Record<number, any[]>;
@@ -22,6 +24,17 @@ export const ContentSections = ({ bannersByPosition, isLoading }: ContentSection
     console.log(`🎯 Position ${position} has banners:`, hasBanners, bannersByPosition[position]);
     return hasBanners;
   };
+
+  // Fetch latest podcasts
+  const { items: podcasts, loading: podcastsLoading } = usePodcast({
+    filters: {
+      limit: 5,
+      page: 1,
+      sort: 'created_at',
+      order: 'DESC'
+    },
+    initialLoad: true
+  });
 
   return (
     <>
@@ -63,9 +76,16 @@ export const ContentSections = ({ bannersByPosition, isLoading }: ContentSection
         <ShortsCarousel />
       </Section>
 
+      {/* Seção 3: Podcast */}
+      {!podcastsLoading && podcasts.length > 0 && (
+        <Section delay={0.31} className="mb-6">
+          <PodcastCarousel podcasts={podcasts} />
+        </Section>
+      )}
+
       {/* Banner Carousel 2 - Após Shorts */}
       {!isLoading && hasBannersInPosition(2) && (
-        <Section delay={0.3} className="px-4 mb-6">
+        <Section delay={0.33} className="px-4 mb-6">
           <BannerCarousel 
             banners={bannersByPosition[2]} 
             autoplayDelay={4500}
@@ -75,12 +95,12 @@ export const ContentSections = ({ bannersByPosition, isLoading }: ContentSection
         </Section>
       )}
 
-      {/* Seção 3: Previsão do Tempo */}
-      <Section delay={0.33} className="px-4 mb-6">
+      {/* Seção 4: Previsão do Tempo */}
+      <Section delay={0.35} className="px-4 mb-6">
         <WeatherSection />
       </Section>
 
-      {/* Seção 4: Enquete */}
+      {/* Seção 5: Enquete */}
       <Section delay={0.37} className="px-4 mb-6">
         <PollCard />
       </Section>
@@ -97,7 +117,7 @@ export const ContentSections = ({ bannersByPosition, isLoading }: ContentSection
         </Section>
       )}
 
-      {/* Seção 5: São Cristóvão Tracker */}
+      {/* Seção 6: São Cristóvão Tracker */}
       <Section delay={0.45} className="px-4 mb-6">
         <SaoCristovaoTracker />
       </Section>
@@ -126,7 +146,7 @@ export const ContentSections = ({ bannersByPosition, isLoading }: ContentSection
         </Section>
       )}
 
-      {/* Seção 6: Notícias */}
+      {/* Seção 7: Notícias */}
       <Section delay={0.55} className="px-4 mb-6">
         <NewsCarousel />
       </Section>
@@ -143,7 +163,7 @@ export const ContentSections = ({ bannersByPosition, isLoading }: ContentSection
         </Section>
       )}
 
-      {/* Seção 7: Fotos */}
+      {/* Seção 8: Fotos */}
       <Section delay={0.6} className="px-4 mb-6">
         <PhotoCarousel />
       </Section>
@@ -160,7 +180,7 @@ export const ContentSections = ({ bannersByPosition, isLoading }: ContentSection
         </Section>
       )}
 
-      {/* Seção 8: Acesso Rápido */}
+      {/* Seção 9: Acesso Rápido */}
       <Section delay={0.65} className="px-4 mb-6">
         <QuickAccess />
       </Section>

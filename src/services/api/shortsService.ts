@@ -43,7 +43,7 @@ export const shortsService = {
       if (params?.sort) searchParams.append('sort', params.sort);
       if (params?.order) searchParams.append('order', params.order);
 
-      const url = `${BASE_URL}/v1/shorts${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+      const url = `${BASE_URL}/shorts${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
       
       const response = await axios.get<ShortsResponse>(url);
       
@@ -87,7 +87,7 @@ export const shortsService = {
     }
 
     try {
-      const response = await axios.get<ShortsResponse>(`${BASE_URL}/v1/shorts/${id}`);
+      const response = await axios.get<ShortsResponse>(`${BASE_URL}/shorts/${id}`);
       
       shortsCache.set(cacheKey, {
         data: response.data.data,

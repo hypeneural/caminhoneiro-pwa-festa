@@ -6,14 +6,12 @@ import { SponsorGrid } from "@/components/sponsors/SponsorGrid";
 import { usePrefetch } from "@/hooks/usePrefetch";
 import { useEffect, useRef } from "react";
 import { useAdvertisements } from '@/hooks/useAdvertisements';
-import { useNavigate } from 'react-router-dom';
 import { Section } from "@/components/layout/Section";
 import { ContentSections } from "@/components/home/ContentSections";
 
 const Index = () => {
   const { recordVisit, prefetchPredicted } = usePrefetch();
   const hasRecorded = useRef(false);
-  const navigate = useNavigate();
 
   const {
     bannersByPosition = {},
@@ -43,14 +41,6 @@ const Index = () => {
 
     return () => clearTimeout(timer);
   }, [recordVisit, prefetchPredicted]);
-
-  useEffect(() => {
-    const isFirstVisit = !localStorage.getItem('visited');
-    if (isFirstVisit) {
-      navigate('/historia');
-      localStorage.setItem('visited', 'true');
-    }
-  }, [navigate]);
 
   if (error) {
     return (

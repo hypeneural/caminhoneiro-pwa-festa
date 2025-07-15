@@ -1,262 +1,141 @@
-import { motion } from "framer-motion";
-import { Heart, Clock, Star, Users, Leaf, Shield, Flame } from "lucide-react";
-import { MenuItem } from "@/types/menu";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2, UtensilsCrossed } from 'lucide-react';
+import { APIMenuItem } from '@/services/api/menuService';
+import { MenuItemCard } from './MenuItemCard';
+import { useInView } from 'react-intersection-observer';
+import { cn } from '@/lib/utils';
 
 interface MenuGridProps {
-  items: MenuItem[];
-  loading: boolean;
+  items: APIMenuItem[];
   favorites: string[];
-  onItemClick: (item: MenuItem) => void;
-  onToggleFavorite: (itemId: string) => void;
+  isLoading: boolean;
+  isFetchingMore: boolean;
+  hasMore: boolean;
+  viewMode: 'grid' | 'list';
+  onLoadMore: () => void;
+  onFavoriteToggle: (id: string) => void;
+  onItemClick: (item: APIMenuItem) => void;
 }
 
-const tagIcons = {
-  'vegetarian': { icon: Leaf, color: 'text-green-500', bg: 'bg-green-100' },
-  'vegan': { icon: Leaf, color: 'text-green-600', bg: 'bg-green-100' },
-  'gluten-free': { icon: Shield, color: 'text-blue-500', bg: 'bg-blue-100' },
-  'spicy': { icon: Flame, color: 'text-red-500', bg: 'bg-red-100' },
-  'large-portion': { icon: Users, color: 'text-orange-500', bg: 'bg-orange-100' }
-};
+export function MenuGrid({
+  items,
+  favorites,
+  isLoading,
+  isFetchingMore,
+  hasMore,
+  viewMode,
+  onLoadMore,
+  onFavoriteToggle,
+  onItemClick
+}: MenuGridProps) {
+  // Infinite scroll handling
+  const { ref: loadMoreRef, inView } = useInView({
+    threshold: 0.5,
+    triggerOnce: false
+  });
 
-const categoryLabels = {
-  'main': 'PRINCIPAL',
-  'snacks': 'PETISCO',
-  'regional': 'REGIONAL',
-  'drinks': 'BEBIDA',
-  'desserts': 'SOBREMESA',
-  'fast': 'LANCHE'
-};
+  useEffect(() => {
+    if (inView && hasMore && !isFetchingMore) {
+      onLoadMore();
+    }
+  }, [inView, hasMore, isFetchingMore, onLoadMore]);
 
-const categoryColors = {
-  'main': 'bg-red-500',
-  'snacks': 'bg-orange-500',
-  'regional': 'bg-green-500',
-  'drinks': 'bg-blue-500',
-  'desserts': 'bg-yellow-500',
-  'fast': 'bg-purple-500'
-};
-
-function MenuItemCard({ item, isFavorite, onItemClick, onToggleFavorite }: {
-  item: MenuItem;
-  isFavorite: boolean;
-  onItemClick: (item: MenuItem) => void;
-  onToggleFavorite: (itemId: string) => void;
-}) {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <Card className="relative overflow-hidden border-border/50 hover:border-trucker-blue/30 transition-all duration-300 hover:shadow-lg group">
-        <CardContent className="p-0">
-          {/* Image Container */}
-          <div className="relative overflow-hidden">
-            <AspectRatio ratio={4/3}>
-              <img
-                src={item.images[0]}
-                alt={item.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
-            </AspectRatio>
-            
-            {/* Category Badge */}
-            <Badge 
-              className={`absolute top-2 left-2 ${categoryColors[item.category]} text-white border-0 text-xs font-bold px-2 py-1`}
-            >
-              {categoryLabels[item.category]}
-            </Badge>
-
-            {/* Favorite Button */}
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleFavorite(item.id);
-              }}
-              className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                isFavorite 
-                  ? 'bg-red-500 text-white' 
-                  : 'bg-white/90 text-gray-600 hover:text-red-500'
-              }`}
-            >
-              <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-            </motion.button>
-
-            {/* Promotion Badge */}
-            {item.promotions && item.promotions.length > 0 && (
-              <Badge className="absolute bottom-2 left-2 bg-trucker-red text-trucker-red-foreground border-0 text-xs">
-                🔥 Promoção
-              </Badge>
-            )}
-          </div>
-
-          {/* Content */}
-          <div 
-            className="p-4 cursor-pointer"
-            onClick={() => onItemClick(item)}
-          >
-            {/* Name and Rating */}
-            <div className="mb-2">
-              <h3 className="font-bold text-foreground text-base line-clamp-2 mb-1">
-                {item.name}
-              </h3>
-              
-              {item.rating && (
-                <div className="flex items-center gap-1">
-                  <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                  <span className="text-xs text-muted-foreground">
-                    {item.rating.average} ({item.rating.count})
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Description */}
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-              {item.description}
-            </p>
-
-            {/* Tags */}
-            <div className="flex flex-wrap gap-1 mb-3">
-              {item.tags.slice(0, 3).map((tag) => {
-                const tagConfig = tagIcons[tag as keyof typeof tagIcons];
-                if (!tagConfig) return null;
-                
-                const Icon = tagConfig.icon;
-                return (
-                  <div
-                    key={tag}
-                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${tagConfig.bg} ${tagConfig.color}`}
-                  >
-                    <Icon className="w-3 h-3" />
-                  </div>
-                );
-              })}
-              {item.tags.includes('popular') && (
-                <Badge variant="outline" className="text-xs px-2 py-0 text-trucker-blue border-trucker-blue/30">
-                  Popular
-                </Badge>
-              )}
-              {item.tags.includes('new') && (
-                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 text-xs px-2 py-0">
-                  Novo
-                </Badge>
-              )}
-            </div>
-
-            {/* Price and Prep Time */}
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-xl font-bold text-trucker-blue">
-                  {formatPrice(item.price)}
-                </span>
-                {item.preparationTime && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="w-3 h-3" />
-                    {item.preparationTime}min
-                  </div>
-                )}
-              </div>
-              
-              <div className="text-right">
-                <div className="text-xs text-muted-foreground">
-                  {item.vendor.name}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {item.vendor.location}
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
-
-function MenuItemSkeleton() {
-  return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-0">
-        <AspectRatio ratio={4/3}>
-          <Skeleton className="w-full h-full" />
-        </AspectRatio>
-        <div className="p-4 space-y-3">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-3 w-full" />
-          <Skeleton className="h-3 w-2/3" />
-          <div className="flex justify-between items-center">
-            <Skeleton className="h-6 w-20" />
-            <Skeleton className="h-4 w-16" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-export function MenuGrid({ items, loading, favorites, onItemClick, onToggleFavorite }: MenuGridProps) {
-  if (loading) {
+  // Loading skeleton
+  if (isLoading) {
     return (
-      <div className="p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }, (_, i) => (
-            <MenuItemSkeleton key={i} />
-          ))}
-        </div>
+      <div className={cn(
+        'grid gap-3 p-3',
+        viewMode === 'grid' 
+          ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' 
+          : 'grid-cols-1'
+      )}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <MenuItemSkeleton key={i} viewMode={viewMode} />
+        ))}
       </div>
     );
   }
 
-  if (items.length === 0) {
+  // Empty state
+  if (!isLoading && items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-          <Users className="w-8 h-8 text-muted-foreground" />
+        <div className="w-16 h-16 mb-4 rounded-full bg-muted flex items-center justify-center">
+          <UtensilsCrossed className="w-8 h-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold text-foreground mb-2">
-          Nenhum prato encontrado
+        <h3 className="text-lg font-semibold mb-2">
+          Nenhum item encontrado
         </h3>
-        <p className="text-muted-foreground text-sm max-w-sm">
-          Tente ajustar os filtros ou termo de busca para encontrar o que procura.
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Tente ajustar seus filtros ou fazer uma nova busca.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="p-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map((item, index) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-          >
+    <div className="min-h-screen">
+      <div className={cn(
+        'grid gap-3 p-3',
+        viewMode === 'grid' 
+          ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' 
+          : 'grid-cols-1'
+      )}>
+        <AnimatePresence mode="popLayout">
+          {items.map((item) => (
             <MenuItemCard
+              key={item.id}
               item={item}
-              isFavorite={favorites.includes(item.id)}
+              isFavorite={favorites.includes(item.id.toString())}
+              onFavoriteToggle={onFavoriteToggle}
               onItemClick={onItemClick}
-              onToggleFavorite={onToggleFavorite}
+              viewMode={viewMode}
             />
-          </motion.div>
-        ))}
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* Load more trigger */}
+      {hasMore && (
+        <div
+          ref={loadMoreRef}
+          className="flex justify-center py-8"
+        >
+          {isFetchingMore && (
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MenuItemSkeleton({ viewMode }: { viewMode: 'grid' | 'list' }) {
+  return (
+    <div className={cn(
+      'rounded-lg overflow-hidden bg-card border animate-pulse',
+      viewMode === 'list' ? 'flex' : 'flex flex-col'
+    )}>
+      {/* Image skeleton */}
+      <div className={cn(
+        'bg-muted',
+        viewMode === 'list' ? 'w-32 h-32' : 'w-full aspect-square'
+      )} />
+
+      {/* Content skeleton */}
+      <div className={cn(
+        'p-4 flex flex-col gap-4',
+        viewMode === 'list' ? 'flex-1' : ''
+      )}>
+        <div className="space-y-2">
+          <div className="h-4 bg-muted rounded w-3/4" />
+          <div className="h-3 bg-muted rounded w-1/2" />
+        </div>
+        <div className="flex items-center justify-between mt-auto">
+          <div className="h-5 bg-muted rounded w-20" />
+          <div className="h-5 bg-muted rounded w-16" />
+        </div>
       </div>
     </div>
   );

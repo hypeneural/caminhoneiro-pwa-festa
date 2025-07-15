@@ -1,141 +1,106 @@
-import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChefHat, Search, Filter, Heart, MapPin, Star, Info } from "lucide-react";
-import { BottomNavigation } from "@/components/mobile/BottomNavigation";
-import { MenuHeader } from "@/components/menu/MenuHeader";
-import { CategoryTabs } from "@/components/menu/CategoryTabs";
-import { MenuGrid } from "@/components/menu/MenuGrid";
-import { MenuFilters } from "@/components/menu/MenuFilters";
-import { MenuSearch } from "@/components/menu/MenuSearch";
-import { MenuModal } from "@/components/menu/MenuModal";
-import { FavoritesSection } from "@/components/menu/FavoritesSection";
-import { PromotionsSection } from "@/components/menu/PromotionsSection";
-import { useMenuData } from "@/hooks/useMenuData";
-import { useMenuFilters } from "@/hooks/useMenuFilters";
-import { useFavorites } from "@/hooks/useFavorites";
-import { MenuItem } from "@/types/menu";
+import { useState } from 'react';
+import { useMenu } from '@/hooks/useMenu';
+import { MenuHeader } from '@/components/menu/MenuHeader';
+import { MenuGrid } from '@/components/menu/MenuGrid';
+import { MenuFiltersSheet } from '@/components/menu/MenuFiltersSheet';
+import { APIMenuItem } from '@/services/api/menuService';
+import { useToast } from '@/hooks/use-toast';
+import { BottomNavigation } from '@/components/mobile/BottomNavigation';
+import { VirtualScroller } from '@/components/ui/virtual-scroller';
 
-const Menu = () => {
-  const { menuItems, reviews, loading } = useMenuData();
-  const { favorites, toggleFavorite } = useFavorites();
+export default function Menu() {
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const { toast } = useToast();
+  
   const {
-    filteredItems,
-    activeCategory,
-    setActiveCategory,
+    categories,
+    menuItems,
+    favorites,
     searchTerm,
-    setSearchTerm,
-    filters,
-    updateFilters,
-    clearFilters,
-    isFiltersActive
-  } = useMenuFilters(menuItems);
+    activeCategory,
+    priceRange,
+    sortOrder,
+    viewMode,
+    hasActiveFilters,
+    isLoading,
+    isFetchingMore,
+    hasMore,
+    error,
+    updateSearch,
+    updateCategory,
+    updatePriceRange,
+    updateSortOrder,
+    toggleViewMode,
+    resetFilters,
+    toggleFavorite,
+    loadMore,
+    refetch
+  } = useMenu();
 
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
-  const [showFavorites, setShowFavorites] = useState(false);
+  // Handle item click (future implementation for item details)
+  const handleItemClick = (item: APIMenuItem) => {
+    // TODO: Implement item details modal/page
+    toast({
+      title: item.name,
+      description: `${item.description || 'Sem descrição disponível'} - R$ ${item.price}`,
+    });
+  };
 
-  const favoriteItems = useMemo(() => 
-    menuItems.filter(item => favorites.includes(item.id)),
-    [menuItems, favorites]
-  );
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+        <h2 className="text-xl font-semibold mb-2">Ops! Algo deu errado</h2>
+        <p className="text-muted-foreground mb-4">
+          Não foi possível carregar o cardápio. Tente novamente mais tarde.
+        </p>
+        <button
+          onClick={() => refetch()}
+          className="text-primary hover:underline"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <MenuHeader />
+    <>
+      <main className="min-h-screen bg-background pb-20">
+        <MenuHeader
+          categories={categories}
+          activeCategory={activeCategory}
+          searchTerm={searchTerm}
+          viewMode={viewMode}
+          onSearchChange={updateSearch}
+          onCategoryChange={updateCategory}
+          onViewModeToggle={toggleViewMode}
+          onOpenFilters={() => setFiltersOpen(true)}
+        />
 
-      {/* Search and Filters */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/50">
-        <div className="px-4 py-3 space-y-3">
-          <MenuSearch 
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-          />
-          
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowFilters(true)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                isFiltersActive 
-                  ? 'bg-trucker-red text-trucker-red-foreground' 
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              <Filter className="w-4 h-4" />
-              Filtros
-              {isFiltersActive && (
-                <span className="w-2 h-2 bg-trucker-red-foreground rounded-full" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setShowFavorites(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
-            >
-              <Heart className="w-4 h-4" />
-              Favoritos
-              {favoriteItems.length > 0 && (
-                <span className="bg-trucker-red text-trucker-red-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[18px] h-[18px] flex items-center justify-center">
-                  {favoriteItems.length}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Tabs */}
-      <CategoryTabs
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
-      />
-
-      {/* Promotions */}
-      <PromotionsSection />
-
-      {/* Main content */}
-      <main className="flex-1 pb-20">
         <MenuGrid
-          items={filteredItems}
-          loading={loading}
+          items={menuItems}
           favorites={favorites}
-          onItemClick={setSelectedItem}
-          onToggleFavorite={toggleFavorite}
+          isLoading={isLoading}
+          isFetchingMore={isFetchingMore}
+          hasMore={hasMore}
+          viewMode={viewMode}
+          onLoadMore={loadMore}
+          onFavoriteToggle={toggleFavorite}
+          onItemClick={handleItemClick}
+        />
+
+        <MenuFiltersSheet
+          open={filtersOpen}
+          onOpenChange={setFiltersOpen}
+          priceRange={priceRange}
+          sortOrder={sortOrder}
+          onPriceRangeChange={updatePriceRange}
+          onSortOrderChange={updateSortOrder}
+          onReset={resetFilters}
         />
       </main>
 
-      {/* Item Detail Modal */}
-      <MenuModal
-        item={selectedItem}
-        isOpen={!!selectedItem}
-        onClose={() => setSelectedItem(null)}
-        reviews={reviews.filter(r => r.menuItemId === selectedItem?.id)}
-        isFavorite={selectedItem ? favorites.includes(selectedItem.id) : false}
-        onToggleFavorite={() => selectedItem && toggleFavorite(selectedItem.id)}
-      />
-
-      {/* Filters Modal */}
-      <MenuFilters
-        isOpen={showFilters}
-        onClose={() => setShowFilters(false)}
-        filters={filters}
-        onFiltersChange={updateFilters}
-        onClearFilters={clearFilters}
-        isFiltersActive={isFiltersActive}
-      />
-
-      {/* Favorites Modal */}
-      <FavoritesSection
-        isOpen={showFavorites}
-        onClose={() => setShowFavorites(false)}
-        favoriteItems={favoriteItems}
-        onItemClick={setSelectedItem}
-        onToggleFavorite={toggleFavorite}
-      />
-
       <BottomNavigation />
-    </div>
+    </>
   );
-};
-
-export default Menu;
+}
