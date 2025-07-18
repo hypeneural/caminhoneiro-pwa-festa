@@ -33,10 +33,22 @@ export interface Testimonial {
   quote: string;
   fullTestimonial?: string;
   year: number;
-  category: 'organizer' | 'trucker' | 'family' | 'authority' | 'participant';
+  category: 'organizer' | 'trucker' | 'family' | 'authority' | 'participant' | 'founder' | 'volunteer';
   audioUrl?: string;
   isHighlighted: boolean;
   relatedMilestone?: string;
+}
+
+export interface GalleryImage {
+  id: string;
+  url: string;
+  thumbnailUrl: string;
+  title: string;
+  description: string;
+  decade: number;
+  type: 'photos' | 'documents' | 'newspaper' | 'all';
+  theme: 'origem' | 'organizacao' | 'educacao' | 'exposicao' | 'procissao' | 'celebracao' | 'adaptacao' | 'tecnologia' | 'futuro';
+  isHistorical: boolean;
 }
 
 export interface HistoryPageState {

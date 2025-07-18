@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { notificationService, Notification } from '@/services/api/notificationService';
+import { notificationService, NotificationAPI as Notification } from '@/services/notificationService';
 import { API } from '@/constants/api';
 
 interface UseNotificationsReturn {
@@ -24,7 +24,7 @@ export function useNotifications(): UseNotificationsReturn {
       console.log('🔔 fetchNotifications: Fazendo requisição para API...');
       const response = await notificationService.getNotifications();
       setNotifications(response.data);
-      setUnreadCount(response.unread_count);
+      setUnreadCount(response.data.filter(n => !n.is_read).length);
       setError(null);
     } catch (err) {
       console.error('🔔 fetchNotifications: Erro:', err);
@@ -40,7 +40,7 @@ export function useNotifications(): UseNotificationsReturn {
       setNotifications(prev => 
         prev.map(notification => 
           notification.id === id 
-            ? { ...notification, read: true }
+            ? { ...notification, is_read: 1 }
             : notification
         )
       );
@@ -55,7 +55,7 @@ export function useNotifications(): UseNotificationsReturn {
     try {
       await notificationService.markAllAsRead();
       setNotifications(prev => 
-        prev.map(notification => ({ ...notification, read: true }))
+        prev.map(notification => ({ ...notification, is_read: 1 }))
       );
       setUnreadCount(0);
     } catch (err) {

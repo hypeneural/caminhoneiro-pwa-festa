@@ -5,7 +5,7 @@ import { useSponsors } from "@/hooks/useSponsors";
 import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { Notification } from "@/services/api/notificationService";
+import { NotificationAPI as Notification } from "@/services/notificationService";
 import { Banner } from "@/types/sponsors";
 
 interface NotificationsModalProps {
@@ -29,15 +29,13 @@ const iconMap: Record<string, IconType> = {
 const typeColors = {
   info: 'bg-blue-50 border-blue-200 text-blue-800',
   success: 'bg-green-50 border-green-200 text-green-800',
-  warning: 'bg-orange-50 border-orange-200 text-orange-800',
-  error: 'bg-red-50 border-red-200 text-red-800',
+  warning: 'bg-orange-50 border-orange-200 text-orange-800'
 };
 
 const typeIconColors = {
   info: 'text-blue-600',
   success: 'text-green-600',
-  warning: 'text-orange-600',
-  error: 'text-red-600',
+  warning: 'text-orange-600'
 };
 
 export function NotificationsModal({ open, onOpenChange }: NotificationsModalProps) {
@@ -100,7 +98,7 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
       await markAsRead(notificationId);
       // Atualiza o estado local imediatamente para melhor UX
       setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+        prev.map(n => n.id === notificationId ? { ...n, is_read: 1 } : n)
       );
     } catch (error) {
       console.error('Erro ao marcar notificação como lida:', error);
@@ -231,29 +229,11 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
           
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
-            {isLoading && notifications.length === 0 ? (
-              <div className="space-y-4 p-6">
-                {[...Array(4)].map((_, i) => (
-                  <motion.div 
-                    key={i} 
-                    className="flex items-start gap-4 p-4 rounded-2xl animate-pulse"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1, transition: { delay: i * 0.1 } }}
-                  >
-                    <div className="w-14 h-14 bg-gray-200 rounded-2xl flex-shrink-0" />
-                    <div className="flex-1 space-y-3">
-                      <div className="h-4 bg-gray-200 rounded w-3/4" />
-                      <div className="h-3 bg-gray-200 rounded w-full" />
-                      <div className="h-3 bg-gray-200 rounded w-1/2" />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            ) : notifications.length > 0 ? (
+            {notifications.length > 0 ? (
               <div className="space-y-3 p-6">
                 {notifications.map((notification, index) => {
                   // Map notification type to icon
-                  let IconComponent = iconMap[notification.type] || Bell;
+                  let IconComponent = iconMap[notification.icon] || Bell;
                   
                   return (
                     <motion.div
@@ -273,7 +253,7 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
                       className={cn(
                         "flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all",
                         "hover:shadow-lg hover:scale-[1.02]",
-                        !notification.read && "bg-blue-50/50",
+                        !notification.is_read && "bg-blue-50/50",
                         typeColors[notification.type]
                       )}
                     >
@@ -282,7 +262,6 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
                         "bg-gradient-to-br shadow-lg",
                         notification.type === 'success' && "from-green-500 to-green-600",
                         notification.type === 'warning' && "from-orange-500 to-orange-600",
-                        notification.type === 'error' && "from-red-500 to-red-600",
                         (!notification.type || notification.type === 'info') && "from-blue-500 to-blue-600"
                       )}>
                         <IconComponent className="w-7 h-7 text-white" />
@@ -292,7 +271,7 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
                         <div className="flex items-start justify-between gap-2">
                           <h3 className={cn(
                             "font-semibold",
-                            !notification.read && "font-bold",
+                            !notification.is_read && "font-bold",
                             typeIconColors[notification.type]
                           )}>
                             {notification.title}
@@ -304,10 +283,23 @@ export function NotificationsModal({ open, onOpenChange }: NotificationsModalPro
                         
                         <p className={cn(
                           "text-sm mt-1",
-                          !notification.read ? "text-gray-800" : "text-gray-600"
+                          !notification.is_read ? "text-gray-800" : "text-gray-600"
                         )}>
-                          {notification.message}
+                          {notification.description}
                         </p>
+
+                        {notification.link_url && (
+                          <a 
+                            href={notification.link_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-trucker-blue mt-2 hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Abrir link
+                          </a>
+                        )}
                       </div>
                     </motion.div>
                   );

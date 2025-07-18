@@ -2,16 +2,43 @@ import { HistoricalMilestone, Testimonial } from '@/types/history';
 
 export const historicalMilestones: HistoricalMilestone[] = [
   {
-    id: 'genesis-2003',
+    id: 'inspiracao-2003',
     year: 2003,
-    title: 'O Gênese de uma Tradição',
-    description: 'A 1ª edição da Festa do Caminhoneiro nasce em Tijucas, unindo fé e valorização da profissão.',
-    longDescription: 'A 1ª edição da Festa do Caminhoneiro, que viria a se tornar um marco em Tijucas, provavelmente teve início por volta de 2003. Sem registros formais detalhados, acredita-se que a celebração nasceu de forma orgânica, por iniciativa da comunidade local de caminhoneiros e da Igreja de Santa Terezinha, no bairro Universitário. A localização estratégica de Tijucas, próxima à BR-101, foi um fator inspirador para a criação do evento, unindo fé e a valorização da profissão.',
+    title: 'A Inspiração do Padre Davi: Uma Visão Transformadora',
+    description: 'Padre Davi Antônio Coelho percebe o potencial de São Cristóvão como co-padroeiro em Tijucas.',
+    longDescription: 'A história da festa começou com a visão inspiradora do Padre Davi Antônio Coelho. Observando o crescimento do bairro Santa Terezinha e a forte presença de transportadoras na cidade, ele vislumbrou São Cristóvão como um "festeiro" forte, tornando-o co-padroeiro da comunidade ao lado de Santa Terezinha. Com experiência prévia na festa de Itajaí, Padre Davi trouxe esta inspiração divina para Tijucas.',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800',
+        caption: 'Padre Davi Antônio Coelho, o visionário da festa',
+        year: 2003,
+        isHistorical: true
+      }
+    ],
+    significance: 'foundation',
+    participantsEstimate: 'Visão inicial',
+    keyFigures: [
+      {
+        name: 'Padre Davi Antônio Coelho',
+        role: 'Pároco visionário e fundador da tradição',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+      }
+    ],
+    context: 'Crescimento do bairro Santa Terezinha e forte presença de transportadoras',
+    relatedEvents: ['Estabelecimento do co-padroeiro São Cristóvão'],
+    sources: ['Depoimentos da comunidade paroquial']
+  },
+  {
+    id: 'primeira-festa-2004',
+    year: 2004,
+    title: 'A Primeira Festa: Humildes Começos',
+    description: 'A primeira festa oficial acontece de forma "meio desorganizada", mas planta a semente da tradição.',
+    longDescription: 'A primeira festa oficial em 2004 foi descrita como uma celebração menor e "meio desorganizada". Apesar das limitações iniciais, a semente da devoção e da união comunitária estava firmemente plantada. Wilson Esgrot, da TCA, foi fundamental neste início, doando a imagem de São Cristóvão e ajudando a dar os primeiros passos essenciais para o que se tornaria uma tradição monumental.',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=800',
-        caption: 'Primeiros caminhões na Igreja Santa Terezinha',
-        year: 2003,
+        caption: 'Primeiros caminhões na Igreja Santa Terezinha em 2004',
+        year: 2004,
         isHistorical: true
       }
     ],
@@ -19,171 +46,417 @@ export const historicalMilestones: HistoricalMilestone[] = [
     participantsEstimate: '500 participantes',
     keyFigures: [
       {
-        name: 'Pe. João Silva',
-        role: 'Pároco da Igreja Santa Terezinha',
+        name: 'Wilson Esgrot',
+        role: 'TCA - Doador da imagem de São Cristóvão',
         photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200'
       }
     ],
-    context: 'Início orgânico na comunidade do bairro Universitário',
-    relatedEvents: ['Fundação da tradição religiosa local'],
-    sources: ['Relatos da comunidade local']
+    context: 'Primeiro evento oficial, ainda em organização',
+    relatedEvents: ['Doação da imagem de São Cristóvão', 'Início da tradição comunitária'],
+    sources: ['Relatos dos organizadores pioneiros']
   },
   {
-    id: 'sesquicentenario-2010',
-    year: 2010,
-    title: 'Festa no Sesquicentenário de Tijucas',
-    description: 'A festa ganha destaque ao integrar as comemorações dos 150 anos de Tijucas.',
-    longDescription: 'A Festa do Caminhoneiro ganha destaque ao integrar as comemorações do Sesquicentenário de Tijucas. Caminhoneiros, em uma emocionante carreata, carregam a bandeira do município e o selo comemorativo dos 150 anos, solidificando a festa como um evento de relevância cultural e cívica para a cidade.',
+    id: 'profissionalizacao-2005',
+    year: 2005,
+    title: 'A Grande Transformação: Nova Gestão CAEP',
+    description: 'Nova gestão do CAEP inicia a profissionalização do evento com lideranças visionárias.',
+    longDescription: 'A partir de 2005, com a chegada da nova gestão ao CAEP (Conselho Administrativo e Econômico Paroquial), o evento começou sua transformação. Lideranças como Carlos Borba, Cizenando da STR, Gilson, Nilson e Saulo, juntamente com Seu Arnaldo Peixoto, foram essenciais. Eles organizaram um churrasco histórico, convidando as 20 principais transportadoras da cidade para apresentar a visão de um evento organizado e lucrativo para toda a comunidade.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1518877593221-1f28583780b4?auto=format&fit=crop&q=80&w=800',
-        caption: 'Carreata com bandeira de Tijucas',
-        year: 2010,
+        url: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=800',
+        caption: 'Reunião histórica com transportadoras em 2005',
+        year: 2005,
+        isHistorical: true
+      }
+    ],
+    significance: 'growth',
+    participantsEstimate: '1.000 participantes',
+    keyFigures: [
+      {
+        name: 'Carlos Borba',
+        role: 'Líder da nova gestão CAEP',
+        photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200'
+      },
+      {
+        name: 'Cizenando',
+        role: 'STR Transportes - Primeiro sorteado para conduzir o santo',
+        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200'
+      },
+      {
+        name: 'Arnaldo Peixoto',
+        role: 'Transportes Peixoto - Visionário e pilar da organização',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+      }
+    ],
+    context: 'Início da profissionalização e organização sistemática',
+    relatedEvents: ['Churrasco com 20 transportadoras', 'Primeiro sorteio para conduzir o santo'],
+    sources: ['Atas do CAEP', 'Relatos dos fundadores']
+  },
+  {
+    id: 'semana-transporte-2006',
+    year: 2006,
+    title: 'Inovação Histórica: A Semana do Transporte',
+    description: 'Terceira edição introduz a revolucionária Semana do Transporte com palestras e exposições.',
+    longDescription: 'A terceira edição de 2006 marcou um divisor de águas com a introdução da Semana do Transporte. Este evento incluía palestras sobre temas cruciais para o setor: jornada de trabalho, saúde, economia e tecnologia. Reunia expositores de diversas áreas, desde vendas de pneus a despachantes e bancos, transformando a festa em um verdadeiro centro de conhecimento e negócios para o setor de transportes.',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=800',
+        caption: 'Primeira Semana do Transporte com palestras técnicas',
+        year: 2006,
+        isHistorical: true
+      }
+    ],
+    significance: 'growth',
+    participantsEstimate: '2.000 participantes',
+    keyFigures: [
+      {
+        name: 'Equipe CAEP',
+        role: 'Organizadores da Semana do Transporte',
+        photo: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=200'
+      }
+    ],
+    context: 'Expansão para além da celebração religiosa',
+    relatedEvents: ['Primeira Semana do Transporte', 'Palestras especializadas'],
+    sources: ['Programação oficial dos eventos']
+  },
+  {
+    id: 'montadoras-2007-2009',
+    year: 2008,
+    title: 'O Fenômeno das Montadoras: Parque de Exposições',
+    description: 'A festa atinge o ápice ao reunir todas as montadoras de caminhões do Brasil.',
+    longDescription: 'Entre 2007-2009, a festa atingiu seu ápice ao conseguir algo raro no Brasil: reunir TODAS as montadoras de caminhões para expor seus veículos. Volkswagen, Volvo, Mercedes, Scania, Iveco e até a DAF estiveram presentes, transformando a festa em um verdadeiro "parque de exposições". Algumas edições contaram com caminhões-escritório, caminhões com dentistas e serviços de exame de vista para os caminhoneiros. Carlos Rosa (Rodopiso) inovou com um sistema que fazia a imagem de São Cristóvão girar, abençoando a todos.',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800',
+        caption: 'Exposição de todas as montadoras brasileiras',
+        year: 2008,
         isHistorical: true
       }
     ],
     significance: 'recognition',
-    participantsEstimate: '1.5K participantes',
-    context: 'Integração com celebrações municipais oficiais',
-    relatedEvents: ['Sesquicentenário de Tijucas', 'Reconhecimento municipal']
+    participantsEstimate: '5.000 participantes',
+    keyFigures: [
+      {
+        name: 'Carlos Rosa',
+        role: 'Rodopiso Transportes - Inovador do santo giratório',
+        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200'
+      }
+    ],
+    context: 'Ápice da festa como evento nacional do setor',
+    relatedEvents: ['Presença de todas as montadoras', 'Inovação do santo giratório'],
+    sources: ['Registros fotográficos da época', 'Depoimentos dos participantes']
   },
   {
-    id: 'consolidacao-2017',
-    year: 2017,
-    title: 'Tradição Consolidada: 15 Anos de Celebração',
-    description: 'A 15ª edição marca a consolidação definitiva da festa como tradição regional.',
-    longDescription: 'A Festa celebra sua 15ª edição, já estabelecida como uma tradição consolidada em Tijucas. O evento atrai grande público e conta com atrações de peso, como o show da dupla Hugo e Thiago, reforçando seu status como um dos maiores encontros de caminhoneiros da região.',
+    id: 'consolidacao-2010-2015',
+    year: 2012,
+    title: 'Era de Ouro: Consolidação da Tradição',
+    description: 'A festa se consolida como tradição regional com histórias marcantes de fé e comunidade.',
+    longDescription: 'Durante a década de 2010-2015, a festa viveu sua era de ouro. Juninho tornou-se o primeiro caminhoneiro autônomo a carregar o santo, realizando um sonho e iniciando uma tradição. Neto da NG/Rimátila começou sua jornada como "São Cristóvão da festa" (16 anos interpretando o santo). Gregório da Solo Transportes foi o primeiro "caminhoneiro mirim" aos 12 anos. A família Vadica teve a honra de conduzir o santo, e Marcelo (Msul) dirigiu em homenagem ao irmão Marinho.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=800',
-        caption: 'Show da dupla Hugo e Thiago',
-        year: 2017,
-        isHistorical: false
+        url: 'https://images.unsplash.com/photo-1518877593221-1f28583780b4?auto=format&fit=crop&q=80&w=800',
+        caption: 'Juninho, primeiro autônomo a carregar o santo',
+        year: 2012,
+        isHistorical: true
       }
     ],
     significance: 'growth',
-    participantsEstimate: '8K participantes',
+    participantsEstimate: '8.000 participantes',
     keyFigures: [
       {
-        name: 'Hugo e Thiago',
-        role: 'Dupla sertaneja - Atração principal',
-        photo: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&q=80&w=200'
+        name: 'Juninho',
+        role: 'Primeiro caminhoneiro autônomo a carregar o santo',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+      },
+      {
+        name: 'Neto',
+        role: 'NG/Rimátila - "São Cristóvão da festa" há 16 anos',
+        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200'
+      },
+      {
+        name: 'Gregório',
+        role: 'Solo Transportes - Primeiro caminhoneiro mirim',
+        photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200'
       }
     ],
-    context: 'Consolidação como evento regional de grande porte',
-    relatedEvents: ['Shows de artistas nacionais', 'Expansão da programação']
+    context: 'Consolidação como tradição familiar e comunitária',
+    relatedEvents: ['Primeiro autônomo conduzindo o santo', 'Início das tradições familiares'],
+    sources: ['Relatos das famílias participantes']
   },
   {
-    id: 'controversias-2022',
-    year: 2022,
-    title: 'O Ano das Multas: Um Desafio na Procissão',
-    description: 'Controvérsias com multas de trânsito geram preocupações sobre a continuidade.',
-    longDescription: 'A festa enfrenta um momento de controvérsia. Durante a tradicional procissão, a aplicação de multas de trânsito (por infrações como uso de celular e falta de cinto de segurança) gera insatisfação entre os caminhoneiros. O incidente levanta preocupações sobre a continuidade do evento, destacando a necessidade de melhor coordenação entre organizadores e autoridades.',
+    id: 'desafios-covid-2020',
+    year: 2020,
+    title: 'Pandemia: Adaptação e Resistência',
+    description: 'COVID-19 transforma a festa, com bombeiros conduzindo o santo por dois anos.',
+    longDescription: 'A pandemia de COVID-19 trouxe desafios únicos para a festa. Por dois anos consecutivos, o caminhão do Corpo de Bombeiros assumiu a responsabilidade de conduzir o santo, mantendo viva a tradição mesmo em tempos difíceis. Este período demonstrou a resiliência da comunidade e a importância da festa como pilar espiritual, adaptando-se às circunstâncias sem perder a essência.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&q=80&w=800',
-        caption: 'Procissão de caminhões enfrentando desafios',
-        year: 2022,
+        url: 'https://images.unsplash.com/photo-1585435557343-3b092031d4c1?auto=format&fit=crop&q=80&w=800',
+        caption: 'Bombeiros conduzindo o santo durante a pandemia',
+        year: 2020,
         isHistorical: false
       }
     ],
     significance: 'controversy',
-    participantsEstimate: '20K participantes',
-    context: 'Tensões entre tradição e regulamentação de trânsito',
-    relatedEvents: ['Aplicação de multas na procissão', 'Discussões sobre continuidade']
+    participantsEstimate: '15.000 participantes (reduzido)',
+    keyFigures: [
+      {
+        name: 'Corpo de Bombeiros',
+        role: 'Responsáveis pela condução do santo na pandemia',
+        photo: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=200'
+      }
+    ],
+    context: 'Adaptação às restrições sanitárias da pandemia',
+    relatedEvents: ['Condução pelos bombeiros', 'Protocolos sanitários'],
+    sources: ['Registros oficiais da época']
   },
   {
-    id: 'futuro-2025',
-    year: 2025,
-    title: 'Rumo à 21ª Edição: A Tradição Continua',
-    description: 'Preparação para a 21ª edição mantendo a essência e renovando a esperança.',
-    longDescription: 'A Festa do Caminhoneiro se prepara para sua 21ª edição, marcada para 19 e 20 de julho de 2025, no pátio da Igreja de Santa Terezinha. Mantendo a tradição de procissões, missas, bênçãos de veículos e atrações culturais, a festa reafirma sua importância para a comunidade e para a valorização da profissão de caminhoneiro.',
+    id: 'retomada-2023-2024',
+    year: 2024,
+    title: 'Renascimento: A Tradição Retorna às Origens',
+    description: 'Transportadoras retomam a condução do santo: Libardo (2023) e Solo Transportes (2024).',
+    longDescription: 'A tradição renasce com força total. Em 2023, a Libardo assumiu a condução do santo, marcando o retorno das transportadoras após a pandemia. Em 2024, a Solo Transportes continuou essa renovação, com a família Vadica novamente protagonizando momentos emocionantes. Este período marca não apenas a recuperação, mas uma renovação do compromisso comunitário com a festa.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&q=80&w=800',
-        caption: 'Visão futurista da festa mantendo tradições',
+        url: 'https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=800',
+        caption: 'Solo Transportes conduzindo o santo em 2024',
+        year: 2024,
+        isHistorical: false
+      }
+    ],
+    significance: 'growth',
+    participantsEstimate: '22.000 participantes',
+    keyFigures: [
+      {
+        name: 'Família Vadica',
+        role: 'Solo Transportes - Retorno às tradições familiares',
+        photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200'
+      }
+    ],
+    context: 'Renovação pós-pandemia e fortalecimento comunitário',
+    relatedEvents: ['Retorno das transportadoras', 'Renovação das tradições'],
+    sources: ['Registros recentes dos eventos']
+  },
+  {
+    id: 'futuro-digital-2025',
+    year: 2025,
+    title: 'Era Digital: Tecnologia a Serviço da Memória',
+    description: 'Projeto digital revolucionário preserva história e conecta comunidades.',
+    longDescription: 'A 21ª edição marca o início da era digital da festa. Liderado por Anderson do Estúdio Evidência, o projeto festadoscaminhoneiros.com.br utiliza inteligência artificial para busca de fotos, acompanhamento em tempo real da procissão, digitalização de conteúdo histórico e criação de um e-book/livro impresso. Inclui cobertura profissional, rádio 24h e guia de serviços, garantindo que a história seja preservada para as futuras gerações.',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&q=80&w=800',
+        caption: 'Plataforma digital preservando a história da festa',
         year: 2025,
         isHistorical: false
       }
     ],
     significance: 'future',
-    participantsEstimate: '25K+ participantes esperados',
-    context: 'Renovação e continuidade para o futuro',
-    relatedEvents: ['21ª edição - 19 e 20 de julho', 'Renovação das tradições']
+    participantsEstimate: '25.000+ participantes esperados',
+    keyFigures: [
+      {
+        name: 'Anderson',
+        role: 'Estúdio Evidência - Líder do projeto digital',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+      }
+    ],
+    context: 'Preservação digital e visão para o futuro',
+    relatedEvents: ['Lançamento da plataforma digital', '21ª edição - 19 e 20 de julho'],
+    sources: ['Projeto festadoscaminhoneiros.com.br']
   }
 ];
 
 export const testimonials: Testimonial[] = [
   {
-    id: 'joao-silva-organizador',
+    id: 'padre-davi-fundador',
     author: {
-      name: 'João Silva',
-      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
-      role: 'Organizador da 1ª Edição',
+      name: 'Padre Davi Antônio Coelho',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+      role: 'Fundador da Festa - Pároco Visionário',
       yearsParticipating: 22
     },
-    quote: 'Quando começamos em 2003, nunca imaginamos que a festa cresceria tanto. Era só um grupo de caminhoneiros que queria celebrar nossa fé.',
-    fullTestimonial: 'A ideia nasceu de uma conversa informal após uma missa. Víamos que os caminhoneiros precisavam de um espaço para celebrar sua fé e profissão. O que começou como um encontro simples se transformou na maior festa de caminhoneiros da região.',
+    quote: 'Vi em São Cristóvão um "festeiro" forte para nossa comunidade. Tijucas merecia ter essa tradição de fé e união.',
+    fullTestimonial: 'Quando percebi o crescimento do bairro Santa Terezinha e a forte presença das transportadoras, senti que São Cristóvão deveria ser nosso co-padroeiro. A experiência que tive em Itajaí me mostrou o potencial de unir fé e trabalho numa celebração que fortalece nossa comunidade.',
     year: 2023,
     category: 'organizer',
-    audioUrl: '/audio/joao-silva-depoimento.mp3',
+    audioUrl: '/audio/padre-davi-depoimento.mp3',
     isHighlighted: true,
-    relatedMilestone: 'genesis-2003'
+    relatedMilestone: 'inspiracao-2003'
   },
   {
-    id: 'maria-santos-caminhoneira',
+    id: 'wilson-esgrot-pioneiro',
     author: {
-      name: 'Maria Santos',
-      photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200',
-      role: 'Caminhoneira Veterana',
+      name: 'Wilson Esgrot',
+      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+      role: 'TCA - Doador da Imagem de São Cristóvão',
+      yearsParticipating: 21
+    },
+    quote: 'Doar a imagem de São Cristóvão foi o começo de algo muito maior do que imaginávamos. Era nossa forma de contribuir.',
+    fullTestimonial: 'Quando o Padre Davi nos procurou, entendemos imediatamente a importância do projeto. Doamos a imagem com o coração, sabendo que seria o início de uma tradição que marcaria nossa cidade para sempre.',
+    year: 2024,
+    category: 'organizer',
+    isHighlighted: true,
+    relatedMilestone: 'primeira-festa-2004'
+  },
+  {
+    id: 'arnaldo-peixoto-visionario',
+    author: {
+      name: 'Arnaldo Peixoto',
+      photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200',
+      role: 'Transportes Peixoto - Pilar da Organização',
+      yearsParticipating: 20
+    },
+    quote: 'Esta festa era meu troféu. Via toda minha frota participando com orgulho, era emocionante demais.',
+    fullTestimonial: 'Sempre garantia que toda a frota da Peixoto participasse da procissão. Era respeitado pelas montadoras e via a festa como um troféu pessoal. Cada ano que passava, o evento crescia e eu me orgulhava mais de fazer parte dessa história.',
+    year: 2019,
+    category: 'trucker',
+    isHighlighted: true,
+    relatedMilestone: 'profissionalizacao-2005'
+  },
+  {
+    id: 'juninho-autonomo-pioneiro',
+    author: {
+      name: 'Juninho',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+      role: 'Caminhoneiro Autônomo - Primeiro a Carregar o Santo',
       yearsParticipating: 15
     },
-    quote: 'São Cristóvão sempre me protegeu nas estradas. Esta festa é nossa forma de agradecer e pedir proteção para mais um ano.',
-    fullTestimonial: 'Participo desde 2008. Ver a evolução da festa é emocionante. É aqui que renovo minha fé e encontro outros profissionais que compartilham os mesmos desafios da estrada.',
+    quote: 'Ser o primeiro autônomo a carregar o santo foi realizar um sonho. Mostrou que a festa é de todos os caminhoneiros.',
+    fullTestimonial: 'Quando fui escolhido para ser o primeiro autônomo a conduzir São Cristóvão, senti uma emoção indescritível. Era a prova de que não importa o tamanho da empresa, o que importa é a fé e o amor pela profissão.',
     year: 2023,
     category: 'trucker',
     isHighlighted: true,
-    relatedMilestone: 'consolidacao-2017'
+    relatedMilestone: 'consolidacao-2010-2015'
   },
   {
-    id: 'pedro-oliveira-familia',
+    id: 'neto-sao-cristovao',
     author: {
-      name: 'Pedro Oliveira',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
-      role: 'Filho de Caminhoneiro',
+      name: 'Neto',
+      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+      role: 'NG/Rimátila - "São Cristóvão da Festa" há 16 anos',
+      yearsParticipating: 16
+    },
+    quote: 'Interpretar São Cristóvão por 16 anos foi uma bênção. Até meus netos participam, é uma tradição familiar.',
+    fullTestimonial: 'Ser o São Cristóvão da festa é uma responsabilidade e uma honra que carrego com orgulho. Ver a emoção das pessoas, as famílias se reunindo, os caminhoneiros buscando a bênção... isso não tem preço. É uma tradição que passou para meus netos também.',
+    year: 2024,
+    category: 'participant',
+    isHighlighted: true,
+    relatedMilestone: 'consolidacao-2010-2015'
+  },
+  {
+    id: 'gregorio-caminhoneiro-mirim',
+    author: {
+      name: 'Gregório',
+      photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200',
+      role: 'Solo Transportes - Primeiro Caminhoneiro Mirim',
       yearsParticipating: 18
     },
-    quote: 'Cresci vindo à festa com meu pai. Agora trago meus filhos. É uma tradição que passa de geração em geração.',
-    fullTestimonial: 'A festa faz parte da minha infância e agora da dos meus filhos. É onde aprendemos sobre a importância do trabalho dos caminhoneiros e a fé em São Cristóvão.',
-    year: 2023,
+    quote: 'Aos 12 anos fui o primeiro caminhoneiro mirim. Cresci com a festa, e agora minha família continua a tradição.',
+    fullTestimonial: 'Ser o primeiro caminhoneiro mirim aos 12 anos marcou minha vida. A festa me ensinou sobre responsabilidade, fé e comunidade. Hoje, com minha família na Solo Transportes, continuamos essa tradição que nos forma como pessoas.',
+    year: 2024,
     category: 'family',
-    isHighlighted: false,
-    relatedMilestone: 'sesquicentenario-2010'
+    isHighlighted: true,
+    relatedMilestone: 'retomada-2023-2024'
   },
   {
-    id: 'ana-costa-autoridade',
+    id: 'marcelo-msul-homenagem',
     author: {
-      name: 'Ana Costa',
-      photo: 'https://images.unsplash.com/photo-1494790108755-2616b332e234?auto=format&fit=crop&q=80&w=200',
-      role: 'Ex-Secretária de Cultura',
-      yearsParticipating: 12
+      name: 'Marcelo',
+      photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200',
+      role: 'Msul Transportes - Participante desde a Segunda Festa',
+      yearsParticipating: 20
     },
-    quote: 'A festa é patrimônio cultural de Tijucas. Precisamos preservar essa tradição que une fé, trabalho e comunidade.',
-    fullTestimonial: 'Durante meu mandato, sempre apoiei a festa. É um evento que movimenta a economia local e fortalece nossa identidade cultural.',
-    year: 2022,
-    category: 'authority',
+    quote: 'Dirigir o caminhão do santo em homenagem ao meu irmão Marinho foi emocionante. A festa é feita para o caminhoneiro.',
+    fullTestimonial: 'Participamos desde a segunda festa junto com meu irmão Maurício. Quando dirigi o caminhão do santo em homenagem ao sonho do nosso irmão Marinho, senti que estava cumprindo uma missão. Esta festa realmente é feita para o caminhoneiro, por caminhoneiros.',
+    year: 2023,
+    category: 'trucker',
+    isHighlighted: true,
+    relatedMilestone: 'consolidacao-2010-2015'
+  },
+  {
+    id: 'carlos-rosa-inovador',
+    author: {
+      name: 'Carlos Rosa',
+      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+      role: 'Rodopiso Transportes - Inovador do Santo Giratório',
+      yearsParticipating: 17
+    },
+    quote: 'Inovar com o sistema que fazia São Cristóvão girar foi especial. Ele abençoava a todos ao longo do trajeto.',
+    fullTestimonial: 'Em 2008, quando conduzimos o santo, criamos um sistema especial que fazia a imagem girar durante toda a procissão. Ver São Cristóvão abençoando todos os lados, todas as pessoas ao longo do trajeto, foi um momento único e emocionante.',
+    year: 2023,
+    category: 'trucker',
     isHighlighted: false,
-    relatedMilestone: 'consolidacao-2017'
+    relatedMilestone: 'montadoras-2007-2009'
+  },
+  {
+    id: 'julio-seguros-novo-apoiador',
+    author: {
+      name: 'Júlio',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+      role: 'Júlio Seguros - Novo Apoiador da Festa',
+      yearsParticipating: 3
+    },
+    quote: 'Além de trazer minha corretora para Tijucas, faço questão de contribuir com o leilão beneficente.',
+    fullTestimonial: 'Como novo apoiador, sinto-me privilegiado em fazer parte desta tradição. Além de estabelecer minha corretora em Tijucas, já doei pneus para o leilão beneficente e me ofereci para ajudar na organização. É uma festa que merece nosso apoio.',
+    year: 2024,
+    category: 'participant',
+    isHighlighted: false,
+    relatedMilestone: 'retomada-2023-2024'
+  },
+  {
+    id: 'euclides-fundador-capela',
+    author: {
+      name: 'Euclides',
+      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+      role: 'Fundador da Capela de Santa Terezinha (1991)',
+      yearsParticipating: 21
+    },
+    quote: 'Como fundador da capela em 1991, ver a festa crescer assim é emocionante. Mereço a Medalha Rosas de Santa Terezinha.',
+    fullTestimonial: 'Sou um dos fundadores da capela de Santa Terezinha em 1991, doei parte da área da igreja e sempre fui voluntário incansável. Ver como a festa cresceu desde 2004 até hoje me emociona profundamente. Receber a Medalha Rosas de Santa Terezinha foi o reconhecimento de uma vida dedicada à comunidade.',
+    year: 2023,
+    category: 'organizer',
+    isHighlighted: true,
+    relatedMilestone: 'primeira-festa-2004'
+  },
+  {
+    id: 'celinha-festeira-voluntaria',
+    author: {
+      name: 'Celinha',
+      photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200',
+      role: 'Festeira Voluntária - Coração da Organização',
+      yearsParticipating: 20
+    },
+    quote: 'Trabalho gratuitamente desde o início, da cozinha à organização. É minha forma de contribuir com a comunidade.',
+    fullTestimonial: 'Desde a primeira edição, trabalho como voluntária em todas as áreas da festa - da cozinha à organização geral. Ver os fundos sendo revertidos para melhorias da nossa paróquia, como a nova igreja e o pavilhão, me dá certeza de que cada esforço vale a pena.',
+    year: 2024,
+    category: 'organizer',
+    isHighlighted: false,
+    relatedMilestone: 'profissionalizacao-2005'
+  },
+  {
+    id: 'anderson-estudio-evidencia',
+    author: {
+      name: 'Anderson',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+      role: 'Estúdio Evidência - Líder do Projeto Digital',
+      yearsParticipating: 5
+    },
+    quote: 'Nossa missão é preservar essa história para as futuras gerações através da tecnologia e inovação.',
+    fullTestimonial: 'Liderar o projeto festadoscaminhoneiros.com.br é uma responsabilidade que abraço com paixão. Utilizamos inteligência artificial, cobertura profissional e tecnologia de ponta para garantir que essa rica história seja preservada e acessível para sempre. É o futuro respeitando o passado.',
+    year: 2024,
+    category: 'organizer',
+    isHighlighted: true,
+    relatedMilestone: 'futuro-digital-2025'
   }
 ];
 
 export const galleryImages = [
   {
     id: 'img-1',
-    url: 'https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=400',
-    title: 'Primeiros Caminhões - 2003',
-    description: 'Os primeiros caminhões na Igreja Santa Terezinha marcam o início da tradição',
+    url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
+    title: 'Padre Davi - A Inspiração (2003)',
+    description: 'Padre Davi Antônio Coelho, o visionário que trouxe São Cristóvão para Tijucas',
     decade: 2000,
     type: 'photos' as const,
     theme: 'origem',
@@ -191,46 +464,101 @@ export const galleryImages = [
   },
   {
     id: 'img-2',
+    url: 'https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=800',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=400',
+    title: 'Primeira Festa Oficial (2004)',
+    description: 'Os primeiros caminhões na Igreja Santa Terezinha, início de uma tradição',
+    decade: 2000,
+    type: 'photos' as const,
+    theme: 'origem',
+    isHistorical: true
+  },
+  {
+    id: 'img-3',
+    url: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=800',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=400',
+    title: 'Churrasco Histórico (2005)',
+    description: 'Reunião com 20 transportadoras que revolucionou a festa',
+    decade: 2000,
+    type: 'photos' as const,
+    theme: 'organizacao',
+    isHistorical: true
+  },
+  {
+    id: 'img-4',
+    url: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=800',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=400',
+    title: 'Semana do Transporte (2006)',
+    description: 'Primeira Semana do Transporte com palestras e exposições técnicas',
+    decade: 2000,
+    type: 'photos' as const,
+    theme: 'educacao',
+    isHistorical: true
+  },
+  {
+    id: 'img-5',
+    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=400',
+    title: 'Era das Montadoras (2007-2009)',
+    description: 'Todas as montadoras de caminhões do Brasil presentes na festa',
+    decade: 2000,
+    type: 'photos' as const,
+    theme: 'exposicao',
+    isHistorical: true
+  },
+  {
+    id: 'img-6',
     url: 'https://images.unsplash.com/photo-1518877593221-1f28583780b4?auto=format&fit=crop&q=80&w=800',
     thumbnailUrl: 'https://images.unsplash.com/photo-1518877593221-1f28583780b4?auto=format&fit=crop&q=80&w=400',
-    title: 'Carreata do Sesquicentenário - 2010',
-    description: 'Caminhoneiros carregam a bandeira de Tijucas nas comemorações dos 150 anos',
+    title: 'Juninho - Primeiro Autônomo (2012)',
+    description: 'Juninho realiza sonho ao ser primeiro autônomo a carregar o santo',
+    decade: 2010,
+    type: 'photos' as const,
+    theme: 'procissao',
+    isHistorical: true
+  },
+  {
+    id: 'img-7',
+    url: 'https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=800',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=400',
+    title: 'Era de Ouro (2010-2015)',
+    description: 'Consolidação da festa com histórias marcantes de fé e comunidade',
     decade: 2010,
     type: 'photos' as const,
     theme: 'celebracao',
     isHistorical: true
   },
   {
-    id: 'img-3',
-    url: 'https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=400',
-    title: 'Grande Show - 2017',
-    description: 'Hugo e Thiago na 15ª edição marcam a consolidação da festa',
-    decade: 2010,
+    id: 'img-8',
+    url: 'https://images.unsplash.com/photo-1585435557343-3b092031d4c1?auto=format&fit=crop&q=80&w=800',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1585435557343-3b092031d4c1?auto=format&fit=crop&q=80&w=400',
+    title: 'Pandemia - Bombeiros (2020-2021)',
+    description: 'Corpo de Bombeiros manteve a tradição durante a pandemia',
+    decade: 2020,
     type: 'photos' as const,
-    theme: 'shows',
+    theme: 'adaptacao',
     isHistorical: false
   },
   {
-    id: 'img-4',
+    id: 'img-9',
     url: 'https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&q=80&w=800',
     thumbnailUrl: 'https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&q=80&w=400',
-    title: 'Procissão Moderna - 2022',
-    description: 'A procissão enfrentando desafios contemporâneos',
+    title: 'Retomada - Solo Transportes (2024)',
+    description: 'Família Vadica e Solo Transportes renovam a tradição pós-pandemia',
     decade: 2020,
     type: 'photos' as const,
     theme: 'procissao',
     isHistorical: false
   },
   {
-    id: 'img-5',
-    url: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&q=80&w=400',
-    title: 'Futuro da Tradição - 2025',
-    description: 'Visão futurista mantendo a essência das tradições',
+    id: 'img-10',
+    url: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&q=80&w=800',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&q=80&w=400',
+    title: 'Era Digital (2025)',
+    description: 'Plataforma digital preservando a história para o futuro',
     decade: 2020,
     type: 'photos' as const,
-    theme: 'futuro',
+    theme: 'tecnologia',
     isHistorical: false
   }
 ];

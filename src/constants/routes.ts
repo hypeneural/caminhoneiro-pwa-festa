@@ -20,7 +20,8 @@ export const ROUTES = {
   FAQ: '/faq',
   SAO_CRISTOVAO: '/sao-cristovao',
   MENU: '/menu',
-  APOIO: '/apoio'
+  APOIO: '/apoio',
+  VOCE_SABIA: '/vocesabia'
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

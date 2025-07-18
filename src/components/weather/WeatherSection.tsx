@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Cloud, CloudRain, Sun, Moon, Wind, Droplets, Eye, CloudSnow } from "lucide-react";
+import { Cloud, CloudRain, Sun, Moon, Wind, Droplets, Eye, CloudSnow, Thermometer, Calendar } from "lucide-react";
 import { useWeather } from "@/hooks/useWeather";
+import { WeatherEventCard } from "@/components/weather/WeatherEventCard";
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -48,29 +50,38 @@ export function WeatherSection() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-2xl shadow-lg p-6 w-full"
+        className="space-y-4 w-full"
       >
-        <div className="text-center">
-          <Cloud className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Não foi possível carregar a previsão do tempo
-          </p>
+        <div className="bg-card rounded-2xl shadow-lg p-6">
+          <div className="text-center">
+            <Cloud className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Não foi possível carregar a previsão do tempo
+            </p>
+          </div>
         </div>
       </motion.div>
     );
   }
 
-  const { now, forecast } = weather;
+  const { now, forecast, event } = weather;
   const WeatherIcon = getWeatherIcon(now.condition);
   const currentDate = format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR });
 
   return (
-    <motion.section
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-card rounded-2xl shadow-lg p-6 w-full"
+      className="space-y-4 w-full"
     >
+      {/* Current Weather Card */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-card rounded-2xl shadow-lg p-6 w-full"
+      >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-foreground">
@@ -213,5 +224,96 @@ export function WeatherSection() {
         </DialogContent>
       </Dialog>
     </motion.section>
+
+    {/* Event Weather Section */}
+    {event && event.length > 0 && (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <div className="bg-card rounded-2xl shadow-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary/90 to-primary rounded-xl flex items-center justify-center shadow-lg">
+              <Calendar className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">
+                🎉 Previsão para a Festa
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Sábado 19 e Domingo 20 de Julho
+              </p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {event.map((day, index) => {
+              const DayIcon = getWeatherIcon(day.condition);
+              
+              return (
+                <motion.div
+                  key={day.date}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="relative overflow-hidden border border-border rounded-xl p-4 bg-gradient-to-br from-background/50 to-muted/20 hover:shadow-md transition-all duration-300"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      {day.condition_icon ? (
+                        <img 
+                          src={day.condition_icon} 
+                          alt={day.description} 
+                          className="w-8 h-8"
+                        />
+                      ) : (
+                        <DayIcon className="w-8 h-8 text-primary" />
+                      )}
+                      <div>
+                        <p className="font-bold text-foreground">{day.weekday}</p>
+                        <p className="text-xs text-muted-foreground">{day.date}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-foreground">
+                        {day.min}° - {day.max}°
+                      </p>
+                      <Badge 
+                        variant="secondary"
+                        className="text-xs bg-primary/10 text-primary border-primary/20"
+                      >
+                        {day.description}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Droplets className="w-3 h-3" />
+                      <span>{day.humidity}%</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Wind className="w-3 h-3" />
+                      <span>{day.wind_kmh} km/h</span>
+                    </div>
+                    {day.rain_probability > 0 && (
+                      <div className="flex items-center gap-1">
+                        <CloudRain className="w-3 h-3" />
+                        <span>{day.rain_probability}%</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Gradient overlay for visual appeal */}
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-primary/5 to-transparent rounded-bl-2xl" />
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </motion.div>
+    )}
+  </motion.div>
   );
 }

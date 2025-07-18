@@ -9,8 +9,10 @@ import { CountdownBadge } from "@/components/mobile/CountdownBadge";
 import { EventCard } from "@/components/mobile/EventCard";
 import { PullToRefresh } from "@/components/mobile/PullToRefresh";
 import { NavigationActions } from "@/components/ui/navigation-actions";
+import { WeatherEventCard } from "@/components/weather/WeatherEventCard";
 import { Event, getEventsByDay, getNextEvent, getEventStatus, getEventTypeConfig } from "@/data/programacao";
 import { useCountdown } from "@/hooks/useCountdown";
+import { useWeather } from "@/hooks/useWeather";
 
 // Componente de ícone dinâmico
 const DynamicIcon = ({ iconName, className }: { iconName: string; className?: string }) => {
@@ -32,6 +34,7 @@ const DynamicIcon = ({ iconName, className }: { iconName: string; className?: st
 const Schedule = () => {
   const [selectedDay, setSelectedDay] = useState<'saturday' | 'sunday'>('saturday'); // Aba padrão é sábado
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { weather } = useWeather();
 
   const getCurrentEvents = () => {
     return getEventsByDay(selectedDay);
@@ -311,29 +314,37 @@ const Schedule = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
-              {/* Weather info with better design */}
+              {/* Weather info with real API data */}
               <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
               >
-                <Card className="p-4 bg-gradient-to-br from-blue-50/80 via-blue-100/60 to-blue-50/40 dark:from-blue-950/80 dark:via-blue-900/60 dark:to-blue-950/40 border-blue-200/50 dark:border-blue-800/50 backdrop-blur-sm">
-                  <div className="flex items-center gap-4">
-                    <motion.div 
-                      className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg"
-                      whileHover={{ rotate: 10 }}
-                    >
-                      <Thermometer className="w-6 h-6 text-white" />
-                    </motion.div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
-                        Previsão do Tempo
-                      </h3>
-                      <p className="text-sm text-blue-700 dark:text-blue-300">
-                        {selectedDay === 'saturday' ? '🌤️ Sáb: 24°C, ensolarado' : '⛅ Dom: 26°C, parcialmente nublado'}
-                      </p>
+                {weather?.event && weather.event.length > 0 ? (
+                  <WeatherEventCard 
+                    eventWeather={weather.event} 
+                    selectedDay={selectedDay}
+                  />
+                ) : (
+                  <Card className="p-4 bg-gradient-to-br from-blue-50/80 via-blue-100/60 to-blue-50/40 dark:from-blue-950/80 dark:via-blue-900/60 dark:to-blue-950/40 border-blue-200/50 dark:border-blue-800/50 backdrop-blur-sm">
+                    <div className="flex items-center gap-4">
+                      <motion.div 
+                        className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg"
+                        whileHover={{ rotate: 10 }}
+                      >
+                        <Thermometer className="w-6 h-6 text-white" />
+                      </motion.div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                          Previsão do Tempo
+                        </h3>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          Carregando previsão para o evento...
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                )}
               </motion.div>
 
               {/* Location info with better design */}

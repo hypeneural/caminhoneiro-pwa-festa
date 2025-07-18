@@ -28,6 +28,7 @@ import FAQ from "./pages/FAQ";
 import SaoCristovao from "./pages/SaoCristovao";
 import Menu from "./pages/Menu";
 import Apoio from "./pages/Apoio";
+import VoceSabia from "./pages/VoceSabia";
 import NotFound from "./pages/NotFound";
 import { OfflineFallback } from "./components/OfflineFallback";
 import { ErrorBoundary } from "react-error-boundary";
@@ -116,6 +117,7 @@ const App = () => {
           <Route path="/menu" element={<Menu />} />
           <Route path="/mais" element={<More />} />
           <Route path="/apoio" element={<Apoio />} />
+          <Route path="/vocesabia" element={<VoceSabia />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

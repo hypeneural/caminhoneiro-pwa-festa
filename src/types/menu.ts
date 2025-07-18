@@ -1,43 +1,85 @@
-export interface MenuItem {
+// API Response Types
+export interface APIResponse<T> {
+  status: 'success' | 'error';
+  message: string | null;
+  meta: {
+    total?: number;
+    page?: number;
+    limit?: number;
+  };
+  data: T;
+}
+
+export interface APIMenuItem {
+  id: number;
+  name: string;
+  description: string | null;
+  price: string;
+  image_url: string | null;
+  created_at: string;
+  category_id: number;
+  category_name: string;
+  icon_url: string;
+  is_available?: number;
+}
+
+export interface APIMenuCategory {
+  id: number;
+  name: string;
+  icon_url: string;
+}
+
+// Cart System Types
+export interface CartItem {
+  id: number;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  category_name: string;
+  icon_url: string;
+  quantity: number;
+  customizations?: CartItemCustomization[];
+  notes?: string;
+}
+
+export interface CartItemCustomization {
   id: string;
   name: string;
-  description: string;
-  longDescription?: string;
   price: number;
-  currency: 'BRL';
-  category: 'main' | 'snacks' | 'regional' | 'drinks' | 'desserts' | 'fast';
-  images: string[];
-  ingredients: string[];
-  allergens?: string[];
-  nutritionalInfo?: {
-    calories?: number;
-    protein?: number;
-    carbs?: number;
-    fat?: number;
+  selected: boolean;
+}
+
+export interface Cart {
+  items: CartItem[];
+  total: number;
+  itemCount: number;
+  lastUpdated: number;
+  sessionId: string;
+}
+
+export interface Order {
+  id: string;
+  sessionId: string;
+  items: CartItem[];
+  total: number;
+  status: 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+  createdAt: number;
+  estimatedTime?: number;
+  notes?: string;
+  customerInfo?: {
+    name?: string;
+    phone?: string;
+    table?: string;
   };
-  tags: Array<'vegetarian' | 'vegan' | 'gluten-free' | 'spicy' | 'popular' | 'new' | 'large-portion'>;
-  preparationTime?: number; // minutos
-  rating?: {
-    average: number;
-    count: number;
-  };
-  vendor: {
-    name: string;
-    location: string;
-    type: 'food-court' | 'food-truck' | 'regional-stand';
-  };
-  availability: {
-    days: ('saturday' | 'sunday')[];
-    hours: {
-      start: string; // "10:00"
-      end: string; // "22:00"
-    };
-  };
-  promotions?: Array<{
-    type: 'combo' | 'discount' | 'happy-hour';
-    description: string;
-    validUntil?: Date;
-  }>;
+}
+
+// Enhanced Menu Types
+export interface MenuItem extends APIMenuItem {
+  formattedPrice: string;
+  isFavorite: boolean;
+  isInCart: boolean;
+  cartQuantity: number;
 }
 
 export interface MenuReview {
@@ -58,22 +100,25 @@ export interface MenuReview {
 export interface MenuFilters {
   priceRange: [number, number];
   tags: string[];
-  category: string[];
-  vendor: string[];
+  category: number[];
+  search: string;
+  sortBy: 'name' | 'price' | 'category';
+  sortOrder: 'ASC' | 'DESC';
 }
 
 export interface MenuPageState {
   menuItems: MenuItem[];
   reviews: MenuReview[];
-  activeCategory: string | null;
+  activeCategory: number | null;
   searchTerm: string;
   selectedItem: MenuItem | null;
   isModalOpen: boolean;
-  favorites: string[]; // IDs dos itens favoritos
+  favorites: number[]; // IDs dos itens favoritos
   filters: MenuFilters;
   sortBy: 'name' | 'price' | 'rating' | 'popularity';
   isLoading: boolean;
   error: string | null;
+  viewMode: 'grid' | 'list';
 }
 
 export interface Promotion {
@@ -87,4 +132,41 @@ export interface Promotion {
   discountPercentage?: number;
   originalPrice?: number;
   promotionalPrice?: number;
+}
+
+// Voice Search Types
+export interface VoiceSearchState {
+  isListening: boolean;
+  isSupported: boolean;
+  transcript: string;
+  confidence: number;
+  error: string | null;
+}
+
+// Cache Types
+export interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  key: string;
+  version: string;
+}
+
+export interface OfflineOrder {
+  id: string;
+  cart: Cart;
+  timestamp: number;
+  synced: boolean;
+  retryCount: number;
+}
+
+// Query Parameters
+export interface MenuQueryParams {
+  search?: string;
+  category?: number;
+  min_price?: number;
+  max_price?: number;
+  sort?: 'price' | 'name';
+  order?: 'ASC' | 'DESC';
+  limit?: number;
+  page?: number;
 }

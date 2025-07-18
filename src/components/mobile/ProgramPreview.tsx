@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, ArrowRight, MapPin, Video, Bell, Share2, X, Church, Coffee, Truck, Gift, Music, Utensils } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { WeatherEventCard } from "@/components/weather/WeatherEventCard";
 import { useToast } from "@/hooks/use-toast";
+import { useWeather } from "@/hooks/useWeather";
 import { Event, getEventsByDay, getNextEvent, getEventStatus, getEventTypeConfig } from "@/data/programacao";
 import { useCountdown } from "@/hooks/useCountdown";
 
@@ -33,6 +35,7 @@ export const ProgramPreview = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const { toast } = useToast();
+  const { weather } = useWeather();
 
   const getCurrentEvents = () => {
     return getEventsByDay(selectedDay);
@@ -285,6 +288,22 @@ export const ProgramPreview = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Weather Section for Events */}
+        {weather?.event && weather.event.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mb-6"
+          >
+            <WeatherEventCard 
+              eventWeather={weather.event} 
+              selectedDay={selectedDay}
+              compact={true}
+            />
+          </motion.div>
+        )}
 
         {/* Enhanced CTA Button */}
         <motion.div

@@ -17,11 +17,13 @@ const Index = () => {
     bannersByPosition = {},
     sponsors,
     isLoading,
-    error
+    error,
+    hasMoreSponsors,
+    loadMoreSponsors
   } = useAdvertisements({
     position: 'home',
     bannersLimit: 25,
-    sponsorsLimit: 6
+    sponsorsLimit: 50
   });
 
   console.log('🏠 Index: bannersByPosition =', bannersByPosition);
@@ -71,7 +73,11 @@ const Index = () => {
         {/* Grid de Patrocinadores */}
         {!isLoading && sponsors.length > 0 && (
           <Section delay={0.75} className="px-4">
-            <SponsorGrid sponsors={sponsors} />
+            <SponsorGrid 
+              sponsors={sponsors} 
+              hasMoreSponsors={hasMoreSponsors}
+              loadMoreSponsors={loadMoreSponsors}
+            />
           </Section>
         )}
       </main>

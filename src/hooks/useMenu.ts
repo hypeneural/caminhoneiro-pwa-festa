@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { menuService, APIMenuItem, APIMenuCategory, MenuQueryParams } from '@/services/api/menuService';
+import { menuService } from '@/services/api/menuService';
+import { APIMenuItem, APIMenuCategory, MenuQueryParams } from '@/types/menu';
 import { useLocalStorage } from './useLocalStorage';
 import { useNetworkStatus } from './useNetworkStatus';
 
@@ -9,7 +10,7 @@ interface MenuState {
   activeCategory: number | null;
   priceRange: [number, number];
   sortOrder: {
-    sort?: 'price';
+    sort?: 'price' | 'name';
     order?: 'ASC' | 'DESC';
   };
   viewMode: 'grid' | 'list';
@@ -34,29 +35,35 @@ const initialState: MenuState = {
 
 export function useMenu() {
   const [state, setState] = useState<MenuState>(initialState);
-  const [favorites, setFavorites] = useLocalStorage<string[]>('menu-favorites', []);
+  const [favorites, setFavorites] = useLocalStorage<number[]>('menu-favorites', []);
   const { isOnline } = useNetworkStatus();
 
-  // Fetch categories
+  // Fetch categories with offline support
   const {
     data: categories = [],
     isLoading: categoriesLoading,
-    error: categoriesError
+    error: categoriesError,
+    refetch: refetchCategories
   } = useQuery<APIMenuCategory[]>({
     queryKey: ['menu-categories'],
     queryFn: () => menuService.getCategories(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: isOnline
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount, error) => {
+      // Don't retry if offline
+      if (!isOnline) return false;
+      return failureCount < 2;
+    },
+    retryDelay: 1000
   });
 
-  // Build query params
+  // Build query params with debouncing
   const buildQueryParams = useCallback((): MenuQueryParams => {
     const params: MenuQueryParams = {
       limit: 15
     };
 
-    if (state.searchTerm) {
-      params.search = state.searchTerm;
+    if (state.searchTerm.trim()) {
+      params.search = state.searchTerm.trim();
     }
 
     if (state.activeCategory !== null) {
@@ -79,7 +86,7 @@ export function useMenu() {
     return params;
   }, [state]);
 
-  // Fetch menu items with infinite loading
+  // Fetch menu items with infinite loading and offline support
   const {
     data: menuData,
     fetchNextPage,
@@ -103,8 +110,13 @@ export function useMenu() {
       const totalPages = Math.ceil(total / limit);
       return page < totalPages ? page + 1 : undefined;
     },
-    enabled: isOnline,
-    staleTime: 2 * 60 * 1000 // 2 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount, error) => {
+      // Don't retry if offline
+      if (!isOnline) return false;
+      return failureCount < 2;
+    },
+    retryDelay: 1000
   });
 
   // Flatten menu items from all pages
@@ -113,21 +125,63 @@ export function useMenu() {
     return menuData.pages.flatMap(page => page.items);
   }, [menuData]);
 
+  // Enhanced menu items with computed properties
+  const enhancedMenuItems = useMemo(() => {
+    return menuItems.map(item => ({
+      ...item,
+      formattedPrice: new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(parseFloat(item.price)),
+      isFavorite: favorites.includes(item.id),
+      isInCart: false, // This will be handled by the cart hook
+      cartQuantity: 0 // This will be handled by the cart hook
+    }));
+  }, [menuItems, favorites]);
+
   // Favorites management
   const toggleFavorite = useCallback((itemId: string) => {
+    const numericId = parseInt(itemId);
     setFavorites(prev => {
-      const newFavorites = prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId];
+      const newFavorites = prev.includes(numericId)
+        ? prev.filter(id => id !== numericId)
+        : [...prev, numericId];
       return newFavorites;
     });
   }, [setFavorites]);
 
-  // State updates
+  // Debounced search update
+  const [searchDebounce, setSearchDebounce] = useState<NodeJS.Timeout | null>(null);
+  
   const updateSearch = useCallback((term: string) => {
-    setState(prev => ({ ...prev, searchTerm: term }));
-  }, []);
+    // Clear existing debounce
+    if (searchDebounce) {
+      clearTimeout(searchDebounce);
+    }
 
+    // Set new debounce
+    const newDebounce = setTimeout(() => {
+      setState(prev => ({ ...prev, searchTerm: term }));
+    }, 300); // 300ms debounce
+
+    setSearchDebounce(newDebounce);
+
+    // If search is cleared immediately, update state
+    if (!term.trim()) {
+      setState(prev => ({ ...prev, searchTerm: '' }));
+    }
+  }, [searchDebounce]);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounce) {
+        clearTimeout(searchDebounce);
+      }
+    };
+  }, [searchDebounce]);
+
+  // State updates
   const updateCategory = useCallback((categoryId: number | null) => {
     setState(prev => ({ ...prev, activeCategory: categoryId }));
   }, []);
@@ -136,7 +190,7 @@ export function useMenu() {
     setState(prev => ({ ...prev, priceRange: range }));
   }, []);
 
-  const updateSortOrder = useCallback((sort: 'price' | undefined, order?: 'ASC' | 'DESC') => {
+  const updateSortOrder = useCallback((sort: 'price' | 'name' | undefined, order?: 'ASC' | 'DESC') => {
     setState(prev => ({ ...prev, sortOrder: { sort, order } }));
   }, []);
 
@@ -162,10 +216,39 @@ export function useMenu() {
     );
   }, [state]);
 
+  // Preload essential data on mount
+  useEffect(() => {
+    if (isOnline) {
+      menuService.preloadEssentialData().catch(console.warn);
+    }
+  }, [isOnline]);
+
+  // Combined error handling
+  const error = categoriesError || menuError;
+
+  // Combined refetch function
+  const refetch = useCallback(async () => {
+    const promises = [];
+    
+    if (categoriesError) {
+      promises.push(refetchCategories());
+    }
+    
+    if (menuError) {
+      promises.push(refetchMenu());
+    }
+
+    if (promises.length === 0) {
+      promises.push(refetchMenu());
+    }
+
+    return Promise.allSettled(promises);
+  }, [categoriesError, menuError, refetchCategories, refetchMenu]);
+
   return {
     // Data
     categories,
-    menuItems,
+    menuItems: enhancedMenuItems,
     favorites,
     
     // State
@@ -182,7 +265,7 @@ export function useMenu() {
     hasMore: hasNextPage,
     
     // Errors
-    error: categoriesError || menuError,
+    error,
     
     // Actions
     updateSearch,
@@ -193,6 +276,9 @@ export function useMenu() {
     resetFilters,
     toggleFavorite,
     loadMore: fetchNextPage,
-    refetch: refetchMenu
+    refetch,
+    
+    // Network status
+    isOnline
   };
 } 

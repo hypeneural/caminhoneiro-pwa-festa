@@ -71,7 +71,8 @@ const moreMenuRoutes = [
   "/about",
   "/contact",
   "/settings",
-  "/faq"
+  "/faq",
+  "/vocesabia"
 ];
 
 export function BottomNavigation() {

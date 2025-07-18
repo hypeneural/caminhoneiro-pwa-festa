@@ -87,36 +87,7 @@ export interface AppConfig {
   };
 }
 
-export interface TraccarAttributes {
-  batteryLevel: number;
-  motion: boolean;
-  totalDistance: number;
-  odometer: number;
-  activity: string;
-  distance: number;
-  event?: string;
-}
-
-export interface TraccarData {
-  id: number;
-  attributes: TraccarAttributes;
-  deviceId: number;
-  protocol: string;
-  serverTime: string;
-  deviceTime: string;
-  fixTime: string;
-  outdated: boolean;
-  valid: boolean;
-  latitude: number;
-  longitude: number;
-  altitude: number;
-  speed: number;
-  course: number;
-  address: string | null;
-  accuracy: number;
-  network: any | null;
-  geofenceIds: number[] | null;
-}
+// TraccarData moved to types/tracker.ts for better organization
 
 export interface GeoJSONFeature {
   type: "Feature";

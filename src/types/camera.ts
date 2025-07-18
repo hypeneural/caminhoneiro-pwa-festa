@@ -1,39 +1,31 @@
-export interface CameraStream {
-  id: string;
-  name: string;
-  location: string;
-  isLive: boolean;
-  viewers: number;
-  thumbnailUrl: string;
-  streamUrl: string;
-  quality: '480p' | '720p' | '1080p' | '4K';
-  fps: number;
-  bitrate: string;
-  uptime: string;
-  maxViewers: number;
-  description: string;
-  category: 'entertainment' | 'religious' | 'general' | 'food' | 'parking';
-  hasAudio: boolean;
-  canRecord: boolean;
-  priority: number;
-  scheduleStart?: Date;
-  scheduleEnd?: Date;
-  status?: 'online' | 'offline' | 'maintenance' | 'scheduled';
-  metadata?: {
-    codec?: string;
-    resolution?: string;
-    bandwidth?: string;
+export interface Camera {
+  id: number;
+  nome_local: string;
+  alias_ipcamlive: string;
+  descricao: string;
+  latitude: number | null;
+  longitude: number | null;
+  thumbnail_url: string | null;
+  ordem_exibicao: number;
+  data_cadastro: string;
+  data_atualizacao: string;
+}
+
+export interface CameraResponse {
+  status: string;
+  message: string;
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
   };
+  data: Camera[];
 }
 
 export interface CameraFilters {
-  category?: string;
-  isLive?: boolean;
-  hasAudio?: boolean;
-  quality?: string[];
   search?: string;
-  sortBy?: 'priority' | 'viewers' | 'name' | 'uptime';
-  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
 }
 
 export interface CameraState {

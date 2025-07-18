@@ -1,5 +1,5 @@
 import { QuickAccessItem } from '@/types/quickAccess';
-import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText, Shield, Users, Heart, ChefHat, Phone, Mic } from "lucide-react";
+import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText, Shield, Users, Heart, ChefHat, Phone, Mic, Lightbulb } from "lucide-react";
 
 export const quickAccessItems: QuickAccessItem[] = [
   // Primeira Linha
@@ -154,6 +154,18 @@ export const quickAccessItems: QuickAccessItem[] = [
     isActive: true
   },
   {
+    id: "vocesabia",
+    title: "Você Sabia?",
+    icon: Lightbulb,
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
+    route: "/vocesabia",
+    category: "info",
+    priority: 13,
+    description: "Curiosidades da festa",
+    isActive: true
+  },
+  {
     id: "faq",
     title: "Dúvidas",
     icon: Heart,
@@ -161,7 +173,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-green-50 dark:bg-green-900/20",
     route: "/faq",
     category: "info",
-    priority: 13,
+    priority: 14,
     description: "Perguntas frequentes",
     isActive: true
   },
@@ -173,7 +185,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
     route: "/historia",
     category: "info",
-    priority: 14,
+    priority: 15,
     description: "Conheça a história da festa",
     isActive: true
   },
@@ -185,7 +197,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-blue-50 dark:bg-blue-900/20",
     route: "/contato-igreja",
     category: "info",
-    priority: 15,
+    priority: 16,
     description: "Entre em contato com a Paróquia",
     isActive: true
   }

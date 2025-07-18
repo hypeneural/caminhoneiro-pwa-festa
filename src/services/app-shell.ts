@@ -12,7 +12,7 @@ export interface AppShellConfig {
 }
 
 export const APP_SHELL_CONFIG: AppShellConfig = {
-  criticalRoutes: ['/', '/galeria', '/mapa', '/programacao', '/noticias'],
+  criticalRoutes: ['/', '/galeria', '/mapa', '/programacao', '/noticias', '/vocesabia'],
   staticAssets: [
     '/manifest.json',
     '/pwa-192x192.png',

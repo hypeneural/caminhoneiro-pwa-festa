@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Calendar, MapPin, Users } from "lucide-react";
 
 export const MobileHero = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -36,7 +36,7 @@ export const MobileHero = () => {
       </motion.div>
 
       {/* Content */}
-      <motion.div 
+      <motion.div
         style={{ opacity }}
         className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4"
       >
@@ -47,16 +47,37 @@ export const MobileHero = () => {
           className="space-y-4"
         >
           <h1 className="text-3xl sm:text-4xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-trucker-yellow to-trucker-orange leading-tight">
-            A História da Nossa Festa
+            Nossa História de Fé e União
           </h1>
           
           <p className="text-base sm:text-lg text-trucker-yellow max-w-sm mx-auto leading-relaxed">
-            Fé, Tradição e a Jornada do Caminhoneiro em Tijucas/SC
+            22 anos celebrando São Cristóvão em Tijucas/SC
           </p>
           
           <blockquote className="text-sm sm:text-base text-white/90 max-w-xs mx-auto italic font-light leading-relaxed">
-            "São Cristóvão, protetor dos viajantes, guia nossos passos há mais de duas décadas"
+            "Da inspiração do Padre Davi em 2003 até hoje, uma tradição de fé e proteção nas estradas"
           </blockquote>
+
+          {/* Key Stats - Mobile Optimized */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 1 }}
+            className="grid grid-cols-1 gap-3 mt-6"
+          >
+            <div className="flex items-center justify-center gap-2 text-white/80">
+              <Calendar className="w-4 h-4 text-trucker-yellow" />
+              <span className="text-xs">22 anos de tradição</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-white/80">
+              <Users className="w-4 h-4 text-trucker-yellow" />
+              <span className="text-xs">25.000+ participantes esperados</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-white/80">
+              <MapPin className="w-4 h-4 text-trucker-yellow" />
+              <span className="text-xs">Tijucas, coração do transporte</span>
+            </div>
+          </motion.div>
         </motion.div>
 
         {/* Scroll Indicator */}
@@ -68,7 +89,7 @@ export const MobileHero = () => {
           aria-label="Rolar para o conteúdo"
         >
           <div className="flex flex-col items-center space-y-2 text-trucker-yellow p-2">
-            <span className="text-xs font-medium">Descubra nossa história</span>
+            <span className="text-xs font-medium">Explore nossa jornada</span>
             <ChevronDown className="w-5 h-5" />
           </div>
         </motion.button>

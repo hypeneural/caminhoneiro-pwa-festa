@@ -18,6 +18,25 @@ export interface WeatherNow {
   timezone: string;
 }
 
+export interface WeatherEvent {
+  date: string;
+  weekday: string;
+  min: number;
+  max: number;
+  humidity: number;
+  cloudiness: number;
+  rain: number;
+  rain_probability: number;
+  wind_kmh: number;
+  sunrise: string;
+  sunset: string;
+  moon_phase: string;
+  moon_icon: string;
+  description: string;
+  condition: string;
+  condition_icon: string;
+}
+
 export interface WeatherForecast {
   date: string;
   weekday: string;
@@ -39,12 +58,13 @@ export interface WeatherForecast {
 
 export interface WeatherData {
   now: WeatherNow;
+  event: WeatherEvent[];
   forecast: WeatherForecast[];
 }
 
 export interface WeatherResponse {
   status: string;
-  message: string;
+  message: string | null;
   meta: any[];
   data: WeatherData;
 }

@@ -9,11 +9,11 @@ interface MenuFiltersSheetProps {
   onOpenChange: (open: boolean) => void;
   priceRange: [number, number];
   sortOrder: {
-    sort?: 'price';
+    sort?: 'price' | 'name';
     order?: 'ASC' | 'DESC';
   };
   onPriceRangeChange: (range: [number, number]) => void;
-  onSortOrderChange: (sort: 'price' | undefined, order?: 'ASC' | 'DESC') => void;
+  onSortOrderChange: (sort: 'price' | 'name' | undefined, order?: 'ASC' | 'DESC') => void;
   onReset: () => void;
 }
 

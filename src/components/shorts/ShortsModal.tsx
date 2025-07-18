@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, ExternalLink, Share2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform } from "framer-motion";
+import { X, ChevronLeft, ChevronRight, ExternalLink, Share2, Volume2, VolumeX } from "lucide-react";
 import { Short } from "@/types/shorts";
 
 interface ShortsModalProps {
@@ -12,6 +12,15 @@ interface ShortsModalProps {
 
 export const ShortsModal = ({ isOpen, onClose, shorts, initialIndex }: ShortsModalProps) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragDirection, setDragDirection] = useState<'left' | 'right' | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Motion values for swipe animations
+  const dragX = useMotionValue(0);
+  const dragOpacity = useTransform(dragX, [-200, 0, 200], [0.5, 1, 0.5]);
+  const dragScale = useTransform(dragX, [-200, 0, 200], [0.9, 1, 0.9]);
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
@@ -20,23 +29,33 @@ export const ShortsModal = ({ isOpen, onClose, shorts, initialIndex }: ShortsMod
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      // Prevent touch events on body when modal is open
+      document.body.style.touchAction = 'none';
     } else {
       document.body.style.overflow = 'unset';
+      document.body.style.touchAction = 'auto';
     }
 
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.style.touchAction = 'auto';
     };
   }, [isOpen]);
 
   const currentShort = shorts[currentIndex];
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : shorts.length - 1));
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+      if (navigator.vibrate) navigator.vibrate(10);
+    }
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev < shorts.length - 1 ? prev + 1 : 0));
+    if (currentIndex < shorts.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      if (navigator.vibrate) navigator.vibrate(10);
+    }
   };
 
   const handleShare = async () => {
@@ -48,14 +67,14 @@ export const ShortsModal = ({ isOpen, onClose, shorts, initialIndex }: ShortsMod
           title: currentShort.title,
           url: url,
         });
+        if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
       } catch (error) {
         console.log('Erro ao compartilhar:', error);
       }
     } else {
-      // Fallback: copiar para clipboard
       try {
         await navigator.clipboard.writeText(url);
-        // Aqui você pode adicionar um toast de sucesso
+        if (navigator.vibrate) navigator.vibrate(50);
       } catch (error) {
         console.log('Erro ao copiar:', error);
       }
@@ -64,6 +83,45 @@ export const ShortsModal = ({ isOpen, onClose, shorts, initialIndex }: ShortsMod
 
   const openInYouTube = () => {
     window.open(`https://youtube.com/shorts/${currentShort.id}`, '_blank');
+    if (navigator.vibrate) navigator.vibrate(15);
+  };
+
+  const handleDragStart = () => {
+    setIsDragging(true);
+    setDragDirection(null);
+  };
+
+  const handleDrag = (event: any, info: PanInfo) => {
+    const { offset } = info;
+    dragX.set(offset.x);
+    
+    if (Math.abs(offset.x) > Math.abs(offset.y)) {
+      setDragDirection(offset.x > 0 ? 'right' : 'left');
+    }
+  };
+
+  const handleDragEnd = (event: any, info: PanInfo) => {
+    const { offset, velocity } = info;
+    setIsDragging(false);
+    dragX.set(0);
+    
+    const swipeThreshold = 100;
+    const velocityThreshold = 500;
+    
+    if (Math.abs(offset.x) > swipeThreshold || Math.abs(velocity.x) > velocityThreshold) {
+      if (offset.x > 0 && currentIndex > 0) {
+        goToPrevious();
+      } else if (offset.x < 0 && currentIndex < shorts.length - 1) {
+        goToNext();
+      }
+    }
+    
+    setDragDirection(null);
+  };
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    if (navigator.vibrate) navigator.vibrate(10);
   };
 
   if (!isOpen || !currentShort) return null;
@@ -74,10 +132,16 @@ export const ShortsModal = ({ isOpen, onClose, shorts, initialIndex }: ShortsMod
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black z-50 flex flex-col"
+        className="fixed inset-0 bg-black/95 z-[9999] flex flex-col"
+        style={{
+          touchAction: "none",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          WebkitTapHighlightColor: "transparent"
+        }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm z-[9999]">
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={onClose}
@@ -93,6 +157,18 @@ export const ShortsModal = ({ isOpen, onClose, shorts, initialIndex }: ShortsMod
           </div>
 
           <div className="flex items-center gap-2">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleMute}
+              className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+            >
+              {isMuted ? (
+                <VolumeX className="w-5 h-5 text-white" />
+              ) : (
+                <Volume2 className="w-5 h-5 text-white" />
+              )}
+            </motion.button>
+            
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={handleShare}
@@ -112,13 +188,13 @@ export const ShortsModal = ({ isOpen, onClose, shorts, initialIndex }: ShortsMod
         </div>
 
         {/* Conteúdo principal */}
-        <div className="flex-1 relative flex items-center justify-center">
+        <div ref={containerRef} className="flex-1 relative flex items-center justify-center">
           {/* Navegação esquerda */}
-          {shorts.length > 1 && (
+          {currentIndex > 0 && (
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={goToPrevious}
-              className="absolute left-4 z-10 w-12 h-12 bg-black/50 rounded-full flex items-center justify-center"
+              className="absolute left-4 z-[9999] w-12 h-12 bg-black/50 rounded-full flex items-center justify-center"
             >
               <ChevronLeft className="w-6 h-6 text-white" />
             </motion.button>
@@ -127,42 +203,70 @@ export const ShortsModal = ({ isOpen, onClose, shorts, initialIndex }: ShortsMod
           {/* Player de vídeo */}
           <motion.div
             key={currentShort.id}
+            drag="x"
+            dragConstraints={containerRef}
+            onDragStart={handleDragStart}
+            onDrag={handleDrag}
+            onDragEnd={handleDragEnd}
+            style={{ 
+              x: dragX,
+              opacity: dragOpacity,
+              scale: dragScale,
+              touchAction: "none"
+            }}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="w-full max-w-sm mx-auto aspect-[9/16] bg-black rounded-lg overflow-hidden"
+            className="w-full max-w-sm mx-auto aspect-[9/16] bg-black rounded-lg overflow-hidden touch-none select-none z-[9998]"
           >
             <iframe
-              src={`https://www.youtube.com/embed/${currentShort.id}?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0&showinfo=0`}
+              src={`https://www.youtube.com/embed/${currentShort.id}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=1&modestbranding=1&rel=0&showinfo=0&playsinline=1&enablejsapi=1`}
               title={currentShort.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
-              className="w-full h-full"
+              className="w-full h-full pointer-events-none"
             />
           </motion.div>
 
           {/* Navegação direita */}
-          {shorts.length > 1 && (
+          {currentIndex < shorts.length - 1 && (
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={goToNext}
-              className="absolute right-4 z-10 w-12 h-12 bg-black/50 rounded-full flex items-center justify-center"
+              className="absolute right-4 z-[9999] w-12 h-12 bg-black/50 rounded-full flex items-center justify-center"
             >
               <ChevronRight className="w-6 h-6 text-white" />
             </motion.button>
           )}
+
+          {/* Swipe direction indicator */}
+          <AnimatePresence>
+            {dragDirection && isDragging && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute inset-0 flex items-center justify-center z-[9999] pointer-events-none"
+              >
+                <div className={`px-6 py-3 rounded-full bg-white/20 backdrop-blur-sm text-white font-medium`}>
+                  {dragDirection === 'left' ? 'Próximo →' : '← Anterior'}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Footer com título */}
-        <div className="p-4 bg-black/80 backdrop-blur-sm">
+        <div className="p-4 bg-black/80 backdrop-blur-sm z-[9999]">
           <h2 className="text-white font-medium text-center leading-tight">
             {currentShort.title}
           </h2>
         </div>
 
-        {/* Indicadores */}
+        {/* Indicadores de navegação */}
         {shorts.length > 1 && (
-          <div className="flex justify-center gap-2 pb-4">
+          <div className="flex justify-center gap-2 pb-4 z-[9999]">
             {shorts.map((_, index) => (
               <motion.button
                 key={index}
