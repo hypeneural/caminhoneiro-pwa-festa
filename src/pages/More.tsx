@@ -50,13 +50,6 @@ const More = () => {
       route: "/contact",
       color: "text-trucker-orange"
     },
-    {
-      icon: Settings,
-      title: "Configurações",
-      description: "Preferências do aplicativo",
-      route: "/settings",
-      color: "text-muted-foreground"
-    },
   ];
 
   return (

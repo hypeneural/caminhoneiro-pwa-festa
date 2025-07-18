@@ -29,7 +29,7 @@ export const ParallaxHero = () => {
         <div 
           className="w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=1920')`
+            backgroundImage: `url('https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg')`
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />

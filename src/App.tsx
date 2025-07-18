@@ -111,7 +111,6 @@ const App = () => {
           <Route path="/cameras" element={<Cameras />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/settings" element={<Settings />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/sao-cristovao" element={<SaoCristovao />} />
           <Route path="/menu" element={<Menu />} />

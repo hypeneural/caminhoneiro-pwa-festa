@@ -100,11 +100,6 @@ export const ContentSections = ({ bannersByPosition, isLoading }: ContentSection
         <WeatherSection />
       </Section>
 
-      {/* Seção 5: Enquete */}
-      <Section delay={0.37} className="px-4 mb-6">
-        <PollCard />
-      </Section>
-
       {/* Banner Carousel 3 - Após Enquete */}
       {!isLoading && hasBannersInPosition(3) && (
         <Section delay={0.4} className="px-4 mb-6">

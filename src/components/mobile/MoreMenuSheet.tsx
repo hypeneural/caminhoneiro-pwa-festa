@@ -137,12 +137,6 @@ const bottomItems = [
     title: 'FAQ',
     icon: HelpCircle,
     route: ROUTES.FAQ
-  },
-  {
-    id: 'settings',
-    title: 'Configurações',
-    icon: Settings,
-    route: ROUTES.SETTINGS
   }
 ];
 

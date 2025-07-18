@@ -12,28 +12,28 @@ const foundingFigures = [
     name: "Padre Davi Antônio Coelho",
     role: "Visionário e Fundador",
     description: "Inspiração inicial em 2003",
-    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+    photo: "https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/padre-davi-antonio.png",
     year: "2003"
   },
   {
-    name: "Wilson Esgrot",
+    name: "Uilson Sgrott",
     role: "TCA - Primeiro Apoiador",
     description: "Doou a imagem de São Cristóvão",
-    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200",
+    photo: "https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/uilson-sgrott.jpg",
     year: "2004"
   },
   {
     name: "Carlos Borba",
     role: "Líder CAEP",
     description: "Profissionalização do evento",
-    photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200",
+    photo: "https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/carlos-borba.jpeg",
     year: "2005"
   },
   {
     name: "Arnaldo Peixoto",
     role: "Transportes Peixoto",
     description: "Visionário empresarial",
-    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+    photo: "https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/arnaldo-peixoto.jpeg",
     year: "2005"
   }
 ];

@@ -9,7 +9,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
     longDescription: 'A história da festa começou com a visão inspiradora do Padre Davi Antônio Coelho. Observando o crescimento do bairro Santa Terezinha e a forte presença de transportadoras na cidade, ele vislumbrou São Cristóvão como um "festeiro" forte, tornando-o co-padroeiro da comunidade ao lado de Santa Terezinha. Com experiência prévia na festa de Itajaí, Padre Davi trouxe esta inspiração divina para Tijucas.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800',
+        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/padre-davi-antonio-coelho-o-visionario-da-festa.jpg',
         caption: 'Padre Davi Antônio Coelho, o visionário da festa',
         year: 2003,
         isHistorical: true
@@ -21,7 +21,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
       {
         name: 'Padre Davi Antônio Coelho',
         role: 'Pároco visionário e fundador da tradição',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/padre-davi-antonio.png'
       }
     ],
     context: 'Crescimento do bairro Santa Terezinha e forte presença de transportadoras',
@@ -36,7 +36,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
     longDescription: 'A primeira festa oficial em 2004 foi descrita como uma celebração menor e "meio desorganizada". Apesar das limitações iniciais, a semente da devoção e da união comunitária estava firmemente plantada. Wilson Esgrot, da TCA, foi fundamental neste início, doando a imagem de São Cristóvão e ajudando a dar os primeiros passos essenciais para o que se tornaria uma tradição monumental.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=800',
+        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/primeiros-caminhoes-na-igreja-santa-terezinha-em-2004.jpg',
         caption: 'Primeiros caminhões na Igreja Santa Terezinha em 2004',
         year: 2004,
         isHistorical: true
@@ -48,7 +48,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
       {
         name: 'Wilson Esgrot',
         role: 'TCA - Doador da imagem de São Cristóvão',
-        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
       }
     ],
     context: 'Primeiro evento oficial, ainda em organização',
@@ -63,7 +63,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
     longDescription: 'A partir de 2005, com a chegada da nova gestão ao CAEP (Conselho Administrativo e Econômico Paroquial), o evento começou sua transformação. Lideranças como Carlos Borba, Cizenando da STR, Gilson, Nilson e Saulo, juntamente com Seu Arnaldo Peixoto, foram essenciais. Eles organizaram um churrasco histórico, convidando as 20 principais transportadoras da cidade para apresentar a visão de um evento organizado e lucrativo para toda a comunidade.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=800',
+        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
         caption: 'Reunião histórica com transportadoras em 2005',
         year: 2005,
         isHistorical: true
@@ -75,17 +75,17 @@ export const historicalMilestones: HistoricalMilestone[] = [
       {
         name: 'Carlos Borba',
         role: 'Líder da nova gestão CAEP',
-        photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
       },
       {
-        name: 'Cizenando',
+        name: 'Sizenando',
         role: 'STR Transportes - Primeiro sorteado para conduzir o santo',
-        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
       },
       {
         name: 'Arnaldo Peixoto',
         role: 'Transportes Peixoto - Visionário e pilar da organização',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
       }
     ],
     context: 'Início da profissionalização e organização sistemática',
@@ -100,7 +100,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
     longDescription: 'A terceira edição de 2006 marcou um divisor de águas com a introdução da Semana do Transporte. Este evento incluía palestras sobre temas cruciais para o setor: jornada de trabalho, saúde, economia e tecnologia. Reunia expositores de diversas áreas, desde vendas de pneus a despachantes e bancos, transformando a festa em um verdadeiro centro de conhecimento e negócios para o setor de transportes.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=800',
+        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
         caption: 'Primeira Semana do Transporte com palestras técnicas',
         year: 2006,
         isHistorical: true
@@ -112,7 +112,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
       {
         name: 'Equipe CAEP',
         role: 'Organizadores da Semana do Transporte',
-        photo: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
       }
     ],
     context: 'Expansão para além da celebração religiosa',
@@ -127,7 +127,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
     longDescription: 'Entre 2007-2009, a festa atingiu seu ápice ao conseguir algo raro no Brasil: reunir TODAS as montadoras de caminhões para expor seus veículos. Volkswagen, Volvo, Mercedes, Scania, Iveco e até a DAF estiveram presentes, transformando a festa em um verdadeiro "parque de exposições". Algumas edições contaram com caminhões-escritório, caminhões com dentistas e serviços de exame de vista para os caminhoneiros. Carlos Rosa (Rodopiso) inovou com um sistema que fazia a imagem de São Cristóvão girar, abençoando a todos.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800',
+        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
         caption: 'Exposição de todas as montadoras brasileiras',
         year: 2008,
         isHistorical: true
@@ -139,7 +139,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
       {
         name: 'Carlos Rosa',
         role: 'Rodopiso Transportes - Inovador do santo giratório',
-        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
       }
     ],
     context: 'Ápice da festa como evento nacional do setor',
@@ -154,7 +154,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
     longDescription: 'Durante a década de 2010-2015, a festa viveu sua era de ouro. Juninho tornou-se o primeiro caminhoneiro autônomo a carregar o santo, realizando um sonho e iniciando uma tradição. Neto da NG/Rimátila começou sua jornada como "São Cristóvão da festa" (16 anos interpretando o santo). Gregório da Solo Transportes foi o primeiro "caminhoneiro mirim" aos 12 anos. A família Vadica teve a honra de conduzir o santo, e Marcelo (Msul) dirigiu em homenagem ao irmão Marinho.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1518877593221-1f28583780b4?auto=format&fit=crop&q=80&w=800',
+        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
         caption: 'Juninho, primeiro autônomo a carregar o santo',
         year: 2012,
         isHistorical: true
@@ -166,17 +166,17 @@ export const historicalMilestones: HistoricalMilestone[] = [
       {
         name: 'Juninho',
         role: 'Primeiro caminhoneiro autônomo a carregar o santo',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
       },
       {
         name: 'Neto',
         role: 'NG/Rimátila - "São Cristóvão da festa" há 16 anos',
-        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
       },
       {
         name: 'Gregório',
         role: 'Solo Transportes - Primeiro caminhoneiro mirim',
-        photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
       }
     ],
     context: 'Consolidação como tradição familiar e comunitária',
@@ -191,7 +191,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
     longDescription: 'A pandemia de COVID-19 trouxe desafios únicos para a festa. Por dois anos consecutivos, o caminhão do Corpo de Bombeiros assumiu a responsabilidade de conduzir o santo, mantendo viva a tradição mesmo em tempos difíceis. Este período demonstrou a resiliência da comunidade e a importância da festa como pilar espiritual, adaptando-se às circunstâncias sem perder a essência.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1585435557343-3b092031d4c1?auto=format&fit=crop&q=80&w=800',
+        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
         caption: 'Bombeiros conduzindo o santo durante a pandemia',
         year: 2020,
         isHistorical: false
@@ -203,7 +203,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
       {
         name: 'Corpo de Bombeiros',
         role: 'Responsáveis pela condução do santo na pandemia',
-        photo: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
       }
     ],
     context: 'Adaptação às restrições sanitárias da pandemia',
@@ -218,7 +218,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
     longDescription: 'A tradição renasce com força total. Em 2023, a Libardo assumiu a condução do santo, marcando o retorno das transportadoras após a pandemia. Em 2024, a Solo Transportes continuou essa renovação, com a família Vadica novamente protagonizando momentos emocionantes. Este período marca não apenas a recuperação, mas uma renovação do compromisso comunitário com a festa.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=800',
+        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
         caption: 'Solo Transportes conduzindo o santo em 2024',
         year: 2024,
         isHistorical: false
@@ -230,7 +230,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
       {
         name: 'Família Vadica',
         role: 'Solo Transportes - Retorno às tradições familiares',
-        photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igrezao.jpg'
       }
     ],
     context: 'Renovação pós-pandemia e fortalecimento comunitário',
@@ -245,7 +245,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
     longDescription: 'A 21ª edição marca o início da era digital da festa. Liderado por Anderson do Estúdio Evidência, o projeto festadoscaminhoneiros.com.br utiliza inteligência artificial para busca de fotos, acompanhamento em tempo real da procissão, digitalização de conteúdo histórico e criação de um e-book/livro impresso. Inclui cobertura profissional, rádio 24h e guia de serviços, garantindo que a história seja preservada para as futuras gerações.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&q=80&w=800',
+        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
         caption: 'Plataforma digital preservando a história da festa',
         year: 2025,
         isHistorical: false
@@ -257,7 +257,7 @@ export const historicalMilestones: HistoricalMilestone[] = [
       {
         name: 'Anderson',
         role: 'Estúdio Evidência - Líder do projeto digital',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igrezao.jpg'
       }
     ],
     context: 'Preservação digital e visão para o futuro',
@@ -271,7 +271,7 @@ export const testimonials: Testimonial[] = [
     id: 'padre-davi-fundador',
     author: {
       name: 'Padre Davi Antônio Coelho',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'Fundador da Festa - Pároco Visionário',
       yearsParticipating: 22
     },
@@ -287,7 +287,7 @@ export const testimonials: Testimonial[] = [
     id: 'wilson-esgrot-pioneiro',
     author: {
       name: 'Wilson Esgrot',
-      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'TCA - Doador da Imagem de São Cristóvão',
       yearsParticipating: 21
     },
@@ -302,7 +302,7 @@ export const testimonials: Testimonial[] = [
     id: 'arnaldo-peixoto-visionario',
     author: {
       name: 'Arnaldo Peixoto',
-      photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'Transportes Peixoto - Pilar da Organização',
       yearsParticipating: 20
     },
@@ -317,7 +317,7 @@ export const testimonials: Testimonial[] = [
     id: 'juninho-autonomo-pioneiro',
     author: {
       name: 'Juninho',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'Caminhoneiro Autônomo - Primeiro a Carregar o Santo',
       yearsParticipating: 15
     },
@@ -332,7 +332,7 @@ export const testimonials: Testimonial[] = [
     id: 'neto-sao-cristovao',
     author: {
       name: 'Neto',
-      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'NG/Rimátila - "São Cristóvão da Festa" há 16 anos',
       yearsParticipating: 16
     },
@@ -347,7 +347,7 @@ export const testimonials: Testimonial[] = [
     id: 'gregorio-caminhoneiro-mirim',
     author: {
       name: 'Gregório',
-      photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'Solo Transportes - Primeiro Caminhoneiro Mirim',
       yearsParticipating: 18
     },
@@ -362,7 +362,7 @@ export const testimonials: Testimonial[] = [
     id: 'marcelo-msul-homenagem',
     author: {
       name: 'Marcelo',
-      photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'Msul Transportes - Participante desde a Segunda Festa',
       yearsParticipating: 20
     },
@@ -377,7 +377,7 @@ export const testimonials: Testimonial[] = [
     id: 'carlos-rosa-inovador',
     author: {
       name: 'Carlos Rosa',
-      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'Rodopiso Transportes - Inovador do Santo Giratório',
       yearsParticipating: 17
     },
@@ -392,7 +392,7 @@ export const testimonials: Testimonial[] = [
     id: 'julio-seguros-novo-apoiador',
     author: {
       name: 'Júlio',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'Júlio Seguros - Novo Apoiador da Festa',
       yearsParticipating: 3
     },
@@ -407,7 +407,7 @@ export const testimonials: Testimonial[] = [
     id: 'euclides-fundador-capela',
     author: {
       name: 'Euclides',
-      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'Fundador da Capela de Santa Terezinha (1991)',
       yearsParticipating: 21
     },
@@ -422,7 +422,7 @@ export const testimonials: Testimonial[] = [
     id: 'celinha-festeira-voluntaria',
     author: {
       name: 'Celinha',
-      photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'Festeira Voluntária - Coração da Organização',
       yearsParticipating: 20
     },
@@ -437,7 +437,7 @@ export const testimonials: Testimonial[] = [
     id: 'anderson-estudio-evidencia',
     author: {
       name: 'Anderson',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+      photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
       role: 'Estúdio Evidência - Líder do Projeto Digital',
       yearsParticipating: 5
     },
@@ -453,8 +453,8 @@ export const testimonials: Testimonial[] = [
 export const galleryImages = [
   {
     id: 'img-1',
-    url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
+    url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+    thumbnailUrl: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
     title: 'Padre Davi - A Inspiração (2003)',
     description: 'Padre Davi Antônio Coelho, o visionário que trouxe São Cristóvão para Tijucas',
     decade: 2000,
@@ -464,8 +464,8 @@ export const galleryImages = [
   },
   {
     id: 'img-2',
-    url: 'https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1487252665478-49b61b47f302?auto=format&fit=crop&q=80&w=400',
+    url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+    thumbnailUrl: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
     title: 'Primeira Festa Oficial (2004)',
     description: 'Os primeiros caminhões na Igreja Santa Terezinha, início de uma tradição',
     decade: 2000,
@@ -475,8 +475,8 @@ export const galleryImages = [
   },
   {
     id: 'img-3',
-    url: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=400',
+    url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+    thumbnailUrl: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
     title: 'Churrasco Histórico (2005)',
     description: 'Reunião com 20 transportadoras que revolucionou a festa',
     decade: 2000,
@@ -486,8 +486,8 @@ export const galleryImages = [
   },
   {
     id: 'img-4',
-    url: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=400',
+    url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+    thumbnailUrl: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
     title: 'Semana do Transporte (2006)',
     description: 'Primeira Semana do Transporte com palestras e exposições técnicas',
     decade: 2000,
@@ -497,8 +497,8 @@ export const galleryImages = [
   },
   {
     id: 'img-5',
-    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=400',
+    url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+    thumbnailUrl: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
     title: 'Era das Montadoras (2007-2009)',
     description: 'Todas as montadoras de caminhões do Brasil presentes na festa',
     decade: 2000,
@@ -508,8 +508,8 @@ export const galleryImages = [
   },
   {
     id: 'img-6',
-    url: 'https://images.unsplash.com/photo-1518877593221-1f28583780b4?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1518877593221-1f28583780b4?auto=format&fit=crop&q=80&w=400',
+    url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+    thumbnailUrl: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
     title: 'Juninho - Primeiro Autônomo (2012)',
     description: 'Juninho realiza sonho ao ser primeiro autônomo a carregar o santo',
     decade: 2010,
@@ -519,8 +519,8 @@ export const galleryImages = [
   },
   {
     id: 'img-7',
-    url: 'https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1469041797191-50ace28483c3?auto=format&fit=crop&q=80&w=400',
+    url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+    thumbnailUrl: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
     title: 'Era de Ouro (2010-2015)',
     description: 'Consolidação da festa com histórias marcantes de fé e comunidade',
     decade: 2010,
@@ -530,8 +530,8 @@ export const galleryImages = [
   },
   {
     id: 'img-8',
-    url: 'https://images.unsplash.com/photo-1585435557343-3b092031d4c1?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1585435557343-3b092031d4c1?auto=format&fit=crop&q=80&w=400',
+    url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+    thumbnailUrl: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
     title: 'Pandemia - Bombeiros (2020-2021)',
     description: 'Corpo de Bombeiros manteve a tradição durante a pandemia',
     decade: 2020,
@@ -541,8 +541,8 @@ export const galleryImages = [
   },
   {
     id: 'img-9',
-    url: 'https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&q=80&w=400',
+    url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+    thumbnailUrl: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
     title: 'Retomada - Solo Transportes (2024)',
     description: 'Família Vadica e Solo Transportes renovam a tradição pós-pandemia',
     decade: 2020,
@@ -552,8 +552,8 @@ export const galleryImages = [
   },
   {
     id: 'img-10',
-    url: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&q=80&w=800',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&q=80&w=400',
+    url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+    thumbnailUrl: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
     title: 'Era Digital (2025)',
     description: 'Plataforma digital preservando a história para o futuro',
     decade: 2020,

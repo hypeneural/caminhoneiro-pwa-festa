@@ -70,7 +70,6 @@ const moreMenuRoutes = [
   "/stories",
   "/about",
   "/contact",
-  "/settings",
   "/faq",
   "/vocesabia"
 ];
