@@ -126,7 +126,7 @@ const Videos = () => {
           {/* Video Grid */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Todos os Vídeos</h2>
-            <div className="grid gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {featuredVideos.map((video) => (
                 <motion.div
                   key={video.id}
@@ -134,23 +134,23 @@ const Videos = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * video.id }}
                 >
-                  <Card className="overflow-hidden">
-                    <CardContent className="p-0">
-                      <div className="flex gap-3 p-3">
-                        <div className="relative flex-shrink-0">
-                          <img
-                            src={video.thumbnail}
-                            alt={video.title}
-                            className="w-24 h-16 object-cover rounded"
-                          />
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded">
-                            <Play className="w-4 h-4 text-white" />
-                          </div>
-                          <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1 rounded">
-                            {video.duration}
-                          </div>
+                  <Card className="overflow-hidden h-full flex flex-col">
+                    <CardContent className="p-0 flex-1 flex flex-col">
+                      <div className="relative flex-shrink-0">
+                        <img
+                          src={video.thumbnail}
+                          alt={video.title}
+                          className="w-full h-32 object-cover rounded-t"
+                        />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-t">
+                          <Play className="w-6 h-6 text-white" />
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1 rounded">
+                          {video.duration}
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0 p-3 flex flex-col justify-between">
+                        <div>
                           <h4 className="font-medium text-sm line-clamp-2 mb-1">
                             {video.title}
                           </h4>
@@ -159,11 +159,11 @@ const Videos = () => {
                               {video.category}
                             </Badge>
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span>{video.views} views</span>
-                            <span>•</span>
-                            <span>3 dias atrás</span>
-                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-auto">
+                          <span>{video.views} views</span>
+                          <span>•</span>
+                          <span>3 dias atrás</span>
                         </div>
                       </div>
                     </CardContent>

@@ -83,14 +83,14 @@ export const MobileHero = () => {
         {/* Scroll Indicator */}
         <motion.button
           onClick={scrollToContent}
-          className="absolute bottom-6 left-1/2 transform -translate-x-1/2 touch-manipulation"
+          className="absolute left-1/2 bottom-6 -translate-x-1/2 flex flex-col items-center justify-center w-auto px-4 touch-manipulation"
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
           aria-label="Rolar para o conteúdo"
         >
-          <div className="flex flex-col items-center space-y-2 text-trucker-yellow p-2">
+          <div className="flex flex-col items-center space-y-2 text-trucker-yellow text-center">
             <span className="text-xs font-medium">Explore nossa jornada</span>
-            <ChevronDown className="w-5 h-5" />
+            <ChevronDown className="w-5 h-5 mx-auto" />
           </div>
         </motion.button>
       </motion.div>

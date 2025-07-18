@@ -147,27 +147,13 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
                 <div className="relative z-10 flex flex-col items-center justify-center gap-3 h-full">
                   {/* Icon Container with Enhanced Animation */}
                   <motion.div 
-                    className={`
-                      w-14 h-14 ${item.bgColor} rounded-2xl flex items-center justify-center
-                      shadow-lg group-hover:shadow-xl transition-all duration-300
-                      ring-2 ring-white/10 group-hover:ring-white/20
-                    `}
+                    className={`w-14 h-14 ${item.bgColor} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 ring-2 ring-white/10 group-hover:ring-white/20`}
                     whileHover={{ rotate: [0, -5, 5, 0] }}
-                    transition={{ duration: 0.3 }}
+                    animate={item.id === 'mapa' || item.id === 'cameras' ? { scale: [1, 1.12, 1] } : {}}
+                    transition={item.id === 'mapa' || item.id === 'cameras' ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
                     aria-hidden="true"
                   >
-                    <motion.div
-                      animate={{ 
-                        scale: isPressed ? 0.9 : 1,
-                        rotate: isLiveItem ? [0, 2, -2, 0] : 0
-                      }}
-                      transition={{ 
-                        duration: isLiveItem ? 3 : 0.2, 
-                        repeat: isLiveItem ? Infinity : 0 
-                      }}
-                    >
-                      <item.icon className={`w-7 h-7 ${item.color} drop-shadow-sm`} />
-                    </motion.div>
+                    <item.icon className={`w-7 h-7 ${item.color} drop-shadow-sm`} />
                   </motion.div>
                   
                   {/* Title with Better Typography */}
@@ -260,27 +246,13 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
                 <div className="relative z-10 flex flex-col items-center justify-center gap-3 h-full">
                   {/* Icon Container with Enhanced Animation */}
                   <motion.div 
-                    className={`
-                      w-14 h-14 ${item.bgColor} rounded-2xl flex items-center justify-center
-                      shadow-lg group-hover:shadow-xl transition-all duration-300
-                      ring-2 ring-white/10 group-hover:ring-white/20
-                    `}
+                    className={`w-14 h-14 ${item.bgColor} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 ring-2 ring-white/10 group-hover:ring-white/20`}
                     whileHover={{ rotate: [0, -5, 5, 0] }}
-                    transition={{ duration: 0.3 }}
+                    animate={item.id === 'mapa' || item.id === 'cameras' ? { scale: [1, 1.12, 1] } : {}}
+                    transition={item.id === 'mapa' || item.id === 'cameras' ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
                     aria-hidden="true"
                   >
-                    <motion.div
-                      animate={{ 
-                        scale: isPressed ? 0.9 : 1,
-                        rotate: isLiveItem ? [0, 2, -2, 0] : 0
-                      }}
-                      transition={{ 
-                        duration: isLiveItem ? 3 : 0.2, 
-                        repeat: isLiveItem ? Infinity : 0 
-                      }}
-                    >
-                      <item.icon className={`w-7 h-7 ${item.color} drop-shadow-sm`} />
-                    </motion.div>
+                    <item.icon className={`w-7 h-7 ${item.color} drop-shadow-sm`} />
                   </motion.div>
                   
                   {/* Title with Better Typography */}

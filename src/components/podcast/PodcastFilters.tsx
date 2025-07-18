@@ -23,6 +23,11 @@ export function PodcastFilters({ filters, onFiltersChange, onReset }: PodcastFil
     onFiltersChange({ ...filters, search: searchTerm, page: 1 });
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    onFiltersChange({ ...filters, search: e.target.value, page: 1 });
+  };
+
   const handleSortChange = (value: string) => {
     const [sort, order] = value.split('_') as [any, 'ASC' | 'DESC'];
     onFiltersChange({ ...filters, sort, order, page: 1 });
@@ -40,7 +45,7 @@ export function PodcastFilters({ filters, onFiltersChange, onReset }: PodcastFil
             type="text"
             placeholder="Buscar podcasts..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             className="pl-10 pr-20 h-12 rounded-xl border-border/20 bg-background/95 backdrop-blur-sm"
           />
           

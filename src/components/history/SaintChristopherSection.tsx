@@ -12,15 +12,15 @@ const foundingFigures = [
     role: "Visionário e Fundador",
     description: "Percebeu o potencial de São Cristóvão como co-padroeiro forte para a comunidade de Santa Terezinha",
     contribution: "Inspiração inicial e estabelecimento da tradição religiosa",
-    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+    photo: "https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/padre-davi-antonio.png",
     year: "2003"
   },
   {
-    name: "Wilson Esgrot",
+    name: "Uilson Sgrott",
     role: "TCA - Primeiro Apoiador",
     description: "Doou a imagem de São Cristóvão, dando os primeiros passos essenciais",
     contribution: "Doação da imagem sagrada e apoio inicial",
-    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200",
+    photo: "https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/uilson-sgrott.jpg",
     year: "2004"
   },
   {
@@ -28,7 +28,15 @@ const foundingFigures = [
     role: "Líder da Nova Gestão CAEP",
     description: "Comandou a profissionalização e organização sistemática do evento",
     contribution: "Transformação organizacional e crescimento",
-    photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200",
+    photo: "https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/carlos-borba.jpeg",
+    year: "2005"
+  },
+  {
+    name: "Sizenando",
+    role: "STR Transportes - Primeiro sorteado para conduzir o santo",
+    description: "Primeiro sorteado para conduzir o santo na procissão",
+    contribution: "Participação fundamental na tradição",
+    photo: "https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/sizenando.jpg",
     year: "2005"
   },
   {
@@ -36,8 +44,16 @@ const foundingFigures = [
     role: "Transportes Peixoto - Visionário",
     description: "Pilar da organização, respeitado pelas montadoras, via a festa como seu 'troféu'",
     contribution: "Conexão com montadoras e visão empresarial",
-    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+    photo: "https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/arnaldo-peixoto.jpeg",
     year: "2005"
+  },
+  {
+    name: "Carlos Rosa",
+    role: "Rodopiso Transportes - Inovador do santo giratório",
+    description: "Criador do sistema que fazia a imagem de São Cristóvão girar",
+    contribution: "Inovação marcante na festa",
+    photo: "https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/carlos-rosa.jpg",
+    year: "2008"
   }
 ];
 

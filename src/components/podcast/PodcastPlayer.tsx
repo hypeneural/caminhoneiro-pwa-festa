@@ -40,7 +40,7 @@ export function PodcastPlayer({ podcast, isOpen, onClose }: PodcastPlayerProps) 
     <AnimatePresence>
       {isOpen && (
         <Dialog open={isOpen} onOpenChange={onClose}>
-          <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 overflow-hidden bg-background border-border/20">
+          <DialogContent className="max-w-2xl w-full sm:w-[95vw] h-[90vh] max-h-[95vh] p-0 overflow-hidden bg-background border-border/20">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -49,14 +49,13 @@ export function PodcastPlayer({ podcast, isOpen, onClose }: PodcastPlayerProps) 
               className="h-full flex flex-col"
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-border/20">
-                <div className="flex-1 min-w-0 mr-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-b border-border/20 gap-2 sm:gap-0">
+                <div className="flex-1 min-w-0 mr-0 sm:mr-4">
                   <h2 className="font-semibold text-sm leading-tight line-clamp-2 text-foreground">
                     {podcast.title}
                   </h2>
                 </div>
-                
-                <div className="flex items-center gap-2">
+                <div className="flex flex-row flex-wrap gap-2 w-full sm:w-auto justify-end items-center">
                   <Button
                     size="sm"
                     variant="outline"
@@ -66,7 +65,6 @@ export function PodcastPlayer({ podcast, isOpen, onClose }: PodcastPlayerProps) 
                     <ExternalLink className="w-3 h-3" />
                     YouTube
                   </Button>
-                  
                   <Button
                     size="sm"
                     variant="outline"
@@ -76,7 +74,6 @@ export function PodcastPlayer({ podcast, isOpen, onClose }: PodcastPlayerProps) 
                     <Share2 className="w-3 h-3" />
                     Compartilhar
                   </Button>
-                  
                   <TouchFeedback
                     onClick={onClose}
                     className="p-2 hover:bg-muted rounded-lg transition-colors"
@@ -86,19 +83,17 @@ export function PodcastPlayer({ podcast, isOpen, onClose }: PodcastPlayerProps) 
                   </TouchFeedback>
                 </div>
               </div>
-
               {/* YouTube Player */}
               <div className="flex-1 bg-black">
                 <iframe
                   src={`https://www.youtube.com/embed/${podcast.id}?autoplay=1&rel=0&modestbranding=1`}
                   title={podcast.title}
-                  className="w-full h-full"
+                  className="w-full h-full min-h-[220px]"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
               </div>
-
               {/* Description */}
               <div className="p-4 border-t border-border/20 bg-muted/20">
                 <p className="text-sm text-muted-foreground leading-relaxed">

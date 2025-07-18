@@ -139,17 +139,7 @@ const Podcast = () => {
                   ? "Resultados da Busca" 
                   : "Últimos Podcasts"}
               </h2>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="gap-2"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Atualizar
-              </Button>
+              {/* Botão de atualizar removido */}
             </div>
 
             {/* Loading State */}

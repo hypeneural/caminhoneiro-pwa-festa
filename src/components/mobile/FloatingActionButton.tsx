@@ -14,7 +14,7 @@ export function FloatingActionButton() {
       animate={{ scale: 1, rotate: 0 }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
-      onClick={handleWhatsAppClick}
+      onClick={() => window.open('https://wa.me/554896425287', '_blank')}
       className="fixed bottom-20 right-4 z-40 w-16 h-16 bg-trucker-red hover:bg-trucker-red/90 text-white rounded-full shadow-lg flex flex-col items-center justify-center transition-colors group"
     >
       <Plus className="w-5 h-5 mb-0.5" />

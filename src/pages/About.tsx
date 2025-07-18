@@ -18,7 +18,7 @@ export default function About() {
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 pb-32">
         {/* História Principal */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

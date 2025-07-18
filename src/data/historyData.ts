@@ -46,9 +46,9 @@ export const historicalMilestones: HistoricalMilestone[] = [
     participantsEstimate: '500 participantes',
     keyFigures: [
       {
-        name: 'Wilson Esgrot',
-        role: 'TCA - Doador da imagem de São Cristóvão',
-        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
+        name: 'Uilson Sgrott',
+        role: 'TCA - Doador da imagem de São Cristovão',
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/uilson-sgrott.jpg'
       }
     ],
     context: 'Primeiro evento oficial, ainda em organização',
@@ -60,10 +60,10 @@ export const historicalMilestones: HistoricalMilestone[] = [
     year: 2005,
     title: 'A Grande Transformação: Nova Gestão CAEP',
     description: 'Nova gestão do CAEP inicia a profissionalização do evento com lideranças visionárias.',
-    longDescription: 'A partir de 2005, com a chegada da nova gestão ao CAEP (Conselho Administrativo e Econômico Paroquial), o evento começou sua transformação. Lideranças como Carlos Borba, Cizenando da STR, Gilson, Nilson e Saulo, juntamente com Seu Arnaldo Peixoto, foram essenciais. Eles organizaram um churrasco histórico, convidando as 20 principais transportadoras da cidade para apresentar a visão de um evento organizado e lucrativo para toda a comunidade.',
+    longDescription: 'A partir de 2005, com a chegada da nova gestão ao CAEP (Conselho Administrativo e Econômico Paroquial), o evento começou sua transformação. Lideranças como Carlos Borba, Sizenando da STR, Gilson, Nilson e Saulo, juntamente com Seu Arnaldo Peixoto, foram essenciais. Eles organizaram um churrasco histórico, convidando as 20 principais transportadoras da cidade para apresentar a visão de um evento organizado e lucrativo para toda a comunidade.',
     images: [
       {
-        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg',
+        url: 'https://festadoscaminhoneiros.com.br/assets/images/historia/reuniao-historica-com-transportadoras-em-2005.jpg',
         caption: 'Reunião histórica com transportadoras em 2005',
         year: 2005,
         isHistorical: true
@@ -75,17 +75,17 @@ export const historicalMilestones: HistoricalMilestone[] = [
       {
         name: 'Carlos Borba',
         role: 'Líder da nova gestão CAEP',
-        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/carlos-borba.jpeg'
       },
       {
         name: 'Sizenando',
         role: 'STR Transportes - Primeiro sorteado para conduzir o santo',
-        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/sizenando.jpg'
       },
       {
         name: 'Arnaldo Peixoto',
         role: 'Transportes Peixoto - Visionário e pilar da organização',
-        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/igreja.jpg'
+        photo: 'https://festadoscaminhoneiros.com.br/assets/images/historia/fundadores/arnaldo-peixoto.jpeg'
       }
     ],
     context: 'Início da profissionalização e organização sistemática',
