@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, 
   Radio, 
-  Video, 
   History, 
   Newspaper, 
   Route, 
@@ -14,7 +13,8 @@ import {
   HelpCircle,
   Cross,
   Heart,
-  Mic
+  Mic,
+  Lightbulb
 } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { TouchFeedback } from "@/components/ui/touch-feedback";
@@ -36,16 +36,6 @@ const menuItems = [
     color: 'text-red-500',
     bgColor: 'bg-red-50',
     borderColor: 'border-red-200'
-  },
-  {
-    id: 'videos',
-    title: 'Vídeos',
-    description: 'Assista aos melhores momentos',
-    icon: Video,
-    route: ROUTES.VIDEOS,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-200'
   },
   {
     id: 'podcast',
@@ -98,14 +88,24 @@ const menuItems = [
     borderColor: 'border-indigo-200'
   },
   {
+    id: 'vocesabia',
+    title: 'Você Sabia?',
+    description: 'Curiosidades da festa',
+    icon: Lightbulb,
+    route: ROUTES.VOCE_SABIA,
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-50',
+    borderColor: 'border-yellow-200'
+  },
+  {
     id: 'sao-cristovao',
     title: 'São Cristóvão',
     description: 'Conheça nosso padroeiro',
     icon: Cross,
     route: ROUTES.SAO_CRISTOVAO,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50',
-    borderColor: 'border-yellow-200'
+    color: 'text-cyan-600',
+    bgColor: 'bg-cyan-50',
+    borderColor: 'border-cyan-200'
   },
   {
     id: 'apoio',

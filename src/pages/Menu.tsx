@@ -15,11 +15,14 @@ import { Wifi, WifiOff, RefreshCw, ChefHat, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
+import { BannerCarousel } from '@/components/sponsors/BannerCarousel';
+import { useAdvertisements } from '@/hooks/useAdvertisements';
 
 export default function Menu() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { toast } = useToast();
   const { isOnline } = useNetworkStatus();
+  const { banners } = useAdvertisements({ position: 'menu' });
   const { 
     isCartOpen, 
     openCart, 
@@ -234,6 +237,24 @@ export default function Menu() {
             onViewModeToggle={toggleViewMode}
             onOpenFilters={() => setFiltersOpen(true)}
           />
+
+          {/* Banner de Anúncios */}
+          {banners.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="px-4 pb-4"
+            >
+              <BannerCarousel 
+                banners={banners} 
+                showControls={true}
+                showDots={true}
+                className="rounded-xl shadow-lg"
+                autoplayDelay={5000}
+              />
+            </motion.div>
+          )}
 
           {/* Quick Stats */}
           {menuItems.length > 0 && !isLoading && (

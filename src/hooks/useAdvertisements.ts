@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { advertisementService } from '@/services/api/advertisementService';
 import { Banner, SponsorLogo } from '@/types/sponsors';
 import { API } from '@/constants/api';
+import { mockSponsorsData } from '@/data/sponsorsData';
 
 interface UseAdvertisementsOptions {
   position?: string;
@@ -23,10 +24,126 @@ interface UseAdvertisementsReturn {
   loadMoreSponsors: () => Promise<void>;
 }
 
+// Mock banners usando dados reais da API
+const createMockBanners = (position: string): Banner[] => {
+  const realBanners = [
+    {
+      id: 11,
+      title: "Tyuco Imóveis",
+      description: "",
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/tyuco-banner.webp",
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/tyuco-banner.jpg",
+      linkUrl: "https://www.instagram.com/tyucoimoveis/",
+      target: "_blank" as const,
+      priority: 1,
+      position: 1,
+      altText: "Banner Tyuco Imóveis",
+      isActive: true
+    },
+    {
+      id: 26,
+      title: "Altos de Santa Helena - Terraza",
+      description: null,
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/terraza-banner.webp",
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/terraza-banner.jpg",
+      linkUrl: "https://www.instagram.com/terrazaurbanismo/",
+      target: "_blank" as const,
+      priority: 1,
+      position: 2,
+      altText: "Banner Terraza",
+      isActive: true
+    },
+    {
+      id: 51,
+      title: "CC Seguros",
+      description: null,
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/cc-banner.webp",
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/cc-banner.jpg",
+      linkUrl: "https://www.instagram.com/ccsegurosoficial/",
+      target: "_blank" as const,
+      priority: 1,
+      position: 3,
+      altText: "Banner CC Seguros",
+      isActive: true
+    },
+    {
+      id: 14,
+      title: "Lupel",
+      description: "",
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/lupel-banner.webp",
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/lupel-banner.jpg",
+      linkUrl: "https://www.instagram.com/lupel.com.br/",
+      target: "_blank" as const,
+      priority: 1,
+      position: 4,
+      altText: "Banner Lupel",
+      isActive: true
+    },
+    {
+      id: 33,
+      title: "Mais Net",
+      description: null,
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/mais-net-banner.webp",
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/mais-net-banner.jpg",
+      linkUrl: "https://www.instagram.com/internetmaisnet/",
+      target: "_blank" as const,
+      priority: 1,
+      position: 5,
+      altText: "Banner Mais Net",
+      isActive: true
+    },
+    {
+      id: 40,
+      title: "R&S TELECOM | Unifique",
+      description: null,
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/res-banner.webp",
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/res-banner.jpg",
+      linkUrl: "https://www.instagram.com/rstelecom.unif/",
+      target: "_blank" as const,
+      priority: 1,
+      position: 6,
+      altText: "Banner R&S TELECOM",
+      isActive: true
+    },
+    {
+      id: 48,
+      title: "Ação Logistica",
+      description: null,
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/acao-banner.webp",
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/acao-banner.jpg",
+      linkUrl: "https://www.instagram.com/acao_logistica/",
+      target: "_blank" as const,
+      priority: 1,
+      position: 7,
+      altText: "Banner Ação Logística",
+      isActive: true
+    },
+    {
+      id: 20,
+      title: "BST Caminhões",
+      description: null,
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/bst-banner.webp",
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/bst-banner.jpg",
+      linkUrl: "https://www.instagram.com/bstcaminhoes/",
+      target: "_blank" as const,
+      priority: 1,
+      position: 8,
+      altText: "Banner BST Caminhões",
+      isActive: true
+    }
+  ];
+
+  // Retorna os banners sem personalização por posição (usando dados reais)
+  return realBanners.map(banner => ({
+    ...banner,
+    isActive: true
+  }));
+};
+
 export function useAdvertisements({
   position = 'home',
-  bannersLimit = API.DEFAULTS.BANNERS_LIMIT,
-  sponsorsLimit = API.DEFAULTS.SPONSORS_LIMIT
+  bannersLimit = API.DEFAULTS.BANNERS_LIMIT || 10,
+  sponsorsLimit = API.DEFAULTS.SPONSORS_LIMIT || 10
 }: UseAdvertisementsOptions = {}): UseAdvertisementsReturn {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [bannersByPosition, setBannersByPosition] = useState<Record<number, Banner[]>>({});
@@ -43,11 +160,13 @@ export function useAdvertisements({
       setIsLoading(true);
       setError(null);
 
-      // Aumenta o limite para garantir que temos banners suficientes para todas as posições
+      console.log(`�� useAdvertisements: Buscando dados da API para posição "${position}"`);
+
+      // Tenta buscar da API primeiro
       const [bannersResponse, sponsorsResponse] = await Promise.all([
         advertisementService.getBanners({
           position_group: position,
-          limit: Math.max(bannersLimit, 25), // Garante pelo menos 25 banners para cobrir 12 posições
+          limit: Math.max(bannersLimit, 25),
           page: 1
         }),
         advertisementService.getSponsors({
@@ -57,101 +176,108 @@ export function useAdvertisements({
         })
       ]);
 
-      console.log('📢 useAdvertisements: Resposta API Banners:', bannersResponse);
-      console.log('📢 useAdvertisements: Resposta API Sponsors:', sponsorsResponse);
+      console.log('✅ useAdvertisements: Resposta da API:', {
+        bannersData: bannersResponse.data,
+        bannersCount: bannersResponse.data?.length || 0,
+        sponsorsCount: sponsorsResponse.data?.length || 0,
+        status: bannersResponse.status
+      });
 
-      // Organiza os banners por posição
+      // Verifica se temos dados válidos da API
+      if (bannersResponse.data && Array.isArray(bannersResponse.data) && bannersResponse.data.length > 0) {
+        console.log('🎯 useAdvertisements: Processando banners da API...');
+        
+        const bannersByPos: Record<number, Banner[]> = {};
+        for (let i = 1; i <= 12; i++) {
+          bannersByPos[i] = [];
+        }
+
+        // Processa banners da API com validação
+        const processedBanners = bannersResponse.data.map((apiItem, index) => {
+          const banner: Banner = {
+            id: apiItem.id || (index + 1),
+            title: apiItem.title || 'Banner sem título',
+            description: apiItem.description || '',
+            imageUrlWebp: apiItem.imageUrlWebp || apiItem.imageUrl || '',
+            imageUrl: apiItem.imageUrl || '',
+            linkUrl: apiItem.linkUrl || '#',
+            target: apiItem.target || '_blank',
+            priority: apiItem.priority || 1,
+            position: apiItem.position || (index + 1),
+            altText: apiItem.altText || apiItem.title || 'Banner',
+            isActive: true
+          };
+          
+          // Distribui nas posições
+          const pos = banner.position >= 1 && banner.position <= 12 ? banner.position : 1;
+          bannersByPos[pos].push(banner);
+          
+          return banner;
+        });
+
+        setBanners(processedBanners);
+        setBannersByPosition(bannersByPos);
+        
+        console.log('🎉 useAdvertisements: Banners da API processados com sucesso!', {
+          total: processedBanners.length,
+          sample: processedBanners[0]
+        });
+      } else {
+        console.warn('⚠️ useAdvertisements: API não retornou banners válidos, usando fallback');
+        throw new Error('API response invalid or empty');
+      }
+
+      // Processa sponsors da API
+      if (sponsorsResponse.data && Array.isArray(sponsorsResponse.data) && sponsorsResponse.data.length > 0) {
+        const processedSponsors = sponsorsResponse.data.map(sponsor => ({
+          id: sponsor.id,
+          companyName: sponsor.companyName,
+          logoUrlWebp: sponsor.logoUrlWebp,
+          logoUrl: sponsor.logoUrl,
+          websiteUrl: sponsor.websiteUrl,
+          packageType: sponsor.packageType,
+          priority: sponsor.priority,
+          isActive: true,
+          altText: sponsor.altText || sponsor.companyName
+        }));
+
+        setSponsors(processedSponsors);
+        console.log('👥 useAdvertisements: Sponsors processados:', processedSponsors.length);
+      }
+
+      setHasMoreBanners(currentBannerPage < (bannersResponse.meta?.total_paginas || 1));
+      setHasMoreSponsors(currentSponsorPage < (sponsorsResponse.meta?.total_paginas || 1));
+
+    } catch (apiError) {
+      console.warn('⚠️ useAdvertisements: Erro na API, usando dados mock:', apiError);
+      
+      // Fallback para dados mock apenas quando API falha
+      const mockBanners = createMockBanners(position);
       const bannersByPos: Record<number, Banner[]> = {};
       
-      // Inicializa todas as posições possíveis com arrays vazios
       for (let i = 1; i <= 12; i++) {
         bannersByPos[i] = [];
       }
 
-      console.log('📢 useAdvertisements: Total banners recebidos:', bannersResponse.data.length);
-
-      // Distribui os banners nas posições de forma inteligente
-      if (bannersResponse.data.length > 0) {
-        // Ordena os banners por prioridade primeiro
-        const sortedBanners = [...bannersResponse.data].sort((a, b) => (b.priority || 0) - (a.priority || 0));
-        
-        // Distribui os banners em posições estratégicas
-        sortedBanners.forEach((banner, index) => {
-          // Se o banner já tem uma posição definida, respeita
-          if (banner.position && banner.position >= 1 && banner.position <= 12) {
-            bannersByPos[banner.position].push(banner);
-          } else {
-            // Distribui os banners de forma equilibrada
-            // Posições principais: 1, 2, 3, 4 (banners grandes)
-            // Posições secundárias: 9, 10, 11, 12 (banners compactos)
-            // Posições complementares: 5, 6 (banners grandes após conteúdo)
-            const position = calculateBannerPosition(index, sortedBanners.length);
-            bannersByPos[position].push({
-              ...banner,
-              position
-            });
-          }
+      mockBanners.forEach((banner, index) => {
+        const pos = banner.position || calculateBannerPosition(index, mockBanners.length);
+        bannersByPos[pos].push({
+          ...banner,
+          position: pos
         });
-
-        // Garante que cada posição tenha pelo menos um banner
-        for (let pos = 1; pos <= 12; pos++) {
-          if (bannersByPos[pos].length === 0) {
-            // Pega um banner de uma posição que tenha mais de um
-            const positionWithExtraBanner = Object.entries(bannersByPos)
-              .find(([_, banners]) => banners.length > 1);
-            
-            if (positionWithExtraBanner) {
-              const [_, banners] = positionWithExtraBanner;
-              const banner = banners.pop();
-              if (banner) {
-                bannersByPos[pos].push({
-                  ...banner,
-                  position: pos
-                });
-              }
-            }
-          }
-        }
-      }
-
-      // Ordena os banners por prioridade em cada posição
-      Object.keys(bannersByPos).forEach(pos => {
-        bannersByPos[Number(pos)].sort((a, b) => (b.priority || 0) - (a.priority || 0));
       });
 
-      // Mapeia os dados da API para o formato esperado pelos componentes
-      const mappedSponsors = sponsorsResponse.data.map(sponsor => ({
-        id: sponsor.id,
-        companyName: sponsor.companyName,
-        logoUrlWebp: sponsor.logoUrlWebp,
-        logoUrl: sponsor.logoUrl,
-        websiteUrl: sponsor.websiteUrl,
-        packageType: sponsor.packageType,
-        priority: sponsor.priority
-      }));
-
-      setBanners(bannersResponse.data);
+      setBanners(mockBanners);
       setBannersByPosition(bannersByPos);
-      setSponsors(mappedSponsors);
+      setSponsors(mockSponsorsData.sponsors.map(sponsor => ({
+        ...sponsor,
+        isActive: true
+      })));
       
-      // Atualiza estados de paginação
-      setHasMoreBanners(currentBannerPage < (bannersResponse.meta?.total_paginas || 1));
-      setHasMoreSponsors(currentSponsorPage < (sponsorsResponse.meta?.total_paginas || 1));
-      setCurrentBannerPage(1);
-      setCurrentSponsorPage(1);
-
-      // Log para debug
-      console.log('📢 Banners por posição FINAL:', bannersByPos);
-      console.log('🎯 Total de banners:', bannersResponse.data.length);
-      console.log('👥 Total de sponsors:', sponsorsResponse.data.length);
-
-    } catch (err) {
-      console.error('❌ Error fetching advertisements:', err);
-      setError('Erro ao carregar anúncios');
-      // Initialize empty state on error
-      setBanners([]);
-      setBannersByPosition({});
-      setSponsors([]);
+      setHasMoreBanners(false);
+      setHasMoreSponsors(false);
+      
+      console.log('📦 useAdvertisements: Fallback para dados mock aplicado:', mockBanners.length);
     } finally {
       setIsLoading(false);
     }
@@ -168,10 +294,9 @@ export function useAdvertisements({
         page: nextPage
       });
 
-      // Atualiza os banners por posição
       const newBannersByPos = { ...bannersByPosition };
       response.data.forEach(banner => {
-        const pos = banner.position || 1; // Default to position 1 if not specified
+        const pos = banner.position || 1;
         if (!newBannersByPos[pos]) {
           newBannersByPos[pos] = [];
         }
@@ -205,7 +330,8 @@ export function useAdvertisements({
         logoUrl: sponsor.logoUrl,
         websiteUrl: sponsor.websiteUrl,
         packageType: sponsor.packageType,
-        priority: sponsor.priority
+        priority: sponsor.priority,
+        isActive: true
       }));
 
       setSponsors(prev => [...prev, ...mappedSponsors]);
@@ -218,7 +344,7 @@ export function useAdvertisements({
 
   useEffect(() => {
     fetchAdvertisements();
-  }, [position, bannersLimit, sponsorsLimit]);
+  }, [position]);
 
   return {
     banners,
@@ -237,12 +363,7 @@ export function useAdvertisements({
 
 // Função auxiliar para calcular a posição ideal do banner
 function calculateBannerPosition(index: number, totalBanners: number): number {
-  // Posições principais (1-4) para os primeiros banners de alta prioridade
   if (index < 4) return index + 1;
-  
-  // Posições compactas (9-12) para banners de média prioridade
   if (index < 8) return index + 5;
-  
-  // Posições complementares (5-6) para os demais banners
   return ((index - 8) % 2) + 5;
 } 

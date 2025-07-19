@@ -13,6 +13,8 @@ import { WeatherEventCard } from "@/components/weather/WeatherEventCard";
 import { Event, getEventsByDay, getNextEvent, getEventStatus, getEventTypeConfig } from "@/data/programacao";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useWeather } from "@/hooks/useWeather";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { useAdvertisements } from "@/hooks/useAdvertisements";
 
 // Componente de ícone dinâmico
 const DynamicIcon = ({ iconName, className }: { iconName: string; className?: string }) => {
@@ -35,6 +37,7 @@ const Schedule = () => {
   const [selectedDay, setSelectedDay] = useState<'saturday' | 'sunday'>('saturday'); // Aba padrão é sábado
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { weather } = useWeather();
+  const { banners } = useAdvertisements({ position: 'schedule' });
 
   const getCurrentEvents = () => {
     return getEventsByDay(selectedDay);
@@ -306,6 +309,24 @@ const Schedule = () => {
               ))}
             </AnimatePresence>
             </div>
+
+            {/* Banner de Anúncios */}
+            {banners.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-6"
+              >
+                <BannerCarousel 
+                  banners={banners} 
+                  showControls={true}
+                  showDots={true}
+                  className="rounded-xl shadow-lg"
+                  autoplayDelay={5000}
+                />
+              </motion.div>
+            )}
 
             {/* Enhanced Info cards */}
             <motion.div 

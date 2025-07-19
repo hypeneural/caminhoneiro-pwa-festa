@@ -8,10 +8,13 @@ import FullRouteMap from '@/components/map/FullRouteMap';
 import { BottomNavigation } from '@/components/mobile/BottomNavigation';
 import { TrackerSkeleton } from '@/components/tracker/TrackerSkeleton';
 import { TrackerError } from '@/components/tracker/TrackerError';
+import { BannerCarousel } from '@/components/sponsors/BannerCarousel';
+import { useAdvertisements } from '@/hooks/useAdvertisements';
 
 const RotaCompleta: React.FC = () => {
   const navigate = useNavigate();
   const { data, isLoading, isError, refetch } = useTraccarData();
+  const { banners } = useAdvertisements({ position: 'rota-completa' });
 
   if (isLoading) {
     return <TrackerSkeleton />;
@@ -36,7 +39,21 @@ const RotaCompleta: React.FC = () => {
           <MapPin className="w-5 h-5 text-trucker-blue" />
           <h1 className="text-lg font-bold">Rota Completa da Procissão</h1>
         </div>
-      </div>
+              </div>
+
+      {/* Banner de Anúncios */}
+      {banners.length > 0 && (
+        <div className="px-4 py-2 bg-muted/20">
+          <BannerCarousel 
+            banners={banners} 
+            showControls={true}
+            showDots={true}
+            className="rounded-lg shadow-md"
+            autoplayDelay={5000}
+            compact={true}
+          />
+        </div>
+      )}
 
       {/* Mapa em tela cheia */}
       <div className="h-[calc(100vh-80px)]">

@@ -1,5 +1,5 @@
 import { QuickAccessItem } from '@/types/quickAccess';
-import { Camera, Map, CalendarDays, Route, Radio, Play, Video, Circle, BookText, Shield, Users, Heart, ChefHat, Phone, Mic, Lightbulb } from "lucide-react";
+import { Camera, Map, CalendarDays, Route, Radio, ChefHat, BookText, Shield, Users, Heart, Phone, Mic, Lightbulb } from "lucide-react";
 
 export const quickAccessItems: QuickAccessItem[] = [
   // Primeira Linha
@@ -78,18 +78,6 @@ export const quickAccessItems: QuickAccessItem[] = [
     isActive: true
   },
   {
-    id: "videos",
-    title: "Vídeos",
-    icon: Play,
-    color: "text-trucker-orange",
-    bgColor: "bg-orange-50 dark:bg-orange-900/20",
-    route: "/videos",
-    category: "media",
-    priority: 7,
-    description: "Assista aos vídeos do evento",
-    isActive: true
-  },
-  {
     id: "podcast",
     title: "Podcast",
     icon: Mic,
@@ -97,34 +85,8 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-purple-50 dark:bg-purple-900/20",
     route: "/podcast",
     category: "media",
-    priority: 8,
+    priority: 7,
     description: "Ouça nossos podcasts exclusivos",
-    isActive: true
-  },
-  
-  // Terceira Linha
-  {
-    id: "cameras",
-    title: "Câmeras Ao Vivo",
-    icon: Video,
-    color: "text-pink-600",
-    bgColor: "bg-pink-50 dark:bg-pink-900/20",
-    route: "/cameras",
-    category: "media",
-    priority: 9,
-    description: "Transmissão ao vivo das câmeras",
-    isActive: true
-  },
-  {
-    id: "stories",
-    title: "Stories",
-    icon: Circle,
-    color: "text-cyan-600",
-    bgColor: "bg-cyan-50 dark:bg-cyan-900/20",
-    route: "/stories",
-    category: "media",
-    priority: 10,
-    description: "Veja os stories do evento",
     isActive: true
   },
   {
@@ -135,12 +97,12 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-blue-50 dark:bg-blue-900/20",
     route: "/noticias",
     category: "info",
-    priority: 11,
+    priority: 8,
     description: "Últimas notícias do evento",
     isActive: true
   },
   
-  // Quarta Linha
+  // Terceira Linha
   {
     id: "rota",
     title: "Rota da Procissão",
@@ -149,7 +111,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
     route: "/rota-completa",
     category: "navigation",
-    priority: 12,
+    priority: 9,
     description: "Veja o percurso da procissão",
     isActive: true
   },
@@ -161,7 +123,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
     route: "/vocesabia",
     category: "info",
-    priority: 13,
+    priority: 10,
     description: "Curiosidades da festa",
     isActive: true
   },
@@ -173,7 +135,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-green-50 dark:bg-green-900/20",
     route: "/faq",
     category: "info",
-    priority: 14,
+    priority: 11,
     description: "Perguntas frequentes",
     isActive: true
   },
@@ -185,20 +147,8 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
     route: "/historia",
     category: "info",
-    priority: 15,
+    priority: 12,
     description: "Conheça a história da festa",
-    isActive: true
-  },
-  {
-    id: "contato-igreja",
-    title: "Contato da Igreja",
-    icon: Phone,
-    color: "text-trucker-blue",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
-    route: "/contato-igreja",
-    category: "info",
-    priority: 16,
-    description: "Entre em contato com a Paróquia",
     isActive: true
   }
 ];

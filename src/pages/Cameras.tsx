@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import { 
   Video, 
   Search, 
@@ -35,7 +36,7 @@ import { cameraService } from "@/services/api/cameraService";
 import { useAdvertisements } from "@/hooks/useAdvertisements";
 import type { Camera as CameraType } from "@/types/camera";
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -61,10 +62,13 @@ const itemVariants = {
 } as const;
 
 export default function Cameras() {
+  const location = useLocation();
   const [cameras, setCameras] = useState<CameraType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
+  const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(
+    location.state?.selectedCamera || null
+  );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [viewersCount] = useState(() => Math.floor(Math.random() * 100) + 50);
   const { toast } = useToast();

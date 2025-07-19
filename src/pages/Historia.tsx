@@ -11,9 +11,12 @@ import { StatisticsSection } from "@/components/history/StatisticsSection";
 import { TraditionsSection } from "@/components/history/TraditionsSection";
 import { LegacySection } from "@/components/history/LegacySection";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { useAdvertisements } from "@/hooks/useAdvertisements";
 
 const Historia = () => {
   const isMobile = useIsMobile();
+  const { banners } = useAdvertisements({ position: 'historia' });
 
   return (
     <div className="min-h-screen bg-background">
@@ -35,6 +38,19 @@ const Historia = () => {
         
         {/* Historical Gallery */}
         <HistoricalGallery />
+        
+        {/* Banner de Anúncios */}
+        {banners.length > 0 && (
+          <section className="py-8 px-4 bg-muted/20">
+            <BannerCarousel 
+              banners={banners} 
+              showControls={true}
+              showDots={true}
+              className="rounded-xl shadow-lg max-w-4xl mx-auto"
+              autoplayDelay={5000}
+            />
+          </section>
+        )}
         
         {/* Statistics */}
         <StatisticsSection />

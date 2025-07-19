@@ -27,6 +27,7 @@ export const advertisementService = {
         }
       });
 
+      console.log('✅ getBanners: Raw API response:', response.data);
       console.log('✅ getBanners: Received', response.data.data?.length || 0, 'banners');
       
       if (!response.data.data || !Array.isArray(response.data.data)) {
@@ -34,12 +35,19 @@ export const advertisementService = {
         throw new Error('Invalid banner response format');
       }
 
+      // Log dos primeiros banners para debug
+      if (response.data.data.length > 0) {
+        console.log('🔍 getBanners: First banner sample:', response.data.data[0]);
+      }
+
       // Valida e ajusta as posições dos banners
-      response.data.data = response.data.data.map(banner => ({
+      response.data.data = response.data.data.map((banner, index) => ({
         ...banner,
-        position: banner.position || 1,
+        position: banner.position || (index + 1),
         priority: banner.priority || 0
-      })).filter(banner => banner.position >= 1 && banner.position <= 8);
+      })).filter(banner => banner.position >= 1 && banner.position <= 12);
+
+      console.log('🎯 getBanners: Processed banners count:', response.data.data.length);
 
       return response.data;
     } catch (error) {

@@ -1,14 +1,249 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
 import { FixedSizeGrid as Grid } from 'react-window';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Eye, Share2, MapPin, Calendar, Truck } from 'lucide-react';
-import { OptimizedImage } from '@/components/ui/optimized-image';
+import { Heart, Eye, Calendar, Truck } from 'lucide-react';
+import { Photo } from '@/types/gallery';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TouchFeedback } from '@/components/ui/touch-feedback';
-import { Photo } from '@/types/gallery';
-import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { OptimizedImage } from '@/components/ui/optimized-image';
+
+// Configurações do grid com proporção 3:4 padronizada (vertical)
+const GRID_CONFIG = {
+  OVERSCAN_COUNT: 3,
+  ASPECT_RATIO: 3/4, // Proporção fixa 3:4 para thumbnails (vertical)
+  PADDING: 4,
+  GAP: 6,
+  DEFAULT_COLUMNS_MOBILE: 2,
+  DEFAULT_COLUMNS_TABLET: 3,
+  DEFAULT_COLUMNS_DESKTOP: 4,
+  BUFFER_SIZE: 20,
+} as const;
+
+// Cache para otimizar cálculos de dimensões
+const dimensionsCache = new Map<string, { width: number; height: number }>();
+
+interface GridItemProps {
+  columnIndex: number;
+  rowIndex: number;
+  style: React.CSSProperties;
+  data: {
+    photos: Photo[];
+    columnCount: number;
+    onPhotoClick: (photo: Photo) => void;
+    favorites: string[];
+    onToggleFavorite: (photoId: string) => void;
+    itemWidth: number;
+  };
+}
+
+// Componente de item seguro para hooks
+const GridItem = memo(({ columnIndex, rowIndex, style, data }: GridItemProps) => {
+  const { photos, columnCount, onPhotoClick, favorites, onToggleFavorite, itemWidth } = data;
+  const photoIndex = rowIndex * columnCount + columnIndex;
+  const photo = photos[photoIndex];
+
+  // SEMPRE executar todos os hooks primeiro
+  const itemRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Memoizar valores para performance
+  const isFavorite = useMemo(() => 
+    photo ? favorites.includes(photo.id) : false, 
+    [photo, favorites]
+  );
+
+  const itemHeight = useMemo(() => {
+    // Proporção fixa 4:3 para todas as thumbnails
+    const height = Math.round(itemWidth / GRID_CONFIG.ASPECT_RATIO);
+    
+    if (photo) {
+      const cacheKey = `${photo.id}-${itemWidth}`;
+      dimensionsCache.set(cacheKey, { width: itemWidth, height });
+    }
+    
+    return height;
+  }, [photo, itemWidth]);
+
+  // Intersection Observer melhorado para lazy loading
+  useEffect(() => {
+    if (!itemRef.current || !photo) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isVisible) {
+            setIsVisible(true);
+          }
+        });
+      },
+      {
+        threshold: 0.01, // Trigger mais cedo
+        rootMargin: '100px 0px 300px 0px' // Margem maior para baixo (pré-carregamento)
+      }
+    );
+
+    observer.observe(itemRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isVisible, photo]);
+
+  // Reset states quando photo muda
+  useEffect(() => {
+    if (photo) {
+      setImageLoaded(false);
+      setImageError(false);
+    }
+  }, [photo?.id]);
+
+  // Handlers
+  const handlePhotoClick = useCallback(() => {
+    if (photo) {
+      onPhotoClick(photo);
+    }
+  }, [photo, onPhotoClick]);
+
+  const handleToggleFavorite = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (photo) {
+      onToggleFavorite(photo.id);
+    }
+  }, [photo, onToggleFavorite]);
+
+  const handleImageLoad = useCallback(() => {
+    setImageLoaded(true);
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+  }, []);
+
+  // Renderização condicional APÓS todos os hooks
+  const renderContent = () => {
+    // Placeholder para posições vazias
+    if (!photo) {
+      return (
+        <div className="w-full h-full bg-muted/30 rounded-lg animate-pulse" />
+      );
+    }
+
+    // Conteúdo da foto
+    const imageUrl = photo.variants?.thumbnail?.webp || photo.variants?.thumbnail?.jpg || photo.thumbnailUrl;
+    const fallbackUrl = photo.variants?.thumbnail?.jpg || photo.thumbnailUrl;
+
+    return (
+      <motion.div
+        className="relative w-full h-full bg-muted/20 rounded-lg overflow-hidden cursor-pointer group hover:scale-[1.02] transition-transform duration-200"
+        onClick={handlePhotoClick}
+        whileTap={{ scale: 0.98 }}
+        style={{ minHeight: itemHeight }}
+      >
+        {/* Loading placeholder */}
+        {!imageLoaded && !imageError && (
+          <div 
+            className="absolute inset-0 bg-gradient-to-br from-muted/40 to-muted/60 animate-pulse"
+            style={{ backgroundColor: photo.dominant_color }}
+          />
+        )}
+
+        {/* Imagem principal */}
+        {isVisible && (
+          <OptimizedImage
+            src={imageUrl}
+            fallbackSrc={fallbackUrl}
+            alt={photo.title || `Foto ${photoIndex + 1}`}
+            className={`
+              thumbnail-3x4 transition-opacity duration-300
+              ${imageLoaded ? 'opacity-100' : 'opacity-0'}
+            `}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            loading="lazy"
+            draggable={false}
+          />
+        )}
+
+        {/* Overlay com informações */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                {photo.group && (
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs mb-1 bg-black/30 text-white border-none"
+                  >
+                    {photo.group.nome}
+                  </Badge>
+                )}
+                
+                {photo.vehiclePlate && (
+                  <div className="flex items-center text-xs opacity-90">
+                    <Truck className="w-3 h-3 mr-1" />
+                    {photo.vehiclePlate}
+                  </div>
+                )}
+              </div>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20 h-8 w-8 p-0"
+                onClick={handleToggleFavorite}
+              >
+                <Heart 
+                  className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} 
+                />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Badge de destaque */}
+        {photo.destaque && (
+          <div className="absolute top-2 left-2">
+            <Badge variant="secondary" className="bg-amber-500 text-white border-none text-xs">
+              ⭐ Destaque
+            </Badge>
+          </div>
+        )}
+
+        {/* Visualizações */}
+        {photo.views > 0 && (
+          <div className="absolute top-2 right-2 bg-black/30 text-white text-xs px-2 py-1 rounded-full flex items-center">
+            <Eye className="w-3 h-3 mr-1" />
+            {photo.views}
+          </div>
+        )}
+
+        {/* Erro de carregamento */}
+        {imageError && (
+          <div className="absolute inset-0 bg-muted flex items-center justify-center">
+            <div className="text-muted-foreground text-center">
+              <div className="text-2xl mb-2">📷</div>
+              <div className="text-xs">Erro ao carregar</div>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    );
+  };
+
+  return (
+    <div 
+      ref={itemRef}
+      style={style} 
+      className="p-1 grid-item"
+    >
+      {renderContent()}
+    </div>
+  );
+});
+
+GridItem.displayName = 'GridItem';
 
 interface VirtualPhotoGridProps {
   photos: Photo[];
@@ -18,282 +253,231 @@ interface VirtualPhotoGridProps {
   onLoadMore: () => void;
   favorites: string[];
   onToggleFavorite: (photoId: string) => void;
+  isRefreshing: boolean;
+  isLoadingMore?: boolean;
+  onScroll?: (scrollTop: number) => void;
 }
 
-const PhotoCard = React.memo(({ 
-  photo, 
-  style, 
-  onPhotoClick, 
-  isFavorite, 
-  onToggleFavorite 
-}: {
-  photo: Photo;
-  style: React.CSSProperties;
-  onPhotoClick: (photo: Photo) => void;
-  isFavorite: boolean;
-  onToggleFavorite: (photoId: string) => void;
-}) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [isPressed, setIsPressed] = useState(false);
-  const isMobile = useIsMobile();
-
-  const handleClick = useCallback(() => {
-    onPhotoClick(photo);
-  }, [photo, onPhotoClick]);
-
-  const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    onToggleFavorite(photo.id);
-    
-    // Haptic feedback on mobile
-    if (isMobile && 'vibrate' in navigator) {
-      navigator.vibrate(15);
-    }
-  }, [photo.id, onToggleFavorite, isMobile]);
-
-  const handleShare = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: photo.title || 'Foto da Procissão',
-          text: `Confira esta foto incrível da procissão! ${photo.vehiclePlate ? `Placa: ${photo.vehiclePlate}` : ''}`,
-          url: photo.url
-        });
-      } catch (error) {
-        // Fallback para clipboard
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(photo.url);
-        }
-      }
-    }
-  }, [photo]);
-
-  return (
-    <div style={style} className="p-1">
-      <TouchFeedback scale={0.98} haptic>
-        <motion.div
-          className="relative bg-background rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer h-full"
-          whileTap={{ scale: 0.95 }}
-          onClick={handleClick}
-          onTouchStart={() => setIsPressed(true)}
-          onTouchEnd={() => setIsPressed(false)}
-          onTouchCancel={() => setIsPressed(false)}
-        >
-          {/* Main Image */}
-          <div className="relative aspect-square overflow-hidden">
-            <OptimizedImage
-              src={photo.thumbnailUrl}
-              alt={photo.title || `Foto ${photo.id}`}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              onLoad={() => setImageLoaded(true)}
-              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              loading="lazy"
-            />
-
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300">
-              {/* Top Actions */}
-              <div className="absolute top-2 right-2 flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`w-8 h-8 backdrop-blur-sm rounded-full transition-all ${
-                    isFavorite 
-                      ? 'bg-red-500/90 text-white hover:bg-red-600/90' 
-                      : 'bg-black/30 text-white/90 hover:bg-black/50'
-                  }`}
-                  onClick={handleFavoriteClick}
-                >
-                  <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-current' : ''}`} />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-8 h-8 bg-black/30 text-white/90 hover:bg-black/50 backdrop-blur-sm rounded-full"
-                  onClick={handleShare}
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-
-              {/* Bottom Info */}
-              <div className="absolute bottom-0 left-0 right-0 p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col gap-1">
-                    {photo.vehiclePlate && (
-                      <Badge className="bg-trucker-blue/90 text-trucker-blue-foreground text-xs w-fit">
-                        <Truck className="w-3 h-3 mr-1" />
-                        {photo.vehiclePlate}
-                      </Badge>
-                    )}
-                    
-                    <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-xs w-fit">
-                      {photo.category}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-white/80 text-xs">
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-3 h-3" />
-                      <span>{photo.views}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Heart className="w-3 h-3" />
-                      <span>{photo.likes}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Loading state */}
-            {!imageLoaded && (
-              <div className="absolute inset-0 bg-muted animate-pulse" />
-            )}
-          </div>
-
-          {/* Quick Info Bar */}
-          <div className="p-2 bg-background/95 backdrop-blur-sm">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                <span>{new Date(photo.timestamp).toLocaleDateString('pt-BR')}</span>
-              </div>
-              
-              {photo.location && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  <span className="truncate max-w-20">Chapecó</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </motion.div>
-      </TouchFeedback>
-    </div>
-  );
-});
-
-PhotoCard.displayName = 'PhotoCard';
-
-const LoadingCard = React.memo(({ style }: { style: React.CSSProperties }) => (
-  <div style={style} className="p-1">
-    <div className="bg-muted rounded-xl overflow-hidden h-full animate-pulse">
-      <div className="aspect-square bg-muted-foreground/10" />
-      <div className="p-2 space-y-2">
-        <div className="h-3 bg-muted-foreground/10 rounded w-3/4" />
-        <div className="h-2 bg-muted-foreground/10 rounded w-1/2" />
-      </div>
-    </div>
-  </div>
-));
-
-LoadingCard.displayName = 'LoadingCard';
-
-export function VirtualPhotoGrid({
+export const VirtualPhotoGrid: React.FC<VirtualPhotoGridProps> = ({
   photos,
   loading,
   hasMore,
   onPhotoClick,
   onLoadMore,
   favorites,
-  onToggleFavorite
-}: VirtualPhotoGridProps) {
-  const isMobile = useIsMobile();
-  const gridRef = useRef<Grid>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-  
-  // Responsive grid calculations
-  const columnCount = isMobile ? 2 : window.innerWidth < 1024 ? 3 : 4;
-  const itemWidth = Math.floor((window.innerWidth - 32) / columnCount); // 32px for padding
-  const itemHeight = itemWidth + 60; // Extra height for info bar
+  onToggleFavorite,
+  isRefreshing,
+  isLoadingMore = false,
+  onScroll
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [isNearBottom, setIsNearBottom] = useState(false);
 
-  // Intersection observer for infinite loading
-  const { isIntersecting } = useIntersectionObserver({
-    threshold: 0.1,
-    rootMargin: '100px'
-  });
-
+  // Detecta redimensionamento
   useEffect(() => {
-    if (isIntersecting && hasMore && !loading) {
-      onLoadMore();
-    }
-  }, [isIntersecting, hasMore, loading, onLoadMore]);
+    const updateSize = () => {
+      if (containerRef.current) {
+        const { clientWidth, clientHeight } = containerRef.current;
+        setContainerSize({ width: clientWidth, height: clientHeight });
+      }
+    };
 
-  useEffect(() => {
-    if (loadMoreRef.current) {
-      // This will trigger the intersection observer
-    }
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  const Cell = useCallback(({ columnIndex, rowIndex, style }: any) => {
-    const index = rowIndex * columnCount + columnIndex;
-    const photo = photos[index];
+  // Calcula configurações do grid
+  const gridConfig = useMemo(() => {
+    const { width } = containerSize;
+    
+    let columnCount: number = GRID_CONFIG.DEFAULT_COLUMNS_MOBILE;
+    if (width >= 768) columnCount = GRID_CONFIG.DEFAULT_COLUMNS_TABLET;
+    if (width >= 1024) columnCount = GRID_CONFIG.DEFAULT_COLUMNS_DESKTOP;
 
-    if (!photo) {
-      if (loading && index < photos.length + 6) {
-        return <LoadingCard style={style} />;
-      }
-      return null;
+    const totalPadding = GRID_CONFIG.PADDING * 2;
+    const totalGaps = GRID_CONFIG.GAP * (columnCount - 1);
+    const itemWidth = Math.floor((width - totalPadding - totalGaps) / columnCount);
+    
+    const rowCount = Math.ceil(photos.length / columnCount);
+
+    // Altura fixa baseada na proporção 4:3
+    const standardHeight = Math.round(itemWidth / GRID_CONFIG.ASPECT_RATIO);
+
+    return {
+      columnCount,
+      rowCount,
+      itemWidth,
+      itemHeight: standardHeight
+    };
+  }, [containerSize.width, photos]);
+
+  // Dados para o grid
+  const itemData = useMemo(() => ({
+    photos,
+    columnCount: gridConfig.columnCount,
+    onPhotoClick,
+    favorites,
+    onToggleFavorite,
+    itemWidth: gridConfig.itemWidth
+  }), [photos, gridConfig.columnCount, gridConfig.itemWidth, onPhotoClick, favorites, onToggleFavorite]);
+
+  // Scroll handler melhorado para infinite loading
+  const handleScroll = useCallback((scrollInfo: any) => {
+    // React-window Grid passa diferentes propriedades
+    const scrollTop = scrollInfo.scrollTop || 0;
+    const scrollLeft = scrollInfo.scrollLeft || 0;
+    
+    // Chama callback de scroll para controle do header
+    onScroll?.(scrollTop);
+    
+    // Pega dimensões do container real
+    const gridElement = document.querySelector('.virtual-grid-scroll');
+    if (!gridElement) return;
+    
+    const containerHeight = gridElement.clientHeight;
+    const contentHeight = gridElement.scrollHeight;
+    
+    // Cálculo mais preciso para trigger do infinite scroll
+    const scrollBottom = scrollTop + containerHeight;
+    const threshold = contentHeight * 0.85; // 85% do scroll
+    const nearBottom = scrollBottom >= threshold;
+    
+    // Alternativa: baseado em distância absoluta do final
+    const distanceFromBottom = contentHeight - scrollBottom;
+    const pixelThreshold = Math.max(500, containerHeight * 0.5); // 500px ou 50% da altura visível
+    const nearBottomPixels = distanceFromBottom <= pixelThreshold;
+    
+    const shouldLoadMore = nearBottom || nearBottomPixels;
+    
+    setIsNearBottom(shouldLoadMore);
+    
+    // Debug mais detalhado para verificar scroll
+    console.log('📊 Scroll Debug:', {
+      scrollTop: Math.round(scrollTop),
+      containerHeight,
+      contentHeight,
+      scrollBottom: Math.round(scrollBottom),
+      threshold: Math.round(threshold),
+      distanceFromBottom: Math.round(distanceFromBottom),
+      pixelThreshold,
+      nearBottom,
+      nearBottomPixels,
+      shouldLoadMore,
+      hasMore,
+      loading,
+      isRefreshing,
+      isLoadingMore
+    });
+    
+    // Trigger do infinite scroll
+    if (shouldLoadMore && hasMore && !loading && !isRefreshing && !isLoadingMore) {
+      console.log('🚀 TRIGGERING LoadMore - Scroll reached threshold!');
+      onLoadMore();
+    } else if (shouldLoadMore) {
+      console.log('❌ LoadMore BLOCKED:', {
+        shouldLoadMore,
+        hasMore,
+        loading,
+        isRefreshing,
+        isLoadingMore
+      });
     }
+  }, [hasMore, loading, isRefreshing, isLoadingMore, onLoadMore, onScroll]);
 
+  // Loading state
+  if (loading && photos.length === 0) {
     return (
-      <PhotoCard
-        photo={photo}
-        style={style}
-        onPhotoClick={onPhotoClick}
-        isFavorite={favorites.includes(photo.id)}
-        onToggleFavorite={onToggleFavorite}
-      />
-    );
-  }, [photos, columnCount, loading, onPhotoClick, favorites, onToggleFavorite]);
-
-  const rowCount = Math.ceil((photos.length + (loading ? 6 : 0)) / columnCount);
-
-  if (photos.length === 0 && !loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 px-4">
-        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-          <span className="text-2xl">📷</span>
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Carregando fotos...</p>
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">
-          Nenhuma foto encontrada
-        </h3>
-        <p className="text-muted-foreground text-center max-w-sm">
-          Tente ajustar os filtros ou usar termos de busca diferentes para encontrar mais fotos.
-        </p>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (!loading && photos.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="text-6xl mb-4">📷</div>
+          <h3 className="text-lg font-semibold mb-2">Nenhuma foto encontrada</h3>
+          <p className="text-muted-foreground">Tente ajustar os filtros ou aguarde novas fotos serem adicionadas.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full">
-      <Grid
-        ref={gridRef}
-        columnCount={columnCount}
-        columnWidth={itemWidth}
-        height={window.innerHeight - 200} // Account for header and filters
-        rowCount={rowCount}
-        rowHeight={itemHeight}
-        width={window.innerWidth}
-        className="scrollbar-hide"
-        style={{ overflowX: 'hidden' }}
-      >
-        {Cell}
-      </Grid>
-      
-      {/* Load more trigger */}
-      <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
-        {loading && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">Carregando mais fotos...</span>
-          </div>
+    <div ref={containerRef} className="absolute inset-0 virtual-grid-container">
+      {containerSize.width > 0 && containerSize.height > 0 && (
+        <Grid
+          columnCount={gridConfig.columnCount}
+          columnWidth={gridConfig.itemWidth + GRID_CONFIG.GAP}
+          height={containerSize.height}
+          rowCount={gridConfig.rowCount}
+          rowHeight={gridConfig.itemHeight}
+          width={containerSize.width}
+          itemData={itemData}
+          overscanRowCount={GRID_CONFIG.OVERSCAN_COUNT}
+          onScroll={handleScroll}
+          className="scrollbar-thin virtual-grid-scroll"
+          style={{ 
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            contain: 'layout style paint'
+          }}
+        >
+          {GridItem}
+        </Grid>
+      )}
+
+      {/* Loading indicator */}
+      <AnimatePresence>
+        {(loading || isRefreshing) && photos.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm border rounded-lg px-4 py-2 shadow-lg"
+          >
+            <div className="flex items-center space-x-2 text-sm">
+              <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+              <span className="text-muted-foreground">
+                {isRefreshing ? 'Atualizando...' : 'Carregando mais fotos...'}
+              </span>
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
+
+      {/* Infinite scroll loading indicator */}
+      <AnimatePresence>
+        {isLoadingMore && hasMore && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="absolute bottom-4 right-4 bg-primary/90 text-primary-foreground rounded-full p-3 shadow-lg"
+          >
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* End indicator */}
+      {!hasMore && photos.length > 0 && !loading && (
+        <div className="text-center py-4 text-muted-foreground text-sm">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="w-8 h-px bg-border" />
+            <span>Fim da galeria</span>
+            <div className="w-8 h-px bg-border" />
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};

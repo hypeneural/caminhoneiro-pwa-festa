@@ -11,6 +11,8 @@ import { Newspaper, Loader2, WifiOff, RefreshCw, TrendingUp } from "lucide-react
 import { useNews, useFeaturedNews } from "@/hooks/useNews";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { NewsItem, NewsFilters as NewsFiltersType } from "@/types/news";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { useAdvertisements } from "@/hooks/useAdvertisements";
 
 const Noticias = () => {
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
@@ -24,6 +26,7 @@ const Noticias = () => {
   
   const loadingRef = useRef<HTMLDivElement>(null);
   const { isOnline } = useNetworkStatus();
+  const { banners } = useAdvertisements({ position: 'noticias' });
   
   const { 
     items: news, 
@@ -138,6 +141,23 @@ const Noticias = () => {
             onFiltersChange={handleFiltersChange}
             onReset={handleFiltersReset}
           />
+
+          {/* Banner de Anúncios */}
+          {banners.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <BannerCarousel 
+                banners={banners} 
+                showControls={true}
+                showDots={true}
+                className="rounded-xl shadow-lg"
+                autoplayDelay={5000}
+              />
+            </motion.div>
+          )}
 
           {/* Featured News Section */}
           {featuredNews && featuredNews.length > 0 && !featuredError && (

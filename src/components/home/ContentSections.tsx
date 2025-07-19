@@ -1,5 +1,4 @@
 import { Section } from "@/components/layout/Section";
-import { CountdownTimer } from "@/components/mobile/CountdownTimer";
 import { ProgramPreview } from "@/components/mobile/ProgramPreview";
 import { WeatherSection } from "@/components/weather/WeatherSection";
 import { PollCard } from "@/components/mobile/PollCard";
@@ -11,6 +10,7 @@ import { ShortsCarousel } from "@/components/shorts/ShortsCarousel";
 import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
 import { CompactBannerCarousel } from "@/components/sponsors/CompactBannerCarousel";
 import { PodcastCarousel } from "@/components/podcast/PodcastCarousel";
+import { CamerasCarousel } from "@/components/mobile/CamerasCarousel";
 import { usePodcast } from "@/hooks/usePodcast";
 
 interface ContentSectionsProps {
@@ -50,12 +50,8 @@ export const ContentSections = ({ bannersByPosition, isLoading }: ContentSection
         </Section>
       )}
 
-      {/* Seção 1: Countdown e Programação */}
+      {/* Seção 1: Programação */}
       <Section delay={0.2} className="px-4 mb-6">
-        <CountdownTimer />
-      </Section>
-      
-      <Section delay={0.25} className="px-4 mb-6">
         <ProgramPreview />
       </Section>
 
@@ -98,6 +94,11 @@ export const ContentSections = ({ bannersByPosition, isLoading }: ContentSection
       {/* Seção 4: Previsão do Tempo */}
       <Section delay={0.35} className="px-4 mb-6">
         <WeatherSection />
+      </Section>
+
+      {/* Seção 5: Câmeras Ao Vivo */}
+      <Section delay={0.37} className="px-4 mb-6">
+        <CamerasCarousel />
       </Section>
 
       {/* Banner Carousel 3 - Após Enquete */}

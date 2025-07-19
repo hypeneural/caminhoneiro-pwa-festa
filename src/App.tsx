@@ -15,7 +15,6 @@ import Map from "./pages/Map";
 import Schedule from "./pages/Schedule";
 import More from "./pages/More";
 import Radio from "./pages/Radio";
-import Videos from "./pages/Videos";
 import Historia from "./pages/Historia";
 import Noticias from "./pages/Noticias";
 import Podcast from "./pages/Podcast";
@@ -23,7 +22,6 @@ import RotaCompleta from "./pages/RotaCompleta";
 import Cameras from "./pages/Cameras";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Settings from "./pages/Settings";
 import FAQ from "./pages/FAQ";
 import SaoCristovao from "./pages/SaoCristovao";
 import Menu from "./pages/Menu";
@@ -57,16 +55,12 @@ const App = () => {
   useEffect(() => {
     // Initialize App Shell and advanced caching
     const initializeApp = async () => {
-      await appShell.initialize();
-      
-      // Process any queued background syncs
-      const isOnline = navigator.onLine;
-      if (isOnline) {
-        await cacheManager.processSyncQueue();
+      try {
+        await appShell.initialize();
+        console.log('🚀 App initialized successfully');
+      } catch (error) {
+        console.error('❌ App initialization failed:', error);
       }
-
-      // Monitor storage quota
-      cacheManager.checkStorageQuota();
     };
 
     initializeApp();
@@ -92,34 +86,39 @@ const App = () => {
           console.error('App Error:', error, errorInfo);
         }}
       >
-        <Toaster />
-        <Sonner />
-        <PWAInstaller />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/galeria" element={<Gallery />} />
-          <Route path="/stories" element={<Stories />} />
-          <Route path="/mapa" element={<Map />} />
-          <Route path="/programacao" element={<Schedule />} />
-          <Route path="/radio" element={<Radio />} />
-          <Route path="/videos" element={<Videos />} />
-          <Route path="/historia" element={<Historia />} />
-          <Route path="/noticias" element={<Noticias />} />
-          <Route path="/podcast" element={<Podcast />} />
-          <Route path="/rota-completa" element={<RotaCompleta />} />
-          <Route path="/rota" element={<RotaCompleta />} />
-          <Route path="/cameras" element={<Cameras />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/sao-cristovao" element={<SaoCristovao />} />
-          <Route path="/menu" element={<Menu />} />
-          <Route path="/mais" element={<More />} />
-          <Route path="/apoio" element={<Apoio />} />
-          <Route path="/vocesabia" element={<VoceSabia />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <QueryClientProvider client={queryClient}>
+          <AppProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <PWAInstaller />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/galeria" element={<Gallery />} />
+                <Route path="/stories" element={<Stories />} />
+                <Route path="/mapa" element={<Map />} />
+                <Route path="/programacao" element={<Schedule />} />
+                <Route path="/radio" element={<Radio />} />
+                <Route path="/historia" element={<Historia />} />
+                <Route path="/noticias" element={<Noticias />} />
+                <Route path="/podcast" element={<Podcast />} />
+                <Route path="/rota-completa" element={<RotaCompleta />} />
+                <Route path="/rota" element={<RotaCompleta />} />
+                <Route path="/cameras" element={<Cameras />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/sao-cristovao" element={<SaoCristovao />} />
+                <Route path="/menu" element={<Menu />} />
+                <Route path="/mais" element={<More />} />
+                <Route path="/apoio" element={<Apoio />} />
+                <Route path="/vocesabia" element={<VoceSabia />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </TooltipProvider>
+          </AppProvider>
+        </QueryClientProvider>
       </ErrorBoundary>
     </>
   );

@@ -1,4 +1,5 @@
 @import 'leaflet/dist/leaflet.css';
+@import '@fortawesome/fontawesome-free/css/all.min.css';
 
 @tailwind base;
 @tailwind components;
@@ -48,16 +49,16 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Trucker Theme Colors */
-    --trucker-blue: 217 91% 27%;
-    --trucker-blue-foreground: 0 0% 100%;
-    --trucker-red: 0 84% 60%;
-    --trucker-red-foreground: 0 0% 100%;
-    --trucker-yellow: 45 93% 58%;
-    --trucker-yellow-foreground: 222 84% 5%;
+    --trucker-blue: 210 100% 50%;
+    --trucker-blue-foreground: 210 40% 98%;
+    --trucker-orange: 25 95% 53%;
+    --trucker-orange-foreground: 0 0% 9%;
+    --trucker-gray: 215 27.9% 16.9%;
+    --trucker-gray-foreground: 210 40% 98%;
     --trucker-green: 142 76% 36%;
-    --trucker-green-foreground: 0 0% 100%;
-    --trucker-orange: 20 91% 48%;
-    --trucker-orange-foreground: 0 0% 100%;
+    --trucker-green-foreground: 355.7 100% 97.3%;
+    --trucker-red: 0 84.2% 60.2%;
+    --trucker-red-foreground: 210 40% 98%;
   }
 
   .dark {
@@ -87,15 +88,28 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 212.7 26.8% 83.9;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 224.3 76.3% 94.1%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Dark mode trucker colors */
+    --trucker-blue: 210 100% 60%;
+    --trucker-blue-foreground: 222.2 84% 4.9%;
+    --trucker-orange: 25 95% 60%;
+    --trucker-orange-foreground: 222.2 84% 4.9%;
+    --trucker-gray: 215 27.9% 25%;
+    --trucker-gray-foreground: 210 40% 98%;
+    --trucker-green: 142 76% 45%;
+    --trucker-green-foreground: 222.2 84% 4.9%;
+    --trucker-red: 0 84.2% 70%;
+    --trucker-red-foreground: 222.2 84% 4.9%;
   }
 }
 
@@ -103,40 +117,55 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
 
-  /* Mobile optimizations */
-  html {
-    -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
+  /* Trucker theme utilities */
+  .bg-trucker-blue {
+    background-color: hsl(var(--trucker-blue));
   }
 
-  /* Touch optimizations */
-  * {
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  .text-trucker-blue {
+    color: hsl(var(--trucker-blue));
   }
 
-  /* Scrollbar styling */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .bg-trucker-orange {
+    background-color: hsl(var(--trucker-orange));
   }
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  .text-trucker-orange {
+    color: hsl(var(--trucker-orange));
   }
 
-  /* Line clamp utilities */
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  .bg-trucker-gray {
+    background-color: hsl(var(--trucker-gray));
+  }
+
+  .text-trucker-gray {
+    color: hsl(var(--trucker-gray));
+  }
+
+  .bg-trucker-green {
+    background-color: hsl(var(--trucker-green));
+  }
+
+  .text-trucker-green {
+    color: hsl(var(--trucker-green));
+  }
+
+  .bg-trucker-red {
+    background-color: hsl(var(--trucker-red));
+  }
+
+  .text-trucker-red {
+    color: hsl(var(--trucker-red));
   }
 
   .line-clamp-3 {
@@ -158,5 +187,277 @@
   /* Touch interaction improvements */
   button, [role="button"] {
     touch-action: manipulation;
+  }
+
+  /* Hide scrollbar for carousels and tag slider */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Performance optimized animations for mobile gallery */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+
+  /* Optimized blur-up animation */
+  @keyframes blurUp {
+    from {
+      filter: blur(5px);
+      transform: scale(1.1);
+    }
+    to {
+      filter: blur(0);
+      transform: scale(1);
+    }
+  }
+
+  .animate-blur-up {
+    animation: blurUp 0.5s ease-out forwards;
+  }
+
+  /* Custom scrollbar for grid */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 2px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
+
+  /* Mobile-first transitions */
+  .transition-mobile {
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+  }
+
+  /* Hardware acceleration for animations */
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  /* Optimized gradient for loading states */
+  .gradient-loading {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Touch feedback optimizations */
+  .touch-feedback {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Container queries for responsive grid */
+  @container (width > 768px) {
+    .grid-responsive {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @container (width > 1024px) {
+    .grid-responsive {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* Tag slider optimizations */
+  .tag-slider-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* High DPI optimizations */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .high-dpi-optimize {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+  }
+
+  /* Reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-shimmer,
+    .animate-blur-up,
+    .transition-mobile {
+      animation: none;
+      transition: none;
+    }
+  }
+
+  /* Network-aware optimizations */
+  @media (prefers-reduced-data: reduce) {
+    .data-saver-mode {
+      background-image: none;
+      filter: none;
+    }
+  }
+
+  /* Touch optimizations for lightbox */
+  .lightbox-container {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+
+  .lightbox-image {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+  }
+
+  .lightbox-controls {
+    touch-action: manipulation;
+    pointer-events: auto;
+  }
+
+  /* Better vertical photo handling */
+  .vertical-photo {
+    max-height: 100vh;
+    max-width: 100vw;
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .horizontal-photo {
+    max-width: 100vw;
+    max-height: 100vh;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  /* Swipe gestures visual feedback */
+  .swipe-indicator {
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+  }
+
+  .swiping {
+    opacity: 0.3;
+    transform: scale(0.95);
+    transition: all 0.2s ease;
+  }
+
+  /* Zoom gesture optimizations */
+  .zoom-container {
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  /* Fix for iOS Safari viewport height */
+  @supports (-webkit-touch-callout: none) {
+    .lightbox-container {
+      height: -webkit-fill-available;
+    }
+  }
+
+  /* FontAwesome icons optimization */
+  .fa, .fas, .far, .fal, .fab {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", "Font Awesome 6 Brands", "Font Awesome 6 Duotone";
+    font-weight: 900;
+    display: inline-block;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ensure icons are properly centered */
+  .tag-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* Grid performance optimizations */
+  .virtual-grid-container {
+    contain: layout style paint;
+    will-change: scroll-position;
+  }
+
+  .grid-item {
+    contain: layout style paint;
+    will-change: transform;
+  }
+
+  /* Better scrollbar for mobile */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* Thumbnails 3:4 com object-cover e bordas redondas */
+  .thumbnail-3x4 {
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+  }
+
+  /* Sticky header animation */
+  .header-slide {
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .header-slide.hidden {
+    transform: translateY(-100%);
   }
 }

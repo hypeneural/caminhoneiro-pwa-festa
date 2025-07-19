@@ -1,4 +1,4 @@
-import { Home, Camera, Map, Calendar, Menu } from "lucide-react";
+import { Home, Camera, Calendar, ChefHat, Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Link, useLocation } from "react-router-dom";
@@ -20,34 +20,33 @@ interface BottomNavTab {
 const navigationTabs: BottomNavTab[] = [
   {
     id: "home",
-    title: "Home",
+    title: "Início",
     icon: Home,
     route: "/",
     isActive: true
   },
   {
+    id: "programacao",
+    title: "Programação",
+    icon: Calendar,
+    route: "/programacao",
+    isActive: false,
+    badge: { count: 2, show: true }
+  },
+  {
     id: "galeria",
-    title: "Galeria",
+    title: "Fotos",
     icon: Camera,
     route: "/galeria",
     isActive: false,
     badge: { count: 5, show: true }
   },
   {
-    id: "mapa",
-    title: "Mapa",
-    icon: Map,
-    route: "/mapa",
-    isActive: false,
-    badge: { count: 1, show: true }
-  },
-  {
-    id: "programacao",
-    title: "Agenda",
-    icon: Calendar,
-    route: "/programacao",
-    isActive: false,
-    badge: { count: 2, show: true }
+    id: "cardapio",
+    title: "Cardápio",
+    icon: ChefHat,
+    route: "/menu",
+    isActive: false
   },
   {
     id: "mais",
@@ -61,7 +60,6 @@ const navigationTabs: BottomNavTab[] = [
 // Pages that are accessible through "Mais" menu
 const moreMenuRoutes = [
   "/radio",
-  "/videos", 
   "/podcast",
   "/historia",
   "/noticias",
@@ -71,7 +69,9 @@ const moreMenuRoutes = [
   "/about",
   "/contact",
   "/faq",
-  "/vocesabia"
+  "/vocesabia",
+  "/sao-cristovao",
+  "/mapa"
 ];
 
 export function BottomNavigation() {

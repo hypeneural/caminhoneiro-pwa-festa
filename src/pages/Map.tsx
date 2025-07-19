@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Map as MapIcon, 
@@ -25,6 +25,8 @@ import { TrackerMetrics } from "@/components/tracker/TrackerMetrics";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { useTraccarData } from "@/hooks/useTraccarData";
 import EnhancedProcissaoMap from "@/components/map/EnhancedProcissaoMap";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { useAdvertisements } from "@/hooks/useAdvertisements";
 import { 
   IoMdRefresh,
   IoMdExpand 
@@ -241,6 +243,30 @@ const Map = () => {
     isRealtime 
   } = useTraccarData();
   
+  const { banners, isLoading: bannersLoading, error: bannersError } = useAdvertisements({ position: 'map' });
+  
+  // Debug da API diretamente
+  useEffect(() => {
+    const testAPI = async () => {
+      try {
+        console.log('🧪 Map.tsx: Testando API diretamente...');
+        const response = await fetch('https://api.festadoscaminhoneiros.com.br/v1/advertisements/banners?position_group=home&limit=5&page=1');
+        const data = await response.json();
+        console.log('✅ Map.tsx: API Direct Test Success:', data);
+      } catch (error) {
+        console.error('❌ Map.tsx: API Direct Test Failed:', error);
+      }
+    };
+    testAPI();
+  }, []);
+  
+  console.log('🗺️ Map.tsx: Hook Status:', { 
+    bannersCount: banners.length, 
+    isLoading: bannersLoading, 
+    error: bannersError,
+    firstBanner: banners[0]
+  });
+  
   const [mapHeight, setMapHeight] = useState<'normal' | 'expanded'>('normal');
 
   const handleShare = async () => {
@@ -381,6 +407,48 @@ const Map = () => {
                 
                 {/* Cronograma */}
                 <ProcessionSchedule data={data} />
+                
+                {/* Banner de Anúncios */}
+                {banners.length > 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <div className="mb-2 text-xs text-muted-foreground">
+                      📢 Banners: {banners.length} | Source: {bannersError ? 'Mock' : 'API'}
+                    </div>
+                    <BannerCarousel 
+                      banners={banners} 
+                      showControls={true}
+                      showDots={true}
+                      className="rounded-xl shadow-lg"
+                      autoplayDelay={5000}
+                    />
+                  </motion.div>
+                ) : bannersLoading ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="h-32 bg-muted/20 rounded-xl flex items-center justify-center"
+                  >
+                    <div className="text-sm text-muted-foreground">
+                      🔄 Carregando banners...
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="h-16 bg-muted/20 rounded-xl flex items-center justify-center"
+                  >
+                    <div className="text-xs text-muted-foreground">
+                      ⚠️ Nenhum banner disponível
+                    </div>
+                  </motion.div>
+                )}
                 
                 {/* Navegação rápida */}
                 <Card className="p-4 shadow-lg">

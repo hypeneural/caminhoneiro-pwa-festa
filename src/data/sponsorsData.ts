@@ -3,28 +3,100 @@ import { SponsorsData } from '@/types/sponsors';
 export const mockSponsorsData: SponsorsData = {
   banners: [
     {
-      id: 1,
-      title: 'Auto Peças Central',
-      description: 'Tudo para seu caminhão',
-      imageUrl: 'https://via.placeholder.com/800x300/0066cc/ffffff?text=Auto+Pe%C3%A7as+Central',
-      imageUrlWebp: 'https://via.placeholder.com/800x300/0066cc/ffffff?text=Auto+Pe%C3%A7as+Central',
-      linkUrl: 'https://autopecascentral.com.br',
-      target: '_blank' as const,
-      priority: 10,
+      id: 11,
+      title: "Tyuco Imóveis",
+      description: "",
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/tyuco-banner.jpg",
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/tyuco-banner.webp",
+      linkUrl: "https://www.instagram.com/tyucoimoveis/",
+      target: "_blank",
+      priority: 1,
       position: 1,
-      altText: 'Banner da Auto Peças Central'
+      altText: "Banner Tyuco Imóveis"
     },
     {
-      id: 2,
-      title: 'Posto Rodoviário São José',
-      description: 'Combustível e serviços',
-      imageUrl: 'https://via.placeholder.com/800x300/dc2626/ffffff?text=Posto+S%C3%A3o+Jos%C3%A9',
-      imageUrlWebp: 'https://via.placeholder.com/800x300/dc2626/ffffff?text=Posto+S%C3%A3o+Jos%C3%A9',
-      linkUrl: 'https://postosaojose.com.br',
-      target: '_blank' as const,
-      priority: 9,
+      id: 26,
+      title: "Altos de Santa Helena - Terraza",
+      description: null,
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/terraza-banner.jpg",
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/terraza-banner.webp",
+      linkUrl: "https://www.instagram.com/terrazaurbanismo/",
+      target: "_blank",
+      priority: 1,
       position: 2,
-      altText: 'Banner do Posto Rodoviário São José'
+      altText: "Banner Terraza"
+    },
+    {
+      id: 51,
+      title: "CC Seguros",
+      description: null,
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/cc-banner.jpg",
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/cc-banner.webp",
+      linkUrl: "https://www.instagram.com/ccsegurosoficial/",
+      target: "_blank",
+      priority: 1,
+      position: 3,
+      altText: "Banner CC Seguros"
+    },
+    {
+      id: 14,
+      title: "Lupel",
+      description: "",
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/lupel-banner.jpg",
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/lupel-banner.webp",
+      linkUrl: "https://www.instagram.com/lupel.com.br/",
+      target: "_blank",
+      priority: 1,
+      position: 4,
+      altText: "Banner Lupel"
+    },
+    {
+      id: 33,
+      title: "Mais Net",
+      description: null,
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/mais-net-banner.jpg",
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/mais-net-banner.webp",
+      linkUrl: "https://www.instagram.com/internetmaisnet/",
+      target: "_blank",
+      priority: 1,
+      position: 5,
+      altText: "Banner Mais Net"
+    },
+    {
+      id: 40,
+      title: "R&S TELECOM | Unifique",
+      description: null,
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/res-banner.jpg",
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/res-banner.webp",
+      linkUrl: "https://www.instagram.com/rstelecom.unif/",
+      target: "_blank",
+      priority: 1,
+      position: 6,
+      altText: "Banner R&S TELECOM"
+    },
+    {
+      id: 48,
+      title: "Ação Logistica",
+      description: null,
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/acao-banner.jpg",
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/acao-banner.webp",
+      linkUrl: "https://www.instagram.com/acao_logistica/",
+      target: "_blank",
+      priority: 1,
+      position: 7,
+      altText: "Banner Ação Logística"
+    },
+    {
+      id: 20,
+      title: "BST Caminhões",
+      description: null,
+      imageUrl: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/fallback/bst-banner.jpg",
+      imageUrlWebp: "https://festadoscaminhoneiros.com.br/assets/images/advertisers/banner/webp/bst-banner.webp",
+      linkUrl: "https://www.instagram.com/bstcaminhoes/",
+      target: "_blank",
+      priority: 1,
+      position: 8,
+      altText: "Banner BST Caminhões"
     }
   ],
   sponsors: [

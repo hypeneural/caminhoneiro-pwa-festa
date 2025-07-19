@@ -5,9 +5,12 @@ import { RadioPlayer } from "@/components/radio/RadioPlayer";
 import { Card, CardContent } from "@/components/ui/card";
 import { AnimatedBackground } from "@/components/radio/AnimatedBackground";
 import { useRadioPlayer } from "@/hooks/useRadioPlayer";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { useAdvertisements } from "@/hooks/useAdvertisements";
 
 const Radio = () => {
   const { isPlaying } = useRadioPlayer();
+  const { banners } = useAdvertisements({ position: 'radio' });
 
   return (
     <div className="relative min-h-screen bg-background">
@@ -26,6 +29,23 @@ const Radio = () => {
             className="space-y-6"
           >
             <RadioPlayer />
+
+            {/* Banner de Anúncios */}
+            {banners.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <BannerCarousel 
+                  banners={banners} 
+                  showControls={true}
+                  showDots={true}
+                  className="rounded-xl shadow-lg backdrop-blur-sm bg-white/10"
+                  autoplayDelay={6000}
+                />
+              </motion.div>
+            )}
 
             {/* Features */}
             <div className="grid grid-cols-2 gap-4">
