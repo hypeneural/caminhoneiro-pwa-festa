@@ -15,15 +15,15 @@ export interface Poll {
 }
 
 export const pollMock: Poll = {
-  id: "truck-fest-2025",
-  pergunta: "Qual atração você mais espera na Festa do Caminhoneiro?",
+  id: "sao-cristovao-2026",
+  pergunta: "Qual atração você mais espera na Festa de São Cristóvão 2026?",
   opcoes: [
-    { id: "show", texto: "Show Nacional", votos: 51 },
-    { id: "food", texto: "Festival Gastronômico", votos: 34 },
-    { id: "desfile", texto: "Desfile de Caminhões", votos: 27 },
-    { id: "brindes", texto: "Sorteio de Brindes", votos: 19 },
+    { id: "procissao", texto: "Procissão automotiva", votos: 51 },
+    { id: "bingo", texto: "Bingo tradicional", votos: 34 },
+    { id: "almoco", texto: "Almoço festivo", votos: 27 },
+    { id: "musica", texto: "Tarde dançante", votos: 19 },
   ],
   total: 131,
   ativo: true,
-  encerraEm: "2025-07-20T23:59:59Z"
+  encerraEm: "2026-07-19T23:59:59Z"
 };

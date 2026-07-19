@@ -11,6 +11,16 @@ node_modules
 dist
 dist-ssr
 *.local
+*.tsbuildinfo
+
+# Local Traccar/Event Gateway runtime data and secrets
+tracking/.env
+tracking/data/
+tracking/traccar/logs/
+tracking/cloudflared/*.json
+tracking/cloudflared/*.pem
+tracking/event-gateway/node_modules/
+tracking/event-gateway/dist/
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +32,32 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python automation runtime data, secrets and local diagnostics
+.env
+automation/data/
+automation/logs/
+automation/spool/
+automation/.pytest_cache/
+automation/**/__pycache__/
+automation/panorama-*.jpg
+*.py[cod]
+
+# Env / secrets - NUNCA commitar credenciais reais
+.env.production
+.env.local
+.env.*.local
+
+# Binarios grandes gerados localmente
+*.tar.gz
+*.tar
+*.zip
+
+# Deploy runtime (gerado pelo script de deploy)
+deploy/
+
+# Shared runtime / secrets
+shared/
+
+# Dev-dist (gerado pelo Vite em modo dev)
+dev-dist/

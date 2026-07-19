@@ -7,6 +7,7 @@ import { Clock, Eye, WifiOff, TrendingUp } from "lucide-react";
 import { NewsItem } from "@/types/news";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { selectSafeImageSrc } from "@/lib/image-safety";
 
 interface NewsCardProps {
   news: NewsItem;
@@ -30,10 +31,17 @@ const LazyImage = ({ src, alt, className, ...props }: {
     const img = imgRef.current;
     if (!img) return;
 
+    const safeSrc = selectSafeImageSrc(src);
+    if (!safeSrc) {
+      setError(true);
+      setIsLoading(false);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          img.src = src;
+          img.src = safeSrc;
           observer.disconnect();
         }
       },

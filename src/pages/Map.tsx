@@ -27,6 +27,7 @@ import { useTraccarData } from "@/hooks/useTraccarData";
 import EnhancedProcissaoMap from "@/components/map/EnhancedProcissaoMap";
 import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
 import { useAdvertisements } from "@/hooks/useAdvertisements";
+import { LiveRouteBanner } from "@/components/tracker/LiveRouteBanner";
 import { 
   IoMdRefresh,
   IoMdExpand 
@@ -79,6 +80,15 @@ const PROCESSION_SCHEDULE = [
 const ProcessionSchedule: React.FC<{ data?: any }> = ({ data }) => {
   const getCurrentScheduleItem = () => {
     const now = new Date();
+    
+    // Verifica se hoje e o dia do evento (19 de julho de 2026)
+    // Mes em JS e 0-indexed (Julho = 6)
+    const isEventDay = now.getFullYear() === 2026 && now.getMonth() === 6 && now.getDate() === 19;
+    
+    if (!isEventDay) {
+      return PROCESSION_SCHEDULE.map(item => ({ ...item, status: 'upcoming' as const }));
+    }
+
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     const currentTimeInMinutes = currentHour * 60 + currentMinute;
@@ -243,29 +253,7 @@ const Map = () => {
     isRealtime 
   } = useTraccarData();
   
-  const { banners, isLoading: bannersLoading, error: bannersError } = useAdvertisements({ position: 'map' });
-  
-  // Debug da API diretamente
-  useEffect(() => {
-    const testAPI = async () => {
-      try {
-        console.log('🧪 Map.tsx: Testando API diretamente...');
-        const response = await fetch('https://api.festadoscaminhoneiros.com.br/v1/advertisements/banners?position_group=home&limit=5&page=1');
-        const data = await response.json();
-        console.log('✅ Map.tsx: API Direct Test Success:', data);
-      } catch (error) {
-        console.error('❌ Map.tsx: API Direct Test Failed:', error);
-      }
-    };
-    testAPI();
-  }, []);
-  
-  console.log('🗺️ Map.tsx: Hook Status:', { 
-    bannersCount: banners.length, 
-    isLoading: bannersLoading, 
-    error: bannersError,
-    firstBanner: banners[0]
-  });
+  const { banners, isLoading: bannersLoading } = useAdvertisements({ position: 'home' });
   
   const [mapHeight, setMapHeight] = useState<'normal' | 'expanded'>('normal');
 
@@ -351,6 +339,7 @@ const Map = () => {
 
       {/* Main content */}
       <main className="pt-16 pb-20">
+        <LiveRouteBanner />
         <ErrorBoundary fallback={({ error }) => (
           <TrackerError onRetry={forceRefresh} isRetrying={isFetching} />
         )}>
@@ -415,9 +404,6 @@ const Map = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
                   >
-                    <div className="mb-2 text-xs text-muted-foreground">
-                      📢 Banners: {banners.length} | Source: {bannersError ? 'Mock' : 'API'}
-                    </div>
                     <BannerCarousel 
                       banners={banners} 
                       showControls={true}
@@ -437,18 +423,7 @@ const Map = () => {
                       🔄 Carregando banners...
                     </div>
                   </motion.div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="h-16 bg-muted/20 rounded-xl flex items-center justify-center"
-                  >
-                    <div className="text-xs text-muted-foreground">
-                      ⚠️ Nenhum banner disponível
-                    </div>
-                  </motion.div>
-                )}
+                ) : null}
                 
                 {/* Navegação rápida */}
                 <Card className="p-4 shadow-lg">

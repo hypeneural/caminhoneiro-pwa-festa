@@ -3,29 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-    <title>Festa do Caminhoneiro - São Cristóvão 2025 | Tijucas/SC</title>
-    <meta name="description" content="PWA oficial da Festa do Caminhoneiro de Tijucas/SC - 19 e 20 de julho de 2025. Acompanhe a procissão de São Cristóvão, notícias, galeria e programação completa ao vivo." />
-    <meta name="keywords" content="festa do caminhoneiro, são cristóvão, tijucas, santa catarina, procissão, caminhoneiros, 2025, PWA" />
+    <title>Festa do Caminhoneiro - São Cristóvão 2026 | Tijucas/SC</title>
+    <meta name="description" content="PWA oficial da XXII Festa de São Cristóvão de Tijucas/SC - 18 e 19 de julho de 2026. Confira missa, bingo, procissão automotiva, almoço festivo e tarde dançante." />
+    <meta name="keywords" content="festa do caminhoneiro, são cristóvão, tijucas, santa catarina, procissão, caminhoneiros, 2026, PWA" />
     <meta name="author" content="Festa do Caminhoneiro Tijucas" />
     <meta name="robots" content="index, follow" />
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://festadocaminhoneiro.com.br" />
+    <link rel="canonical" href="https://festadoscaminhoneiros.com.br" />
     
     <!-- Theme and PWA -->
-    <meta name="theme-color" content="#1e3a8a" />
+    <meta name="theme-color" content="#1e3a8a" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Caminhoneiro 2025" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Caminhoneiro 2026" />
+    <meta name="format-detection" content="telephone=no" />
     <link rel="manifest" href="/manifest.json" />
     
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://images.unsplash.com" />
-    <link rel="dns-prefetch" href="https://images.unsplash.com" />
-    
     <!-- Preload critical first image -->
-    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&q=80&w=400" fetchpriority="high" />
+    <link rel="preload" as="image" href="/assets/images/programacao/sao-cristovao-2026.png" fetchpriority="high" />
     
     <!-- Critical CSS inline for instant loading -->
     <style>
@@ -67,36 +66,36 @@
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://festadocaminhoneiro.com.br" />
-    <meta property="og:title" content="Festa do Caminhoneiro - São Cristóvão 2025 | Tijucas/SC" />
-    <meta property="og:description" content="PWA oficial da Festa do Caminhoneiro de Tijucas/SC - 19 e 20 de julho de 2025. Acompanhe a procissão de São Cristóvão, notícias, galeria e programação completa ao vivo." />
-    <meta property="og:image" content="https://festadocaminhoneiro.com.br/og-image.jpg" />
+    <meta property="og:url" content="https://festadoscaminhoneiros.com.br" />
+    <meta property="og:title" content="Festa do Caminhoneiro - São Cristóvão 2026 | Tijucas/SC" />
+    <meta property="og:description" content="PWA oficial da XXII Festa de São Cristóvão de Tijucas/SC - 18 e 19 de julho de 2026, na Capela Santa Teresinha." />
+    <meta property="og:image" content="https://festadoscaminhoneiros.com.br/assets/images/programacao/sao-cristovao-2026.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="pt_BR" />
-    <meta property="og:site_name" content="Festa do Caminhoneiro 2025" />
+    <meta property="og:site_name" content="Festa do Caminhoneiro 2026" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://festadocaminhoneiro.com.br" />
-    <meta name="twitter:title" content="Festa do Caminhoneiro - São Cristóvão 2025 | Tijucas/SC" />
-    <meta name="twitter:description" content="PWA oficial da Festa do Caminhoneiro de Tijucas/SC - 19 e 20 de julho de 2025. Acompanhe a procissão de São Cristóvão, notícias, galeria e programação completa ao vivo." />
-    <meta name="twitter:image" content="https://festadocaminhoneiro.com.br/og-image.jpg" />
+    <meta name="twitter:url" content="https://festadoscaminhoneiros.com.br" />
+    <meta name="twitter:title" content="Festa do Caminhoneiro - São Cristóvão 2026 | Tijucas/SC" />
+    <meta name="twitter:description" content="PWA oficial da XXII Festa de São Cristóvão de Tijucas/SC - 18 e 19 de julho de 2026." />
+    <meta name="twitter:image" content="https://festadoscaminhoneiros.com.br/assets/images/programacao/sao-cristovao-2026.png" />
     
     <!-- Schema.org structured data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Event",
-      "name": "Festa do Caminhoneiro - São Cristóvão 2025",
-      "description": "Festa religiosa em homenagem a São Cristóvão, padroeiro dos motoristas e caminhoneiros, realizada em Tijucas, Santa Catarina.",
-      "startDate": "2025-07-19",
-      "endDate": "2025-07-20",
+      "name": "Festa do Caminhoneiro - São Cristóvão 2026",
+      "description": "XXII Festa de São Cristóvão na Capela Santa Teresinha, com programação religiosa, procissão automotiva, bingo, almoço festivo e tarde dançante.",
+      "startDate": "2026-07-18T18:00:00-03:00",
+      "endDate": "2026-07-19T18:00:00-03:00",
       "eventStatus": "https://schema.org/EventScheduled",
       "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
       "location": {
         "@type": "Place",
-        "name": "Tijucas",
+        "name": "Capela Santa Teresinha",
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Tijucas",
@@ -108,8 +107,8 @@
         "@type": "Organization",
         "name": "Festa do Caminhoneiro Tijucas"
       },
-      "image": "https://festadocaminhoneiro.com.br/og-image.jpg",
-      "url": "https://festadocaminhoneiro.com.br"
+      "image": "https://festadoscaminhoneiros.com.br/assets/images/programacao/sao-cristovao-2026.png",
+      "url": "https://festadoscaminhoneiros.com.br"
     }
     </script>
   </head>

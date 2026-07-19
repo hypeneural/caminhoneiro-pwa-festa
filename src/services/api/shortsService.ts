@@ -47,13 +47,18 @@ export const shortsService = {
       
       const response = await axios.get<ShortsResponse>(url);
       
+      const filteredShorts = filterOutdatedProgramShorts(response.data.data || []);
+
       shortsCache.set(cacheKey, {
-        data: response.data.data,
+        data: filteredShorts,
         meta: response.data.meta,
         timestamp: Date.now()
       });
       
-      return response.data;
+      return {
+        ...response.data,
+        data: filteredShorts
+      };
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Erro ao carregar shorts';
       
@@ -108,4 +113,12 @@ export const shortsService = {
       throw new Error(errorMessage);
     }
   }
+};
+
+const filterOutdatedProgramShorts = <T extends { title?: string }>(items: T[]): T[] => {
+  return items.filter((item) => {
+    const title = item.title || '';
+    const isOldProgramCall = /2025|XXI/i.test(title) && /programa/i.test(title);
+    return !isOldProgramCall;
+  });
 };

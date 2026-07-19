@@ -38,8 +38,7 @@ const navigationTabs: BottomNavTab[] = [
     title: "Fotos",
     icon: Camera,
     route: "/galeria",
-    isActive: false,
-    badge: { count: 5, show: true }
+    isActive: false
   },
   {
     id: "cardapio",
@@ -59,12 +58,9 @@ const navigationTabs: BottomNavTab[] = [
 
 // Pages that are accessible through "Mais" menu
 const moreMenuRoutes = [
-  "/radio",
   "/podcast",
   "/historia",
-  "/noticias",
   "/rota-completa",
-  "/cameras",
   "/stories",
   "/about",
   "/contact",
@@ -96,7 +92,7 @@ export function BottomNavigation() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border/50 shadow-lg pb-safe">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/92 supports-[backdrop-filter]:bg-background/78 backdrop-blur-xl border-t border-border/50 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] pb-safe">
         <div className="flex items-center justify-around h-16 px-2">
           {navigationTabs.map((tab) => {
             const isActive = tab.id === currentTab.id || (tab.id === "mais" && isMoreMenuActive);
@@ -105,18 +101,20 @@ export function BottomNavigation() {
             if (isMoreTab) {
               return (
                 <motion.div
-                  key={tab.id}
+                   key={tab.id}
                   className="flex-1"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95, y: 2 }}
                 >
                   <button
                     onClick={() => setIsMoreMenuOpen(true)}
-                    className={`flex flex-col items-center justify-center w-full py-2 px-1 rounded-lg transition-colors relative ${
-                      isActive 
-                        ? 'text-trucker-blue' 
+                    className={`touch-feedback flex min-h-14 w-full flex-col items-center justify-center rounded-xl px-1 py-2 transition relative ${
+                      isActive
+                        ? 'text-trucker-blue bg-trucker-blue/10'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
+                    aria-current={isActive ? "page" : undefined}
+                    aria-label="Abrir mais opções"
                   >
                     <div className="relative">
                       <tab.icon className={`w-6 h-6 ${
@@ -133,7 +131,7 @@ export function BottomNavigation() {
                     {isActive && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-trucker-blue rounded-full"
+                        className="absolute top-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-trucker-blue rounded-full"
                         initial={false}
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
                       />
@@ -144,13 +142,13 @@ export function BottomNavigation() {
             }
 
             return (
-              <Link key={tab.id} to={tab.route} className="flex-1">
+              <Link key={tab.id} to={tab.route} className="flex-1" aria-current={isActive ? "page" : undefined}>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95, y: 2 }}
-                  className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors relative ${
-                    isActive 
-                      ? 'text-trucker-blue' 
+                  className={`touch-feedback flex min-h-14 flex-col items-center justify-center rounded-xl px-1 py-2 transition relative ${
+                    isActive
+                      ? 'text-trucker-blue bg-trucker-blue/10'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -179,7 +177,7 @@ export function BottomNavigation() {
                   {isActive && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-trucker-blue rounded-full"
+                      className="absolute top-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-trucker-blue rounded-full"
                       initial={false}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />

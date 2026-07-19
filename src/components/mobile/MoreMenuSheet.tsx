@@ -1,15 +1,11 @@
-
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, 
   Radio, 
   History, 
-  Newspaper, 
   Route, 
-  Camera,
   Info,
   Phone,
-  Settings,
   HelpCircle,
   Cross,
   Heart,
@@ -27,16 +23,6 @@ interface MoreMenuSheetProps {
 }
 
 const menuItems = [
-  {
-    id: 'radio',
-    title: 'Rádio Festa',
-    description: 'Escute nossa programação especial',
-    icon: Radio,
-    route: ROUTES.RADIO,
-    color: 'text-red-500',
-    bgColor: 'bg-red-50',
-    borderColor: 'border-red-200'
-  },
   {
     id: 'podcast',
     title: 'Podcast',
@@ -58,16 +44,6 @@ const menuItems = [
     borderColor: 'border-amber-200'
   },
   {
-    id: 'noticias',
-    title: 'Notícias',
-    description: 'Últimas novidades da festa',
-    icon: Newspaper,
-    route: ROUTES.NEWS,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50',
-    borderColor: 'border-green-200'
-  },
-  {
     id: 'rota',
     title: 'Rota Completa',
     description: 'Veja todo o percurso',
@@ -76,16 +52,6 @@ const menuItems = [
     color: 'text-purple-600',
     bgColor: 'bg-purple-50',
     borderColor: 'border-purple-200'
-  },
-  {
-    id: 'cameras',
-    title: 'Câmeras',
-    description: 'Acompanhe ao vivo',
-    icon: Camera,
-    route: ROUTES.CAMERAS,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-50',
-    borderColor: 'border-indigo-200'
   },
   {
     id: 'vocesabia',
@@ -304,7 +270,7 @@ export function MoreMenuSheet({ open, onOpenChange }: MoreMenuSheetProps) {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/40 text-xs text-muted-foreground">
               <Heart className="w-3 h-3 text-red-500" />
-              <span>Festa do Caminhoneiro 2025</span>
+              <span>Festa do Caminhoneiro 2026</span>
             </div>
           </motion.div>
         </div>

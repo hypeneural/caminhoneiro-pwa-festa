@@ -1,5 +1,4 @@
-// Tipos baseados nos dados reais do endpoint Traccar
-// https://hypeneural.com/caminhao/api.php
+// Tipos baseados nos dados publicos do Event Gateway de rastreamento.
 
 export type ActivityType = 
   | 'unknown'
@@ -51,6 +50,30 @@ export interface TraccarPosition {
 }
 
 export type TraccarResponse = TraccarPosition[];
+
+export type PublicVehicleType = 'main' | 'truck' | 'support';
+export type PublicVehicleStatus = 'live' | 'stale' | 'offline';
+
+export interface PublicTrackingVehicle {
+  id: string;
+  name: string;
+  type: PublicVehicleType;
+  lat: number;
+  lng: number;
+  speedKmh: number;
+  bearing: number;
+  accuracy: number | null;
+  battery: number | null;
+  updatedAt: string;
+  stale: boolean;
+  status: PublicVehicleStatus;
+}
+
+export interface PublicTrackingSnapshot {
+  event: 'snapshot';
+  serverTime: string;
+  vehicles: PublicTrackingVehicle[];
+}
 
 // Estados derivados para UI
 export type MovementState = 
@@ -194,4 +217,6 @@ export interface TrackerError {
   code?: number;
   timestamp: number;
   retryable: boolean;
-} 
+}
+
+export type TraccarData = ProcessedTrackerData;

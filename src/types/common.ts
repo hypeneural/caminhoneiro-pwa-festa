@@ -87,7 +87,7 @@ export interface AppConfig {
   };
 }
 
-// TraccarData moved to types/tracker.ts for better organization
+export type { TraccarData } from './tracker';
 
 export interface GeoJSONFeature {
   type: "Feature";

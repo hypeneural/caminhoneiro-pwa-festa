@@ -12,9 +12,13 @@ import { useFactsFilter } from "@/hooks/useFacts";
 import { useNavigation } from "@/hooks/useNavigation";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { cn } from "@/lib/utils";
+import { LiveRouteBanner } from "@/components/tracker/LiveRouteBanner";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { useAdvertisements } from "@/hooks/useAdvertisements";
 
 const VoceSabia = () => {
   const [showFilters, setShowFilters] = useState(false);
+  const { banners } = useAdvertisements({ position: "home" });
   const {
     facts,
     loading,
@@ -132,6 +136,19 @@ const VoceSabia = () => {
         
         <main className={cn("flex-1 pb-20", !isOnline ? "pt-28" : showFilters ? "pt-24" : "pt-16")}>
           <PullToRefresh onRefresh={handleRefresh}>
+            <LiveRouteBanner />
+            {banners.length > 0 && (
+              <div className="px-4 py-2 bg-muted/20">
+                <BannerCarousel
+                  banners={banners}
+                  showControls={true}
+                  showDots={true}
+                  className="rounded-lg shadow-md"
+                  autoplayDelay={5000}
+                  compact={true}
+                />
+              </div>
+            )}
             <div className="px-4 py-6 space-y-6">
               {/* Hero Section - Modern Design */}
               <motion.div

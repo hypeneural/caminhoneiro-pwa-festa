@@ -13,14 +13,28 @@ import { LegacySection } from "@/components/history/LegacySection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
 import { useAdvertisements } from "@/hooks/useAdvertisements";
+import { LiveRouteBanner } from "@/components/tracker/LiveRouteBanner";
 
 const Historia = () => {
   const isMobile = useIsMobile();
-  const { banners } = useAdvertisements({ position: 'historia' });
+  const { banners } = useAdvertisements({ position: 'home' });
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <LiveRouteBanner />
+      {banners.length > 0 && (
+        <div className="px-4 py-2 bg-muted/20">
+          <BannerCarousel
+            banners={banners}
+            showControls={true}
+            showDots={true}
+            className="rounded-lg shadow-md"
+            autoplayDelay={5000}
+            compact={true}
+          />
+        </div>
+      )}
       
       {/* Hero Section - Mobile or Desktop */}
       {isMobile ? <MobileHero /> : <ParallaxHero />}
@@ -39,18 +53,6 @@ const Historia = () => {
         {/* Historical Gallery */}
         <HistoricalGallery />
         
-        {/* Banner de Anúncios */}
-        {banners.length > 0 && (
-          <section className="py-8 px-4 bg-muted/20">
-            <BannerCarousel 
-              banners={banners} 
-              showControls={true}
-              showDots={true}
-              className="rounded-xl shadow-lg max-w-4xl mx-auto"
-              autoplayDelay={5000}
-            />
-          </section>
-        )}
         
         {/* Statistics */}
         <StatisticsSection />

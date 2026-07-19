@@ -1,0 +1,670 @@
+"""Ponto de entrada (entrypoint) para o serviço de notificações do Tracker."""
+
+import importlib.util
+import time
+import logging
+import os
+import shutil
+import uuid
+from contextlib import ExitStack
+from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Optional
+import threading
+import httpx
+
+from app.config import settings
+from app.tracker.models import VehicleSnapshot
+from app.tracker.tracker_db import TrackerDB
+from app.tracker.zapi_client import ZAPIClient
+from app.tracker.geocoder import ReverseGeocoder
+from app.tracker.async_geocoder import AsyncReverseGeocoder
+from app.tracker.notifications import AsyncZAPIDispatcher
+from app.tracker.engine import TrackerEngine
+from app.tracker.maps.route_repository import RouteRepository
+from app.tracker.maps.route_matcher import RouteProgressService
+from app.tracker.maps.policy import MapSendPolicy
+from app.tracker.maps.dispatcher import MapDispatcher
+from app.tracker.maps.renderer import LeafletMapRenderer
+from app.tracker.panorama import PanoramaDispatcher
+from app.tracker.streetview import (
+    PanoramaComposeConfig,
+    PillowPanoramaComposer,
+    SeleniumStreetViewCapture,
+    StreetViewCaptureConfig,
+    StreetViewPanoramaService,
+)
+
+# Logger setup
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+ZAPI_STATUS_REFRESH_SECONDS = 60.0
+
+
+def _refresh_zapi_connection(
+    zapi: ZAPIClient,
+    *,
+    now_monotonic: float,
+    last_checked_at: Optional[float],
+    connected: bool,
+) -> tuple[bool, float]:
+    """Refresh the cached Z-API connectivity state when its TTL expires."""
+
+    if (
+        last_checked_at is not None
+        and now_monotonic - last_checked_at < ZAPI_STATUS_REFRESH_SECONDS
+    ):
+        return connected, last_checked_at
+
+    try:
+        status = zapi.get_instance_status()
+        connected = (
+            isinstance(status, dict)
+            and status.get("connected") is True
+            and status.get("smartphoneConnected") is True
+        )
+        if not connected:
+            logger.warning(
+                "Z-API instance or smartphone disconnected; readiness disabled"
+            )
+    except Exception as exc:
+        connected = False
+        logger.error(
+            "Z-API status probe failed (%s)",
+            type(exc).__name__,
+            exc_info=True,
+        )
+
+    return connected, now_monotonic
+
+
+def _safe_close(name: str, resource) -> None:
+    """Fecha um recurso sem impedir a limpeza dos recursos restantes."""
+
+    try:
+        resource.close()
+    except Exception as exc:
+        logger.error(
+            "Falha ao encerrar %s (%s)",
+            name,
+            type(exc).__name__,
+        )
+
+
+def _close_background_channels(
+    resources: dict[str, tuple[object, float]],
+) -> None:
+    """Encerra apenas os canais que chegaram a ser criados."""
+
+    closers = list(resources.items())
+    if not closers:
+        return
+
+    def close_one(name: str, resource: object, timeout: float) -> None:
+        try:
+            resource.close(timeout)
+        except Exception as exc:
+            logger.error(
+                "Falha ao encerrar canal %s (%s)",
+                name,
+                type(exc).__name__,
+            )
+
+    try:
+        with ThreadPoolExecutor(max_workers=len(closers)) as pool:
+            futures = [
+                pool.submit(close_one, name, resource, timeout)
+                for name, (resource, timeout) in closers
+            ]
+            for future in futures:
+                future.result()
+    except Exception as exc:
+        # Fallback defensivo caso o executor nem consiga iniciar. Os close()
+        # dos canais sao idempotentes e podem ser chamados novamente.
+        logger.error(
+            "Falha no encerramento paralelo dos canais (%s)",
+            type(exc).__name__,
+        )
+        for name, (resource, timeout) in closers:
+            close_one(name, resource, timeout)
+
+
+def _release_tracker_lease(
+    db: TrackerDB,
+    lease_name: str,
+    lease_owner: str,
+) -> None:
+    """Libera a lideranca sem mascarar uma falha de inicializacao."""
+
+    try:
+        db.release_tracker_lease(
+            lease_name=lease_name,
+            lease_owner=lease_owner,
+        )
+    except Exception as exc:
+        logger.warning(
+            "Falha ao liberar lideranca do tracker (%s)",
+            type(exc).__name__,
+        )
+
+
+def _find_chrome_binary(configured_path: str) -> str:
+    """Localiza Chrome/Chromium para falhar cedo com uma mensagem clara."""
+
+    if configured_path:
+        return configured_path if Path(configured_path).is_file() else ""
+
+    command = (
+        shutil.which("google-chrome")
+        or shutil.which("google-chrome-stable")
+        or shutil.which("chromium")
+        or shutil.which("chromium-browser")
+        or shutil.which("chrome")
+    )
+    if command:
+        return command
+
+    candidates = (
+        Path(os.environ.get("PROGRAMFILES", r"C:\Program Files"))
+        / "Google"
+        / "Chrome"
+        / "Application"
+        / "chrome.exe",
+        Path(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"))
+        / "Google"
+        / "Chrome"
+        / "Application"
+        / "chrome.exe",
+        Path("/usr/bin/google-chrome"),
+        Path("/usr/bin/google-chrome-stable"),
+        Path("/usr/bin/chromium"),
+        Path("/usr/bin/chromium-browser"),
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+    return ""
+
+
+def _panorama_runtime() -> tuple[bool, str]:
+    if importlib.util.find_spec("selenium") is None:
+        logger.error(
+            "Panorama desativado: Selenium não instalado. "
+            "Execute pip install -r requirements.txt"
+        )
+        return False, ""
+
+    chrome_binary = _find_chrome_binary(settings.TRACKER_CHROME_BINARY)
+    if not chrome_binary:
+        logger.error(
+            "Panorama desativado: Google Chrome/Chromium não encontrado"
+        )
+        return False, ""
+
+    if (
+        settings.TRACKER_CHROMEDRIVER_PATH
+        and not Path(settings.TRACKER_CHROMEDRIVER_PATH).is_file()
+    ):
+        logger.error(
+            "Panorama desativado: TRACKER_CHROMEDRIVER_PATH não existe"
+        )
+        return False, ""
+
+    return True, chrome_binary
+def _initialize_or_cleanup(lifecycle: ExitStack, factory):
+    """Cria um componente ou desmonta imediatamente o runtime parcial."""
+
+    try:
+        return factory()
+    except BaseException:
+        lifecycle.close()
+        raise
+
+
+def _create_panorama_dispatcher(
+    *,
+    zapi: ZAPIClient,
+    db: TrackerDB,
+    notification_dispatcher,
+    recovery_cutoff: datetime,
+    chrome_binary: str,
+) -> PanoramaDispatcher:
+    """Monta o canal de panorama transferindo a posse do gerador ao worker."""
+
+    capture = SeleniumStreetViewCapture(
+        StreetViewCaptureConfig(
+            headless=settings.TRACKER_PANORAMA_HEADLESS,
+            chrome_binary=chrome_binary,
+            chromedriver_path=settings.TRACKER_CHROMEDRIVER_PATH,
+            window_width=settings.TRACKER_PANORAMA_WINDOW_WIDTH,
+            window_height=settings.TRACKER_PANORAMA_WINDOW_HEIGHT,
+            page_timeout_seconds=(
+                settings.TRACKER_PANORAMA_PAGE_TIMEOUT_SECONDS
+            ),
+            settle_seconds=settings.TRACKER_PANORAMA_SETTLE_SECONDS,
+            retries=max(0, settings.TRACKER_PANORAMA_RETRIES),
+            use_swiftshader=settings.TRACKER_PANORAMA_USE_SWIFTSHADER,
+            no_sandbox=settings.TRACKER_PANORAMA_NO_SANDBOX,
+        )
+    )
+    composer = PillowPanoramaComposer(
+        PanoramaComposeConfig(
+            max_jpeg_bytes=settings.TRACKER_PANORAMA_MAX_JPEG_BYTES,
+        )
+    )
+    generator = StreetViewPanoramaService(capture, composer)
+    try:
+        return PanoramaDispatcher(
+            generator=generator,
+            zapi=zapi,
+            db=db,
+            notification_dispatcher=notification_dispatcher,
+            lease_seconds=settings.TRACKER_NOTIFICATION_LEASE_SECONDS,
+            idle_poll_seconds=settings.TRACKER_NOTIFICATION_POLL_SECONDS,
+            fallback_max_attempts=settings.TRACKER_NOTIFICATION_MAX_ATTEMPTS,
+            fallback_ttl_seconds=(
+                settings.TRACKER_NOTIFICATION_TEXT_TTL_SECONDS
+            ),
+            recovery_cutoff=recovery_cutoff,
+            max_job_age_seconds=(
+                settings.TRACKER_PANORAMA_JOB_MAX_AGE_SECONDS
+            ),
+            send_attempts=settings.TRACKER_PANORAMA_SEND_ATTEMPTS,
+        )
+    except BaseException:
+        _safe_close("gerador de panorama", generator)
+        raise
+
+
+
+
+def run_tracker_background(
+    stop_event: Optional[threading.Event] = None,
+    ready_event: Optional[threading.Event] = None,
+):
+    """Executa o loop de consulta e alertas em background."""
+    if ready_event is not None:
+        ready_event.clear()
+    logger.info("Iniciando loop do tracker em background...")
+
+    # 1. Carregar Configurações
+    instance_id = settings.ZAPI_INSTANCE_ID
+    token = settings.ZAPI_TOKEN
+    client_token = settings.ZAPI_CLIENT_TOKEN
+    phone = settings.TRACKER_NOTIFY_PHONE
+    system_alert_phone = settings.TRACKER_SYSTEM_ALERT_PHONE
+    endpoint = settings.TRACKER_ENDPOINT
+    poll_interval = settings.TRACKER_POLL_SECONDS
+    sqlite_path = settings.TRACKER_SQLITE_PATH
+    user_agent = settings.NOMINATIM_USER_AGENT
+
+    logger.info(f"Configurações do tracker carregadas:")
+    logger.info(f" - Endpoint: {endpoint}")
+    logger.info(
+        " - Telefone Destino: final %s",
+        phone[-4:] if len(phone) >= 4 else "****",
+    )
+    logger.info(
+        " - Alertas de sistema: %s",
+        "destino separado" if system_alert_phone.strip() else "destino principal",
+    )
+    logger.info(f" - Intervalo Polling: {poll_interval}s")
+    logger.info(f" - SQLite: {sqlite_path}")
+    logger.info(
+        " - Panorama Street View: %s",
+        "ativado" if settings.TRACKER_PANORAMA_ENABLED else "desativado",
+    )
+
+    # 2. Inicializar Componentes
+    lifecycle = ExitStack()
+    channel_resources: dict[str, tuple[object, float]] = {}
+
+    zapi = _initialize_or_cleanup(
+        lifecycle,
+        lambda: ZAPIClient(instance_id, token, client_token),
+    )
+    lifecycle.callback(_safe_close, "cliente Z-API", zapi)
+
+    db = _initialize_or_cleanup(
+        lifecycle,
+        lambda: TrackerDB(sqlite_path),
+    )
+    lease_name = "whatsapp-tracker"
+    lease_owner = uuid.uuid4().hex
+    lease_seconds = settings.TRACKER_LEADER_LEASE_SECONDS
+    lease_acquired = _initialize_or_cleanup(
+        lifecycle,
+        lambda: db.acquire_tracker_lease(
+            lease_name=lease_name,
+            lease_owner=lease_owner,
+            lease_seconds=lease_seconds,
+        ),
+    )
+    if not lease_acquired:
+        logger.warning(
+            "Tracker não iniciado: outra instância possui a liderança"
+        )
+        lifecycle.close()
+        return
+
+    lifecycle.callback(
+        _release_tracker_lease,
+        db,
+        lease_name,
+        lease_owner,
+    )
+    lifecycle.callback(_close_background_channels, channel_resources)
+    logger.info("Liderança exclusiva do tracker adquirida")
+    recovery_cutoff = datetime.now(timezone.utc)
+    recovered_panorama_jobs = _initialize_or_cleanup(
+        lifecycle,
+        lambda: db.recover_panorama_fallbacks(
+            created_before=recovery_cutoff,
+            now=recovery_cutoff,
+        ),
+    )
+    if recovered_panorama_jobs:
+        logger.info(
+            "%d panorama(s) anterior(es) convertido(s) em texto de fallback",
+            recovered_panorama_jobs,
+        )
+
+    geocoder = _initialize_or_cleanup(
+        lifecycle,
+        lambda: ReverseGeocoder(user_agent=user_agent),
+    )
+    geocode_dispatcher = _initialize_or_cleanup(
+        lifecycle,
+        lambda: AsyncReverseGeocoder(
+            geocoder,
+            cache_ttl_seconds=settings.TRACKER_GEOCODER_CACHE_TTL_SECONDS,
+            cache_distance_m=settings.TRACKER_GEOCODER_CACHE_DISTANCE_M,
+            stale_cache_ttl_seconds=(
+                settings.TRACKER_GEOCODER_STALE_CACHE_TTL_SECONDS
+            ),
+            stale_cache_distance_m=(
+                settings.TRACKER_GEOCODER_STALE_CACHE_DISTANCE_M
+            ),
+            max_job_age_seconds=settings.TRACKER_GEOCODER_JOB_MAX_AGE_SECONDS,
+            max_attempts=settings.TRACKER_GEOCODER_MAX_ATTEMPTS,
+            retry_base_seconds=(
+                settings.TRACKER_GEOCODER_RETRY_BASE_SECONDS
+            ),
+        ),
+    )
+    channel_resources["geocodificacao"] = (geocode_dispatcher, 8.0)
+
+    notification_dispatcher = _initialize_or_cleanup(
+        lifecycle,
+        lambda: AsyncZAPIDispatcher(
+            zapi=zapi,
+            db=db,
+            text_ttl_seconds=settings.TRACKER_NOTIFICATION_TEXT_TTL_SECONDS,
+            location_ttl_seconds=(
+                settings.TRACKER_NOTIFICATION_LOCATION_TTL_SECONDS
+            ),
+            max_attempts=settings.TRACKER_NOTIFICATION_MAX_ATTEMPTS,
+            lease_seconds=settings.TRACKER_NOTIFICATION_LEASE_SECONDS,
+            idle_poll_seconds=settings.TRACKER_NOTIFICATION_POLL_SECONDS,
+        ),
+    )
+    channel_resources["texto/localizacao"] = (
+        notification_dispatcher,
+        12.0,
+    )
+
+    panorama_dispatcher = None
+    logger.info(
+        "Canais assíncronos ativos: texto, localização e geocodificação"
+    )
+
+    chrome_runtime_ok = False
+    chrome_binary = ""
+    if settings.TRACKER_PANORAMA_ENABLED or settings.TRACKER_MAP_ENABLED:
+        chrome_runtime_ok, chrome_binary = _initialize_or_cleanup(
+            lifecycle,
+            _panorama_runtime,
+        )
+
+    panorama_dispatcher = None
+    if settings.TRACKER_PANORAMA_ENABLED and chrome_runtime_ok:
+        panorama_dispatcher = _initialize_or_cleanup(
+            lifecycle,
+            lambda: _create_panorama_dispatcher(
+                zapi=zapi,
+                db=db,
+                notification_dispatcher=notification_dispatcher,
+                recovery_cutoff=recovery_cutoff,
+                chrome_binary=chrome_binary,
+            ),
+        )
+        channel_resources["panorama"] = (panorama_dispatcher, 35.0)
+
+    map_dispatcher = None
+    map_policy = None
+    route_progress_service = None
+    if settings.TRACKER_MAP_ENABLED and chrome_runtime_ok:
+        # Detectar a raiz do projeto para resolver caminhos relativos de geodata de forma robusta
+        app_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(os.path.dirname(app_dir))
+
+        route_geojson = settings.TRACKER_MAP_ROUTE_GEOJSON_PATH
+        if not os.path.isabs(route_geojson):
+            abs_route = os.path.join(root_dir, route_geojson)
+            if os.path.exists(abs_route):
+                route_geojson = abs_route
+
+        start_geojson = settings.TRACKER_MAP_START_GEOJSON_PATH
+        if not os.path.isabs(start_geojson):
+            abs_start = os.path.join(root_dir, start_geojson)
+            if os.path.exists(abs_start):
+                start_geojson = abs_start
+
+        route_repo = _initialize_or_cleanup(
+            lifecycle,
+            lambda: RouteRepository(
+                route_geojson_path=route_geojson,
+                start_geojson_path=start_geojson,
+            )
+        )
+        route_progress_service = _initialize_or_cleanup(
+            lifecycle,
+            lambda: RouteProgressService(
+                repository=route_repo,
+                max_off_route_m=settings.TRACKER_MAP_MAX_OFF_ROUTE_M,
+            )
+        )
+        map_policy = _initialize_or_cleanup(
+            lifecycle,
+            lambda: MapSendPolicy(
+                enabled=settings.TRACKER_MAP_ENABLED,
+                min_interval_minutes=settings.TRACKER_MAP_INTERVAL_MINUTES,
+                max_interval_minutes=settings.TRACKER_MAP_MAX_INTERVAL_MINUTES,
+                min_progress_meters=settings.TRACKER_MAP_MIN_PROGRESS_M,
+                max_accuracy_meters=settings.TRACKER_MAP_MAX_ACCURACY_M,
+                max_fix_age_seconds=settings.TRACKER_MAP_MAX_FIX_AGE_SECONDS,
+                transition_cooldown_minutes=settings.TRACKER_MAP_TRANSITION_COOLDOWN_MINUTES,
+            )
+        )
+        map_renderer = _initialize_or_cleanup(
+            lifecycle,
+            lambda: LeafletMapRenderer(
+                chrome_binary=chrome_binary,
+                chromedriver_path=settings.TRACKER_CHROMEDRIVER_PATH,
+                headless=settings.TRACKER_PANORAMA_HEADLESS,
+                use_swiftshader=settings.TRACKER_PANORAMA_USE_SWIFTSHADER,
+                no_sandbox=settings.TRACKER_PANORAMA_NO_SANDBOX,
+                max_jpeg_bytes=settings.TRACKER_MAP_MAX_JPEG_BYTES,
+            )
+        )
+        lifecycle.callback(_safe_close, "gerador de mapa", map_renderer)
+
+        map_dispatcher = _initialize_or_cleanup(
+            lifecycle,
+            lambda: MapDispatcher(
+                db=db,
+                renderer=map_renderer,
+                zapi=zapi,
+                route_repo=route_repo,
+                lease_seconds=settings.TRACKER_NOTIFICATION_LEASE_SECONDS,
+                max_job_age_seconds=settings.TRACKER_NOTIFICATION_TEXT_TTL_SECONDS,
+                idle_poll_seconds=settings.TRACKER_NOTIFICATION_POLL_SECONDS,
+                send_attempts=settings.TRACKER_NOTIFICATION_MAX_ATTEMPTS,
+                instance_id=lease_owner,
+                notification_dispatcher=notification_dispatcher,
+            )
+        )
+        channel_resources["mapa"] = (map_dispatcher, 35.0)
+    elif settings.TRACKER_MAP_ENABLED:
+        logger.warning(
+            "Canal de mapa desativado: Chrome/driver não passou no preflight"
+        )
+
+    engine = _initialize_or_cleanup(
+        lifecycle,
+        lambda: TrackerEngine(
+            zapi=zapi,
+            db=db,
+            geocoder=geocoder,
+            phone=phone,
+            system_alert_phone=system_alert_phone,
+            panorama_dispatcher=panorama_dispatcher,
+            map_dispatcher=map_dispatcher,
+            map_policy=map_policy,
+            route_progress_service=route_progress_service,
+            notification_dispatcher=notification_dispatcher,
+            geocode_dispatcher=geocode_dispatcher,
+            location_max_accuracy_m=settings.TRACKER_LOCATION_MAX_ACCURACY_M,
+            image_retry_cooldown_minutes=settings.TRACKER_PANORAMA_RETRY_COOLDOWN_MINUTES,
+            image_no_imagery_cooldown_minutes=settings.TRACKER_PANORAMA_NO_IMAGERY_COOLDOWN_MINUTES,
+            image_no_imagery_retry_distance_m=settings.TRACKER_PANORAMA_NO_IMAGERY_RETRY_DISTANCE_M,
+            image_street_change_min_distance_m=settings.TRACKER_PANORAMA_STREET_CHANGE_MIN_DISTANCE_M,
+            panorama_max_fix_age_seconds=settings.TRACKER_PANORAMA_MAX_FIX_AGE_SECONDS,
+            panorama_future_tolerance_seconds=settings.TRACKER_PANORAMA_FUTURE_TOLERANCE_SECONDS,
+            panorama_max_accuracy_m=settings.TRACKER_PANORAMA_MAX_ACCURACY_M,
+            combined_message_enabled=settings.TRACKER_COMBINED_MESSAGE_ENABLED,
+            panorama_caption_max_chars=settings.TRACKER_PANORAMA_CAPTION_MAX_CHARS,
+            completion_separator_count=settings.TRACKER_COMPLETION_SEPARATOR_COUNT,
+        ),
+    )
+
+    # 3. Loop Principal
+    tracker_http = _initialize_or_cleanup(
+        lifecycle,
+        lambda: httpx.Client(timeout=10.0),
+    )
+    lifecycle.callback(_safe_close, "cliente HTTP do tracker", tracker_http)
+    zapi_connected = False
+    last_zapi_status_check = None
+
+    try:
+        while stop_event is None or not stop_event.is_set():
+            if not db.acquire_tracker_lease(
+                lease_name=lease_name,
+                lease_owner=lease_owner,
+                lease_seconds=lease_seconds,
+            ):
+                logger.error(
+                    "Liderança do tracker perdida; encerrando esta instância"
+                )
+                break
+
+            zapi_connected, last_zapi_status_check = _refresh_zapi_connection(
+                zapi,
+                now_monotonic=time.monotonic(),
+                last_checked_at=last_zapi_status_check,
+                connected=zapi_connected,
+            )
+            if not zapi_connected and ready_event is not None:
+                ready_event.clear()
+
+            try:
+                now = datetime.now(timezone.utc)
+                logger.debug(f"Efetuando GET em: {endpoint}")
+
+                response = tracker_http.get(endpoint)
+
+                if response.status_code != 200:
+                    if ready_event is not None:
+                        ready_event.clear()
+                    logger.error(
+                        "Erro ao consultar endpoint de rastreamento: HTTP %s",
+                        response.status_code,
+                    )
+                    # Espera em pedaços pequenos para responder rápido ao stop_event
+                    for _ in range(poll_interval):
+                        if stop_event is not None and stop_event.is_set():
+                            break
+                        time.sleep(1)
+                    continue
+
+                data = response.json()
+                if not isinstance(data, dict):
+                    raise ValueError(
+                        "Tracker endpoint JSON payload must be an object"
+                    )
+                server_time_str = data.get("serverTime")
+                vehicles = data.get("vehicles", [])
+
+                if not vehicles:
+                    logger.debug(
+                        "Nenhum veículo ativo no snapshot do rastreamento"
+                    )
+
+                for vehicle in vehicles:
+                    # Processa apenas o veículo principal 'sao-cristovao'
+                    if vehicle.get("id") != "sao-cristovao":
+                        continue
+
+                    snapshot = VehicleSnapshot.from_api(
+                        vehicle,
+                        server_time_str,
+                    )
+                    state = db.load_state(snapshot.vehicle_id)
+                    engine.process_snapshot(snapshot, state, now)
+
+                if ready_event is not None:
+                    if zapi_connected:
+                        ready_event.set()
+                    else:
+                        ready_event.clear()
+
+            except Exception as exc:
+                if ready_event is not None:
+                    ready_event.clear()
+                logger.error(
+                    "Erro inesperado no loop do tracker (%s)",
+                    type(exc).__name__,
+                    exc_info=True,
+                )
+
+            # Espera poll_interval respondendo ao stop_event
+            for _ in range(poll_interval):
+                if stop_event is not None and stop_event.is_set():
+                    break
+                time.sleep(1)
+    finally:
+        if ready_event is not None:
+            ready_event.clear()
+        lifecycle.close()
+        logger.info("Loop do tracker em background finalizado.")
+
+
+def main():
+    logger.info("Iniciando Serviço de Notificações WhatsApp Rastreamento (processo autônomo)...")
+    stop_event = threading.Event()
+    
+    try:
+        run_tracker_background(stop_event)
+    except KeyboardInterrupt:
+        logger.info("Interrupção manual recebida. Desligando serviço...")
+        stop_event.set()
+
+
+if __name__ == "__main__":
+    main()

@@ -17,12 +17,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 import { BannerCarousel } from '@/components/sponsors/BannerCarousel';
 import { useAdvertisements } from '@/hooks/useAdvertisements';
+import { LiveRouteBanner } from '@/components/tracker/LiveRouteBanner';
 
 export default function Menu() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { toast } = useToast();
   const { isOnline } = useNetworkStatus();
-  const { banners } = useAdvertisements({ position: 'menu' });
+  const { banners } = useAdvertisements({ position: 'home' });
   const { 
     isCartOpen, 
     openCart, 
@@ -227,6 +228,19 @@ export default function Menu() {
           transition={{ duration: 0.3 }}
           className={!isOnline ? 'pt-16' : ''}
         >
+          <LiveRouteBanner />
+          {banners.length > 0 && (
+            <div className="px-4 py-2 bg-muted/20">
+              <BannerCarousel
+                banners={banners}
+                showControls={true}
+                showDots={true}
+                className="rounded-lg shadow-md"
+                autoplayDelay={5000}
+                compact={true}
+              />
+            </div>
+          )}
           <MenuHeader
             categories={categories}
             activeCategory={activeCategory}
@@ -238,23 +252,6 @@ export default function Menu() {
             onOpenFilters={() => setFiltersOpen(true)}
           />
 
-          {/* Banner de Anúncios */}
-          {banners.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="px-4 pb-4"
-            >
-              <BannerCarousel 
-                banners={banners} 
-                showControls={true}
-                showDots={true}
-                className="rounded-xl shadow-lg"
-                autoplayDelay={5000}
-              />
-            </motion.div>
-          )}
 
           {/* Quick Stats */}
           {menuItems.length > 0 && !isLoading && (

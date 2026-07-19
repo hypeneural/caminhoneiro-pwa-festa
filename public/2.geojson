@@ -1,0 +1,7 @@
+{
+"type": "FeatureCollection",
+"name": "Camada sem título",
+"features": [
+{ "type": "Feature", "properties": { "Name": "Saida as 9h" }, "geometry": { "type": "Point", "coordinates": [ -48.6445363, -27.2361597, 0.0 ] } }
+]
+}

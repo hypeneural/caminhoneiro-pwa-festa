@@ -47,7 +47,7 @@ export const useSponsors = () => {
 
   // Memoized sponsor logos (combining all support categories for carousel display)
   const supportSponsors = useMemo(() => {
-    return sponsorsData.sponsors.filter(s => s.packageType === 2);
+    return sponsorsData.sponsors;
   }, [sponsorsData.sponsors]);
 
   // Distribute 15 banners across 4 strategic positions
@@ -103,7 +103,7 @@ export const useSponsors = () => {
         }),
         advertisementService.getSponsors({
           active: true,
-          limit: API.DEFAULTS.SPONSORS_LIMIT
+          limit: 1000
         })
       ]);
 
@@ -128,7 +128,8 @@ export const useSponsors = () => {
           websiteUrl: sponsor.websiteUrl,
           packageType: sponsor.packageType,
           priority: sponsor.priority,
-          altText: sponsor.altText
+          altText: sponsor.altText,
+          category: sponsor.category ?? (sponsor.packageType === 1 ? 'ouro' : 'apoiador')
         })),
         positions: [], // Will be populated when positions API is available
         lastUpdated: new Date().toISOString()

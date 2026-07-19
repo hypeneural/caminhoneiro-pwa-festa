@@ -79,7 +79,7 @@ export function ContatoIgrejaModal({ open, onOpenChange }: ContatoIgrejaModalPro
   }, []);
 
   const handleWhatsAppClick = () => {
-    const message = encodeURIComponent("Olá! Gostaria de informações sobre a Festa do Divino Espírito Santo em Tijucas.");
+    const message = encodeURIComponent("Olá! Gostaria de informações sobre a XXII Festa de São Cristóvão em Tijucas.");
     const whatsappUrl = `https://wa.me/5548999999999?text=${message}`;
     window.open(whatsappUrl, '_blank');
     
@@ -99,7 +99,7 @@ export function ContatoIgrejaModal({ open, onOpenChange }: ContatoIgrejaModalPro
   };
 
   const handleMapClick = () => {
-    const address = "Rua Coronel Lara Ribas, 123, Tijucas, SC";
+    const address = "Capela Santa Teresinha, Bairro Universitário, Tijucas, SC";
     const encodedAddress = encodeURIComponent(address);
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
   };
@@ -123,7 +123,7 @@ export function ContatoIgrejaModal({ open, onOpenChange }: ContatoIgrejaModalPro
                   Contato da Igreja
                 </DrawerTitle>
                 <DrawerDescription className="text-sm text-muted-foreground">
-                  Paróquia São Sebastião - Tijucas/SC
+                  Capela Santa Teresinha - Tijucas/SC
                 </DrawerDescription>
               </div>
             </div>
@@ -246,9 +246,9 @@ export function ContatoIgrejaModal({ open, onOpenChange }: ContatoIgrejaModalPro
               <div className="flex items-center gap-3">
                 <MapPin className="w-5 h-5 text-trucker-red" />
                 <div>
-                  <p className="font-medium text-card-foreground">Igreja São Sebastião</p>
-                  <p className="text-sm text-muted-foreground">Rua Coronel Lara Ribas, 123</p>
-                  <p className="text-sm text-muted-foreground">Centro - Tijucas/SC</p>
+                  <p className="font-medium text-card-foreground">Capela Santa Teresinha</p>
+                  <p className="text-sm text-muted-foreground">Bairro Universitário</p>
+                  <p className="text-sm text-muted-foreground">Tijucas/SC</p>
                 </div>
               </div>
             </Card>
@@ -263,14 +263,14 @@ export function ContatoIgrejaModal({ open, onOpenChange }: ContatoIgrejaModalPro
             <Card className="p-4 bg-gradient-to-br from-trucker-orange/10 to-trucker-yellow/10 border-trucker-orange/20">
               <div className="flex items-center gap-3 mb-2">
                 <Sparkles className="w-5 h-5 text-trucker-orange" />
-                <h4 className="font-semibold text-card-foreground">Festa do Divino 2025</h4>
+                <h4 className="font-semibold text-card-foreground">XXII Festa de São Cristóvão 2026</h4>
               </div>
               <p className="text-sm text-muted-foreground mb-3">
-                Entre em contato para mais informações sobre a programação, missas especiais e eventos da festa.
+                Entre em contato para mais informações sobre a programação, missa, bingo, procissão, almoço e tarde dançante.
               </p>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-trucker-blue" />
-                <span className="text-sm font-medium text-trucker-blue">19 e 20 de Julho • Tijucas/SC</span>
+                <span className="text-sm font-medium text-trucker-blue">18 e 19 de Julho • Tijucas/SC</span>
               </div>
             </Card>
           </motion.div>
@@ -287,7 +287,7 @@ export function ContatoIgrejaModal({ open, onOpenChange }: ContatoIgrejaModalPro
               <p className="text-sm font-medium text-card-foreground">Bem-vindos à nossa comunidade</p>
             </div>
             <p className="text-xs text-muted-foreground">
-              "Vinde Espírito Santo, enchei os corações dos vossos fiéis"
+              "São Cristóvão, protegei os motoristas e viajantes"
             </p>
           </motion.div>
         </div>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Share2, MapPin, Navigation } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import { processionPointsGeoJson, processionRouteGeoJson } from '@/data/processionRoute';
 
 // Debug logging helper
 const debugLog = (message: string, data?: any) => {
@@ -201,10 +202,7 @@ const ProcissaoMap: React.FC = () => {
 
       try {
         debugLog('Starting parallel fetch of route and point data');
-        const [route, point] = await Promise.all([
-          fetchGeoJSON('https://hypeneural.com/caminhao/geojson.php?f=1'),
-          fetchGeoJSON('https://hypeneural.com/caminhao/geojson.php?f=2')
-        ]);
+        const [route, point] = [processionRouteGeoJson, processionPointsGeoJson] as [GeoJSONData, GeoJSONData];
 
         if (mounted) {
           debugLog('Data fetched successfully', {

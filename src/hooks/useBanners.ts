@@ -9,6 +9,7 @@ interface BannerAnalytics {
 }
 
 interface UseBannersConfig {
+  enabled?: boolean;
   enableRandomRotation?: boolean;
   maxImpressionsPerBanner?: number;
   analyticsEnabled?: boolean;
@@ -17,6 +18,7 @@ interface UseBannersConfig {
 
 export const useBanners = (config: UseBannersConfig = {}) => {
   const {
+    enabled = true,
     enableRandomRotation = true,
     maxImpressionsPerBanner = 10,
     analyticsEnabled = true,
@@ -44,6 +46,8 @@ export const useBanners = (config: UseBannersConfig = {}) => {
 
   // Carrega banners da API real
   const loadBanners = useCallback(async () => {
+    if (!enabled) return;
+
     // Evita carregamentos duplicados
     if (loading || isInitialized) return;
     
@@ -114,7 +118,7 @@ export const useBanners = (config: UseBannersConfig = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [loading, isInitialized]);
+  }, [enabled, loading, isInitialized]);
 
   // Seleciona banner aleatório evitando repetições
   const selectRandomBanner = useCallback((pool: Banner[], excludeIds: number[] = []) => {
@@ -251,8 +255,9 @@ export const useBanners = (config: UseBannersConfig = {}) => {
 
   // Carregamento inicial
   useEffect(() => {
+    if (!enabled) return;
     loadBanners();
-  }, [loadBanners]);
+  }, [enabled, loadBanners]);
 
   return {
     // Estado

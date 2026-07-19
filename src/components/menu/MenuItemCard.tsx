@@ -10,7 +10,7 @@ import { memo, forwardRef, useState } from 'react';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/use-toast';
-import * as Fa from 'react-icons/fa';
+import { MenuCategoryIcon } from './MenuCategoryIcon';
 
 interface MenuItemCardProps {
   item: APIMenuItem;
@@ -19,13 +19,6 @@ interface MenuItemCardProps {
   onItemClick: (item: APIMenuItem) => void;
   viewMode?: 'grid' | 'list';
 }
-
-const CategoryIcon = memo(({ iconName }: { iconName: string }) => {
-  const IconComponent = (Fa as any)[iconName];
-  return IconComponent ? <IconComponent className="w-6 h-6 opacity-60" /> : null;
-});
-
-CategoryIcon.displayName = 'CategoryIcon';
 
 const MotionCard = motion.create(Card);
 
@@ -127,7 +120,7 @@ export const MenuItemCard = memo(forwardRef<HTMLDivElement, MenuItemCardProps>(f
               />
             ) : (
               <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-gray-100 to-gray-200">
-                <CategoryIcon iconName={item.icon_url} />
+                <MenuCategoryIcon iconName={item.icon_url} className="w-6 h-6 opacity-60" />
               </div>
             )}
           </div>
@@ -267,7 +260,7 @@ export const MenuItemCard = memo(forwardRef<HTMLDivElement, MenuItemCardProps>(f
               />
             ) : (
               <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-gray-100 to-gray-200">
-                <CategoryIcon iconName={item.icon_url} />
+                <MenuCategoryIcon iconName={item.icon_url} className="w-6 h-6 opacity-60" />
               </div>
             )}
           </AspectRatio>
@@ -403,4 +396,4 @@ export const MenuItemCard = memo(forwardRef<HTMLDivElement, MenuItemCardProps>(f
       </div>
     </MotionCard>
   );
-})); 
+}));

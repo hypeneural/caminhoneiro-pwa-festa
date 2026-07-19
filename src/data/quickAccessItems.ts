@@ -11,44 +11,56 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-purple-50 dark:bg-purple-900/20",
     route: "/galeria",
     category: "media",
-    priority: 1,
+    priority: 7,
     description: "Veja as melhores fotos do evento",
     isActive: true
   },
   {
     id: "mapa",
-    title: "Mapa em Tempo Real",
+    title: "Como Chegar",
     icon: Map,
     color: "text-trucker-blue",
     bgColor: "bg-blue-50 dark:bg-blue-900/20",
     route: "/mapa",
     category: "navigation",
-    priority: 2,
-    description: "Acompanhe a localização em tempo real",
+    priority: 3,
+    description: "Veja o caminho até a Capela Santa Teresinha",
     isActive: true
   },
   {
     id: "programacao",
-    title: "Programação",
+    title: "Programação 2026",
     icon: CalendarDays,
     color: "text-trucker-green",
     bgColor: "bg-green-50 dark:bg-green-900/20",
     route: "/programacao",
     category: "schedule",
-    priority: 3,
-    description: "Confira a programação completa",
+    priority: 1,
+    description: "Confira os horários de 18 e 19 de julho",
+    isActive: true
+  },
+  {
+    id: "contato-igreja",
+    title: "Contato Capela",
+    icon: Phone,
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+    route: "#",
+    category: "info",
+    priority: 4,
+    description: "Fale com a comunidade da Capela Santa Teresinha",
     isActive: true
   },
   {
     id: "menu",
-    title: "Cardápio",
+    title: "Bar e Cozinha",
     icon: ChefHat,
     color: "text-trucker-orange",
     bgColor: "bg-orange-50 dark:bg-orange-900/20",
     route: "/menu",
     category: "info",
-    priority: 4,
-    description: "Explore os sabores da festa",
+    priority: 5,
+    description: "Serviço completo nos dois dias de festa",
     isActive: true
   },
   
@@ -61,7 +73,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
     route: "/sao-cristovao",
     category: "info",
-    priority: 5,
+    priority: 6,
     description: "Conheça o padroeiro dos motoristas",
     isActive: true
   },
@@ -73,7 +85,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-red-50 dark:bg-red-900/20",
     route: "/radio",
     category: "media",
-    priority: 6,
+    priority: 11,
     description: "Ouça a rádio oficial do evento",
     isActive: true
   },
@@ -85,7 +97,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-purple-50 dark:bg-purple-900/20",
     route: "/podcast",
     category: "media",
-    priority: 7,
+    priority: 12,
     description: "Ouça nossos podcasts exclusivos",
     isActive: true
   },
@@ -111,8 +123,8 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
     route: "/rota-completa",
     category: "navigation",
-    priority: 9,
-    description: "Veja o percurso da procissão",
+    priority: 2,
+    description: "Veja as informações da procissão automotiva",
     isActive: true
   },
   {
@@ -123,7 +135,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
     route: "/vocesabia",
     category: "info",
-    priority: 10,
+    priority: 13,
     description: "Curiosidades da festa",
     isActive: true
   },
@@ -135,7 +147,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-green-50 dark:bg-green-900/20",
     route: "/faq",
     category: "info",
-    priority: 11,
+    priority: 9,
     description: "Perguntas frequentes",
     isActive: true
   },
@@ -147,7 +159,7 @@ export const quickAccessItems: QuickAccessItem[] = [
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
     route: "/historia",
     category: "info",
-    priority: 12,
+    priority: 10,
     description: "Conheça a história da festa",
     isActive: true
   }

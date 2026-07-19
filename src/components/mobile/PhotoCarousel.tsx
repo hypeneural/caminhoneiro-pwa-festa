@@ -9,16 +9,19 @@ import { CarouselSkeleton } from "@/components/ui/skeleton";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { TouchFeedback, RippleEffect } from "@/components/ui/touch-feedback";
 import { AccessibleButton } from "@/components/ui/accessible-button";
-import { usePhotos } from "@/hooks/usePhotos";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ROUTES, THEME_COLORS, APP_TEXTS } from "@/constants";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import galleryService from "@/services/api/galleryService";
+import { Photo, convertAPIPhotoToPhoto } from "@/types/gallery";
+import { Section } from "@/components/layout/Section";
 
 const PhotoCard = React.memo(({ photo, index, scrollX, userInteracted }: { photo: any; index: number; scrollX: any; userInteracted: boolean }) => {
-  const { toggleFavorite, isFavorite } = usePhotos();
+  const [favorites, setFavorites] = useLocalStorage<string[]>('gallery-favorites', []);
   const { navigateTo } = useNavigation();
   const [isPressed, setIsPressed] = useState(false);
   
-  const isPhotoLiked = isFavorite(photo.id);
+  const isPhotoLiked = favorites.includes(photo.id);
   
   // Responsive card width - smaller for clean mobile design
   const cardWidth = 256; // Reduced from 280 for better mobile fit
@@ -33,13 +36,17 @@ const PhotoCard = React.memo(({ photo, index, scrollX, userInteracted }: { photo
 
   const handleLikeClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleFavorite(photo.id);
+    if (favorites.includes(photo.id)) {
+      setFavorites(prev => prev.filter(id => id !== photo.id));
+    } else {
+      setFavorites(prev => [...prev, photo.id]);
+    }
     
     // Haptic feedback only after user interaction
     if (userInteracted && 'vibrate' in navigator) {
       navigator.vibrate(15);
     }
-  }, [photo.id, toggleFavorite, userInteracted]);
+  }, [photo.id, favorites, setFavorites, userInteracted]);
 
   return (
     <motion.div
@@ -80,7 +87,7 @@ const PhotoCard = React.memo(({ photo, index, scrollX, userInteracted }: { photo
                   transition={{ duration: 0.3 }}
                 >
                   <OptimizedImage
-                    src={photo.imageUrl}
+                    src={photo.imageUrl || photo.thumbnailUrl || photo.url}
                     alt={`Momento especial: ${photo.category}`}
                     className="w-full h-full object-cover"
                   />
@@ -320,87 +327,121 @@ const PremiumLoadingState = React.memo(() => (
 ));
 
 export const PhotoCarousel = React.memo(() => {
-  const { latestPhotos, loading } = usePhotos();
+  const [latestPhotos, setLatestPhotos] = useState<Photo[]>([]);
+  const [loading, setLoading] = useState(true);
   const { navigateTo } = useNavigation();
 
+  useEffect(() => {
+    let active = true;
+    const fetchLatest = async () => {
+      try {
+        const response = await galleryService.getPhotos({
+          page: 1,
+          limit: 10,
+          ordenar_por: 'data_desc'
+        });
+        if (response?.data?.photos && active) {
+          const converted = response.data.photos.map(convertAPIPhotoToPhoto);
+          setLatestPhotos(converted);
+        }
+      } catch (error) {
+        console.error("Error loading latest photos for home:", error);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    fetchLatest();
+    return () => { active = false; };
+  }, []);
+
   if (loading) {
-    return <PremiumLoadingState />;
+    return (
+      <Section delay={0.38} className="px-4 mb-6">
+        <PremiumLoadingState />
+      </Section>
+    );
+  }
+
+  if (!latestPhotos || latestPhotos.length === 0) {
+    return null;
   }
 
   return (
-    <ErrorBoundary fallback={CarouselErrorFallback}>
-      <motion.section 
-        className="mb-8" 
-        aria-labelledby="photos-section"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        {/* Premium Header */}
-        <motion.div 
-          className="flex items-center justify-between px-4 mb-6"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <div className="flex items-center gap-4">
-            <motion.div 
-              className="w-10 h-10 bg-gradient-to-br from-purple-600 via-pink-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-xl shadow-purple-500/25"
-              whileHover={{ rotate: 360, scale: 1.1 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Camera className="w-5 h-5 text-white" aria-hidden="true" />
-            </motion.div>
-            <div>
-              <h2 id="photos-section" className="text-xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
-                Momentos Especiais
-              </h2>
-              <p className="text-sm text-muted-foreground">Reviva os melhores momentos</p>
-            </div>
-          </div>
-
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <AccessibleButton 
-              variant="ghost" 
-              size="sm" 
-              className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-600 hover:from-purple-500/20 hover:to-pink-500/20 border border-purple-200/30 rounded-full px-4 py-2 font-medium"
-              onClick={() => navigateTo(ROUTES.GALLERY)}
-              aria-label="Ver galeria completa"
-            >
-              Ver Galeria
-            </AccessibleButton>
-          </motion.div>
-        </motion.div>
-
-        {/* Mobile Carousel */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <MobileCarousel photos={latestPhotos} />
-        </motion.div>
-
-        {/* Simplified Bottom stats */}
-        <motion.div 
-          className="flex justify-center mt-6 px-4"
+    <Section delay={0.38} className="px-4 mb-6">
+      <ErrorBoundary fallback={CarouselErrorFallback}>
+        <motion.section 
+          className="mb-8" 
+          aria-labelledby="photos-section"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
+          transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center gap-3 px-6 py-3 bg-background/60 backdrop-blur-md rounded-full border border-border/30 shadow-lg">
-            <div className="flex items-center gap-2">
-              <Camera className="w-3 h-3 text-primary" />
-              <span className="text-xs font-medium text-muted-foreground">
-                {latestPhotos.length} fotos na galeria
-              </span>
+          {/* Premium Header */}
+          <motion.div 
+            className="flex items-center justify-between px-4 mb-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <div className="flex items-center gap-4">
+              <motion.div 
+                className="w-10 h-10 bg-gradient-to-br from-purple-600 via-pink-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-xl shadow-purple-500/25"
+                whileHover={{ rotate: 360, scale: 1.1 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Camera className="w-5 h-5 text-white" aria-hidden="true" />
+              </motion.div>
+              <div>
+                <h2 id="photos-section" className="text-xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                  Momentos Especiais
+                </h2>
+                <p className="text-sm text-muted-foreground">Reviva os melhores momentos</p>
+              </div>
             </div>
-          </div>
-        </motion.div>
-      </motion.section>
-    </ErrorBoundary>
+
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <AccessibleButton 
+                variant="ghost" 
+                size="sm" 
+                className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-600 hover:from-purple-500/20 hover:to-pink-500/20 border border-purple-200/30 rounded-full px-4 py-2 font-medium"
+                onClick={() => navigateTo(ROUTES.GALLERY)}
+                aria-label="Ver galeria completa"
+              >
+                Ver Galeria
+              </AccessibleButton>
+            </motion.div>
+          </motion.div>
+
+          {/* Mobile Carousel */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <MobileCarousel photos={latestPhotos} />
+          </motion.div>
+
+          {/* Simplified Bottom stats */}
+          <motion.div 
+            className="flex justify-center mt-6 px-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
+          >
+            <div className="flex items-center gap-3 px-6 py-3 bg-background/60 backdrop-blur-md rounded-full border border-border/30 shadow-lg">
+              <div className="flex items-center gap-2">
+                <Camera className="w-3 h-3 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground">
+                  {latestPhotos.length} fotos na galeria
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        </motion.section>
+      </ErrorBoundary>
+    </Section>
   );
 });

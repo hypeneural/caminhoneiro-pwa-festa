@@ -1,33 +1,19 @@
 {
-  "name": "Festa do Caminhoneiro - São Cristóvão 2025",
-  "short_name": "Caminhoneiro 2025",
-  "description": "PWA oficial da Festa do Caminhoneiro de Tijucas/SC",
+  "id": "/",
+  "name": "Festa do Caminhoneiro - São Cristóvão 2026",
+  "short_name": "Caminhoneiro 2026",
+  "description": "PWA oficial da XXII Festa de São Cristóvão de Tijucas/SC",
   "theme_color": "#1e3a8a",
   "background_color": "#ffffff",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait-primary",
   "scope": "/",
   "start_url": "/?utm_source=pwa",
   "prefer_related_applications": false,
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "lang": "pt-BR",
+  "dir": "ltr",
   "categories": ["entertainment", "lifestyle", "travel"],
-  "screenshots": [
-    {
-      "src": "/screenshots/mobile-1.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Tela inicial do aplicativo"
-    },
-    {
-      "src": "/screenshots/desktop-1.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Versão desktop"
-    }
-  ],
   "icons": [
     {
       "src": "pwa-64x64.png",
@@ -42,16 +28,11 @@
     {
       "src": "pwa-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "pwa-512x512.png",
-      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "pwa-512x512.png",
+      "src": "pwa-maskable-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -59,25 +40,32 @@
   ],
   "shortcuts": [
     {
-      "name": "Acompanhar São Cristóvão",
-      "short_name": "Tracker",
-      "description": "Acompanhe a localização de São Cristóvão em tempo real",
-      "url": "/?action=tracker",
-      "icons": [{ "src": "/shortcuts/tracker.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Programação",
+      "name": "Programação 2026",
       "short_name": "Agenda",
       "description": "Veja a programação completa da festa",
       "url": "/programacao",
-      "icons": [{ "src": "/shortcuts/schedule.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/shortcuts/schedule.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
-      "name": "Galeria",
-      "short_name": "Fotos",
-      "description": "Veja fotos e vídeos da festa",
-      "url": "/galeria",
-      "icons": [{ "src": "/shortcuts/gallery.png", "sizes": "96x96" }]
+      "name": "Rota da Procissão",
+      "short_name": "Rota",
+      "description": "Acompanhe a rota da procissão automotiva",
+      "url": "/rota-completa",
+      "icons": [{ "src": "/shortcuts/route.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Cardápio",
+      "short_name": "Cardápio",
+      "description": "Veja as opções de bar e cozinha",
+      "url": "/menu",
+      "icons": [{ "src": "/shortcuts/menu.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Contato Capela",
+      "short_name": "Contato",
+      "description": "Encontre canais de contato da organização",
+      "url": "/contact",
+      "icons": [{ "src": "/shortcuts/contact.png", "sizes": "96x96", "type": "image/png" }]
     }
   ]
 }

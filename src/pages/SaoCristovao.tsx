@@ -8,9 +8,13 @@ import { ConclusionSection } from "@/components/sao-cristovao/ConclusionSection"
 import { FloatingNavigation } from "@/components/sao-cristovao/FloatingNavigation";
 import { Header } from "@/components/mobile/Header";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { useAdvertisements } from "@/hooks/useAdvertisements";
+import { LiveRouteBanner } from "@/components/tracker/LiveRouteBanner";
 
 const SaoCristovao = () => {
   const contentRef = useRef<HTMLDivElement>(null);
+  const { banners } = useAdvertisements({ position: "home" });
 
   const scrollToContent = () => {
     if (contentRef.current) {
@@ -23,8 +27,20 @@ const SaoCristovao = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <Header />
+      <LiveRouteBanner />
+      {banners.length > 0 && (
+        <div className="px-4 py-2 bg-muted/20">
+          <BannerCarousel
+            banners={banners}
+            showControls={true}
+            showDots={true}
+            className="rounded-lg shadow-md"
+            autoplayDelay={5000}
+            compact={true}
+          />
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="relative">

@@ -2,8 +2,12 @@ import { motion } from "framer-motion";
 import { History, Users, Calendar, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { useAdvertisements } from "@/hooks/useAdvertisements";
+import { LiveRouteBanner } from "@/components/tracker/LiveRouteBanner";
 
 export default function About() {
+  const { banners } = useAdvertisements({ position: "home" });
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -16,6 +20,20 @@ export default function About() {
           A tradição e fé da Festa do Caminhoneiro de Tijucas
         </p>
       </div>
+      
+      <LiveRouteBanner />
+      {banners.length > 0 && (
+        <div className="px-4 py-2 bg-muted/20">
+          <BannerCarousel
+            banners={banners}
+            showControls={true}
+            showDots={true}
+            className="rounded-lg shadow-md"
+            autoplayDelay={5000}
+            compact={true}
+          />
+        </div>
+      )}
 
       {/* Content */}
       <div className="p-4 space-y-6 pb-32">
@@ -54,7 +72,7 @@ export default function About() {
           >
             <Card className="p-4 text-center">
               <Calendar className="w-8 h-8 text-trucker-blue mx-auto mb-2" />
-              <div className="text-2xl font-bold text-foreground">XXI</div>
+              <div className="text-2xl font-bold text-foreground">XXII</div>
               <div className="text-xs text-muted-foreground">Anos de Festa</div>
             </Card>
           </motion.div>
@@ -89,7 +107,7 @@ export default function About() {
                 generosa doação do empresário Uilson Sgrott e outros colaboradores.
               </p>
               <p>
-                Em 2025, celebramos com grande alegria a XXIª Festa de São Cristóvão, 
+                Em 2026, celebramos com grande alegria a XXII Festa de São Cristóvão,
                 protetor dos motoristas, mantendo viva esta importante tradição de 
                 fé e comunidade.
               </p>
@@ -104,11 +122,11 @@ export default function About() {
           transition={{ delay: 0.4, duration: 0.5 }}
         >
           <Card className="p-6 bg-muted/50">
-            <h3 className="font-bold text-foreground mb-3">Edição 2025</h3>
+            <h3 className="font-bold text-foreground mb-3">Edição 2026</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Data:</span>
-                <span className="font-medium">25 e 26 de Julho</span>
+                <span className="font-medium">18 e 19 de Julho</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Local:</span>

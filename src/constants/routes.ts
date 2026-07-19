@@ -12,7 +12,6 @@ export const ROUTES = {
   PODCAST: '/podcast',
   COMPLETE_ROUTE: '/rota-completa',
   ROUTE: '/rota',
-  CAMERAS: '/cameras',
   ABOUT: '/about',
   CONTACT: '/contact',
   SETTINGS: '/settings',

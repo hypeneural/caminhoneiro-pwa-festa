@@ -4,7 +4,8 @@ import { useState } from 'react';
 import type { 
   TraccarResponse, 
   TraccarPosition, 
-  ProcessedTrackerData
+  ProcessedTrackerData,
+  TraccarData
 } from '@/types/tracker';
 import { API } from '@/constants/api';
 import { useNetworkStatus } from './useNetworkStatus';
@@ -31,10 +32,44 @@ const usePageVisibility = () => {
   return isVisible;
 };
 
+// Função para mapear PublicTrackingVehicle do Event Gateway para o formato TraccarPosition
+const mapVehicleToPosition = (vehicle: any): TraccarPosition => {
+  const speedKnots = (vehicle.speedKmh || 0) / 1.852;
+  const timeStr = vehicle.updatedAt || new Date().toISOString();
+  
+  return {
+    id: 1,
+    deviceId: 1,
+    protocol: 'osmand',
+    serverTime: timeStr,
+    deviceTime: timeStr,
+    fixTime: timeStr,
+    outdated: vehicle.stale || false,
+    valid: vehicle.status === 'live' || vehicle.status === 'delayed' || !vehicle.stale,
+    latitude: vehicle.lat,
+    longitude: vehicle.lng,
+    altitude: 0,
+    speed: speedKnots,
+    course: vehicle.bearing || 0,
+    accuracy: vehicle.accuracy || 10,
+    address: null,
+    network: null,
+    geofenceIds: null,
+    attributes: {
+      motion: (vehicle.speedKmh || 0) > 0.5,
+      odometer: 0,
+      activity: (vehicle.speedKmh || 0) > 0.5 ? 'automotive' : 'still',
+      batteryLevel: vehicle.battery !== null && vehicle.battery !== undefined ? vehicle.battery : 100,
+      distance: 0,
+      totalDistance: 0
+    }
+  };
+};
+
 // Função para buscar dados do Traccar com cache inteligente
 const fetchTraccarData = async (): Promise<ProcessedTrackerData> => {
   const startTime = Date.now();
-  const url = `${API.TRACCAR.BASE_URL}${API.TRACCAR.ENDPOINTS.POSITIONS}`;
+  const url = `${API.TRACCAR.BASE_URL}${API.TRACCAR.ENDPOINTS.POSITIONS}?_=${startTime}`;
   
   console.log('🚚 Fazendo requisição Traccar para:', url);
   
@@ -47,6 +82,9 @@ const fetchTraccarData = async (): Promise<ProcessedTrackerData> => {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       },
       signal: AbortSignal.timeout(8000) // 8s timeout
     });
@@ -71,11 +109,21 @@ const fetchTraccarData = async (): Promise<ProcessedTrackerData> => {
       });
     }
     
-    const result: TraccarResponse = await response.json();
+    const result: any = await response.json();
     console.log('📊 Dados recebidos:', result);
     
+    let position: TraccarPosition | null = null;
+
+    if (Array.isArray(result) && result.length > 0) {
+      position = result[0];
+    } else if (result && result.vehicles && Array.isArray(result.vehicles) && result.vehicles.length > 0) {
+      position = mapVehicleToPosition(result.vehicles[0]);
+    } else if (result && Array.isArray(result.positions) && result.positions.length > 0) {
+      position = result.positions[0];
+    }
+
     // Validação da resposta
-    if (!Array.isArray(result) || result.length === 0) {
+    if (!position) {
       // Se falhou mas temos cache, usar cache
       if (cachedPosition) {
         console.log('📦 Usando cache devido a resposta inválida');
@@ -85,13 +133,11 @@ const fetchTraccarData = async (): Promise<ProcessedTrackerData> => {
       
       throw new TrackerError({
         type: 'validation',
-        message: 'API retornou array vazio ou formato inválido',
+        message: 'API retornou formato inválido ou sem veículos ativos',
         timestamp: Date.now(),
         retryable: true
       });
     }
-    
-    const position = result[0];
     
     // Validações críticas
     if (!isValidCoordinate(position.latitude, position.longitude)) {
@@ -349,6 +395,7 @@ export const useTraccarData = () => {
     isOnline,
     isPageVisible,
     pollingInterval: getPollingInterval(),
+    isTrackerEnabled: API.TRACCAR.ENABLED,
     
     // Dados processados
     hasValidData: query.data?.hasValidGPS || false,
@@ -381,4 +428,4 @@ class TrackerError extends Error {
 }
 
 // Re-exportar tipos e interfaces para conveniência
-export type { TraccarPosition, ProcessedTrackerData };
+export type { TraccarPosition, ProcessedTrackerData, TraccarData };

@@ -5,8 +5,13 @@ import { Photo } from '@/types/gallery';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { LightboxBannerCarousel } from './LightboxBannerCarousel';
 import { useBanners } from '@/hooks/useBanners';
+import { SponsorPhotoMark } from './SponsorPhotoMark';
+import type { SponsorPhotoBrand } from '@/types/sponsorGallery';
+import { downloadBrandedPhoto } from '@/utils/brandedPhotoDownload';
+import { toast } from 'sonner';
 
 interface TouchFriendlyLightboxProps {
+  photoBrand?: SponsorPhotoBrand;
   photo: Photo | null;
   isOpen: boolean;
   onClose: () => void;
@@ -29,12 +34,15 @@ export const TouchFriendlyLightbox: React.FC<TouchFriendlyLightboxProps> = ({
   totalPhotos,
   currentIndex,
   allPhotos,
-  enableBanners = true
+  enableBanners = true,
+  photoBrand
 }) => {
   const [isZoomed, setIsZoomed] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [dragOffset, setDragOffset] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const shouldEnableBanners = enableBanners && !photoBrand;
   
   // Hook para preload de imagens
   const { preloadNext, getCacheStats, isPreloaded } = useImagePreloader();
@@ -47,6 +55,7 @@ export const TouchFriendlyLightbox: React.FC<TouchFriendlyLightboxProps> = ({
     trackBannerImpression,
     trackBannerClick
   } = useBanners({
+    enabled: shouldEnableBanners,
     enableRandomRotation: true,
     analyticsEnabled: true
   });
@@ -185,6 +194,24 @@ export const TouchFriendlyLightbox: React.FC<TouchFriendlyLightboxProps> = ({
     }
   }, [isZoomed, resetControlsTimer]);
 
+  const handleBrandedDownload = useCallback(async () => {
+    if (!photo || !photoBrand || isDownloading) return;
+
+    setIsDownloading(true);
+    try {
+      await downloadBrandedPhoto(photo, photoBrand);
+      toast.success('Foto com a logo pronta para download.');
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível baixar a foto com a logo.',
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [photo, photoBrand, isDownloading]);
+
   const isFavorite = photo ? favorites.includes(photo.id) : false;
   const isVertical = photo && photo.aspect_ratio < 1;
 
@@ -288,6 +315,14 @@ export const TouchFriendlyLightbox: React.FC<TouchFriendlyLightboxProps> = ({
               }}
               draggable={false}
             />
+
+            {photoBrand && (
+              <SponsorPhotoMark
+                brand={photoBrand}
+                variant='lightbox'
+                aspectRatio={photo.aspect_ratio}
+              />
+            )}
 
             {/* Error state */}
             {imageError && (
@@ -439,6 +474,25 @@ export const TouchFriendlyLightbox: React.FC<TouchFriendlyLightboxProps> = ({
           )}
         </AnimatePresence>
 
+        {photoBrand && showControls && (
+          <motion.button
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            onClick={handleBrandedDownload}
+            disabled={isDownloading}
+            className='absolute right-4 top-20 z-20 flex items-center gap-2 rounded-full bg-black/55 px-3 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-black/75 disabled:cursor-wait disabled:opacity-70'
+            aria-label='Baixar foto'
+          >
+            {isDownloading ? (
+              <span className='h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white' />
+            ) : (
+              <Download className='h-4 w-4' />
+            )}
+            <span className='hidden sm:inline'>Baixar</span>
+          </motion.button>
+        )}
+
         {/* Zoom indicator */}
         {isZoomed && (
           <div className="absolute top-20 left-1/2 -translate-x-1/2 text-white/75 text-xs bg-black/30 px-3 py-1 rounded-full z-10">
@@ -448,7 +502,7 @@ export const TouchFriendlyLightbox: React.FC<TouchFriendlyLightboxProps> = ({
       </motion.div>
 
       {/* Banner Carousel no rodapé do lightbox */}
-      {enableBanners && isOpen && lightboxBanners.length > 0 && (
+      {shouldEnableBanners && isOpen && lightboxBanners.length > 0 && (
         <LightboxBannerCarousel
           banners={lightboxBanners}
           onBannerClick={trackBannerClick}

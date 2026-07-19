@@ -115,7 +115,7 @@ export function CountdownTimer() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const targetDate = new Date('2025-07-19T08:00:00').getTime();
+    const targetDate = new Date('2026-07-18T18:00:00').getTime();
 
     const updateCountdown = () => {
       const now = new Date().getTime();
@@ -189,8 +189,8 @@ export function CountdownTimer() {
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <Zap className="w-3 h-3 text-trucker-red" />
-            <span className="text-xs text-trucker-red font-semibold">AO VIVO</span>
+            <Zap className="w-3 h-3 text-trucker-blue" />
+            <span className="text-xs text-trucker-blue font-semibold">ABERTURA 18/07 ÀS 18H</span>
           </motion.div>
         </div>
       </motion.div>
@@ -261,7 +261,7 @@ export function CountdownTimer() {
           animate={{ scale: [1, 1.02, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <span className="font-semibold text-trucker-blue">São Cristóvão 2025</span> • Tijucas/SC
+          <span className="font-semibold text-trucker-blue">São Cristóvão 2026</span> • Tijucas/SC
         </motion.p>
         
         <motion.div

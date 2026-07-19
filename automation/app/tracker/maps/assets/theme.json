@@ -1,0 +1,14 @@
+{
+  "eventName": "Procissão de São Cristóvão",
+  "title": "Acompanhamento da rota",
+  "primaryColor": "#dc2626",
+  "remainingRouteColor": "#94a3b8",
+  "completedRouteColor": "#dc2626",
+  "movingColor": "#22c55e",
+  "stoppedColor": "#3b82f6",
+  "showSpeed": true,
+  "showBattery": false,
+  "showAddress": true,
+  "showProgress": true,
+  "timezone": "America/Sao_Paulo"
+}

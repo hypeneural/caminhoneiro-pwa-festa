@@ -1,110 +1,150 @@
-
-import React, { useEffect } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
-import { appShell } from "@/services/app-shell";
-import { cacheManager } from "@/services/advanced-cache";
-import Index from "./pages/Index";
-import Gallery from "./pages/Gallery";
-import Stories from "./pages/Stories";
-import Map from "./pages/Map";
-import Schedule from "./pages/Schedule";
-import More from "./pages/More";
-import Radio from "./pages/Radio";
-import Historia from "./pages/Historia";
-import Noticias from "./pages/Noticias";
-import Podcast from "./pages/Podcast";
-import RotaCompleta from "./pages/RotaCompleta";
-import Cameras from "./pages/Cameras";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import FAQ from "./pages/FAQ";
-import SaoCristovao from "./pages/SaoCristovao";
-import Menu from "./pages/Menu";
-import Apoio from "./pages/Apoio";
-import VoceSabia from "./pages/VoceSabia";
-import NotFound from "./pages/NotFound";
-import { OfflineFallback } from "./components/OfflineFallback";
 import { ErrorBoundary } from "react-error-boundary";
 import { DefaultErrorFallback } from "./components/ui/error-boundary";
-import { PWAInstaller } from "@/components/PWAInstaller";
+
+const Index = lazy(() => import("./pages/Index"));
+const Gallery = lazy(() => import("./pages/Gallery"));
+const Stories = lazy(() => import("./pages/Stories"));
+const Map = lazy(() => import("./pages/Map"));
+const Schedule = lazy(() => import("./pages/Schedule"));
+const More = lazy(() => import("./pages/More"));
+const Historia = lazy(() => import("./pages/Historia"));
+const Podcast = lazy(() => import("./pages/Podcast"));
+const RotaCompleta = lazy(() => import("./pages/RotaCompleta"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+const SaoCristovao = lazy(() => import("./pages/SaoCristovao"));
+const Menu = lazy(() => import("./pages/Menu"));
+const Apoio = lazy(() => import("./pages/Apoio"));
+const VoceSabia = lazy(() => import("./pages/VoceSabia"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const LazyPWAInstaller = lazy(() =>
+  import("@/components/PWAInstaller").then((module) => ({ default: module.PWAInstaller }))
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000,   // 10 minutes
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error && 'status' in error && typeof error.status === 'number') {
+        if (error && "status" in error && typeof error.status === "number") {
           return error.status >= 500 && failureCount < 2;
         }
+
         return failureCount < 2;
       },
       refetchOnWindowFocus: false,
-      refetchOnReconnect: 'always'
-    }
-  }
+      refetchOnReconnect: "always",
+    },
+  },
 });
+
+const AppRouteFallback = () => (
+  <div className="flex min-h-dvh items-center justify-center bg-background px-6">
+    <div className="flex flex-col items-center gap-3">
+      <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+      <p className="text-sm font-medium text-muted-foreground">Abrindo...</p>
+    </div>
+  </div>
+);
+
+const DeferredPWAInstaller = () => {
+  const [shouldRender, setShouldRender] = useState(false);
+
+  useEffect(() => {
+    const scheduleInstaller = () => setShouldRender(true);
+    const requestIdle = window.requestIdleCallback?.bind(window);
+    const cancelIdle = window.cancelIdleCallback?.bind(window);
+
+    if (requestIdle && cancelIdle) {
+      const idleId = requestIdle(scheduleInstaller, { timeout: 2500 });
+      return () => cancelIdle(idleId);
+    }
+
+    const timeoutId = window.setTimeout(scheduleInstaller, 1800);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  if (!shouldRender) return null;
+
+  return (
+    <Suspense fallback={null}>
+      <LazyPWAInstaller />
+    </Suspense>
+  );
+};
 
 const App = () => {
   useEffect(() => {
-    // Initialize App Shell and advanced caching
-    const initializeApp = async () => {
-      try {
-        await appShell.initialize();
-        console.log('🚀 App initialized successfully');
-      } catch (error) {
-        console.error('❌ App initialization failed:', error);
-      }
+    const requestIdle = window.requestIdleCallback?.bind(window);
+    const cancelIdle = window.cancelIdleCallback?.bind(window);
+    const initializeApp = () => {
+      import("@/services/app-shell")
+        .then(({ appShell }) => appShell.initialize())
+        .catch((error) => {
+          console.error("App initialization failed:", error);
+        });
     };
 
-    initializeApp();
+    let idleCleanup: () => void;
 
-    // Setup online/offline handlers
-    const handleOnline = () => cacheManager.processSyncQueue();
-    const handleOffline = () => console.log('📴 App went offline');
+    if (requestIdle && cancelIdle) {
+      const idleId = requestIdle(initializeApp, { timeout: 2000 });
+      idleCleanup = () => cancelIdle(idleId);
+    } else {
+      const timeoutId = window.setTimeout(initializeApp, 900);
+      idleCleanup = () => window.clearTimeout(timeoutId);
+    }
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    const handleOnline = () => {
+      import("@/services/advanced-cache")
+        .then(({ cacheManager }) => cacheManager.processSyncQueue())
+        .catch(() => undefined);
+    };
+    const handleOffline = () => undefined;
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      idleCleanup();
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
   return (
-    <>
-      <ErrorBoundary 
-        FallbackComponent={DefaultErrorFallback}
-        onError={(error, errorInfo) => {
-          console.error('App Error:', error, errorInfo);
-        }}
-      >
-        <QueryClientProvider client={queryClient}>
-          <AppProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <PWAInstaller />
+    <ErrorBoundary
+      FallbackComponent={DefaultErrorFallback}
+      onError={(error, errorInfo) => {
+        console.error("App Error:", error, errorInfo);
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <AppProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <DeferredPWAInstaller />
+            <Suspense fallback={<AppRouteFallback />}>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/galeria" element={<Gallery />} />
                 <Route path="/stories" element={<Stories />} />
                 <Route path="/mapa" element={<Map />} />
                 <Route path="/programacao" element={<Schedule />} />
-                <Route path="/radio" element={<Radio />} />
                 <Route path="/historia" element={<Historia />} />
-                <Route path="/noticias" element={<Noticias />} />
                 <Route path="/podcast" element={<Podcast />} />
                 <Route path="/rota-completa" element={<RotaCompleta />} />
                 <Route path="/rota" element={<RotaCompleta />} />
-                <Route path="/cameras" element={<Cameras />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/faq" element={<FAQ />} />
@@ -113,14 +153,14 @@ const App = () => {
                 <Route path="/mais" element={<More />} />
                 <Route path="/apoio" element={<Apoio />} />
                 <Route path="/vocesabia" element={<VoceSabia />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
+                <Route path={'/galeria/:sponsorSlug'} element={<Gallery />} />
               </Routes>
-            </TooltipProvider>
-          </AppProvider>
-        </QueryClientProvider>
-      </ErrorBoundary>
-    </>
+            </Suspense>
+          </TooltipProvider>
+        </AppProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 

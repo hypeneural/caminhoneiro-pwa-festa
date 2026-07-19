@@ -8,7 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { GalleryAdBanner } from './GalleryAdBanner';
+import { SponsorPhotoMark } from './SponsorPhotoMark';
 import { useBanners } from '@/hooks/useBanners';
+import type { SponsorPhotoBrand } from '@/types/sponsorGallery';
 
 // Configurações do grid com proporção 3:4 padronizada (vertical)
 const GRID_CONFIG = {
@@ -45,6 +47,7 @@ interface GridItemProps {
     onBannerClick?: (banner: Banner, position: number) => void;
     onBannerImpression?: (banner: Banner, position: number) => void;
     onBannerDismiss?: (bannerId: number) => void;
+    photoBrand?: SponsorPhotoBrand;
   };
 }
 
@@ -59,7 +62,8 @@ const MixedGridItem = memo(({ columnIndex, rowIndex, style, data }: GridItemProp
     itemWidth,
     onBannerClick,
     onBannerImpression,
-    onBannerDismiss
+    onBannerDismiss,
+    photoBrand
   } = data;
   
   const itemIndex = rowIndex * columnCount + columnIndex;
@@ -177,6 +181,8 @@ const MixedGridItem = memo(({ columnIndex, rowIndex, style, data }: GridItemProp
             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
 
+          {photoBrand && <SponsorPhotoMark brand={photoBrand} />}
+
           {/* Overlay escuro no hover */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
         </div>
@@ -215,7 +221,7 @@ const MixedGridItem = memo(({ columnIndex, rowIndex, style, data }: GridItemProp
         )}
 
         {/* Visualizações */}
-        {photo.views > 0 && (
+        {photo.views > 0 && !photoBrand && (
           <div className="absolute bottom-2 right-2 bg-black/30 text-white text-xs px-2 py-1 rounded-full flex items-center">
             <Eye className="w-3 h-3 mr-1" />
             {photo.views}
@@ -260,6 +266,7 @@ interface VirtualPhotoGridWithAdsProps {
   isLoadingMore?: boolean;
   onScroll?: (scrollTop: number) => void;
   enableAds?: boolean;
+  photoBrand?: SponsorPhotoBrand;
 }
 
 export const VirtualPhotoGridWithAds: React.FC<VirtualPhotoGridWithAdsProps> = ({
@@ -273,11 +280,13 @@ export const VirtualPhotoGridWithAds: React.FC<VirtualPhotoGridWithAdsProps> = (
   isRefreshing,
   isLoadingMore = false,
   onScroll,
-  enableAds = true
+  enableAds = true,
+  photoBrand
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [isNearBottom, setIsNearBottom] = useState(false);
+  const shouldEnableAds = enableAds && !photoBrand;
 
   // Hook de banners
   const {
@@ -287,6 +296,7 @@ export const VirtualPhotoGridWithAds: React.FC<VirtualPhotoGridWithAdsProps> = (
     dismissBanner,
     getBannerStats
   } = useBanners({
+    enabled: shouldEnableAds,
     enableRandomRotation: true,
     galleryInsertionInterval: GRID_CONFIG.BANNER_INTERVAL,
     analyticsEnabled: true
@@ -327,7 +337,7 @@ export const VirtualPhotoGridWithAds: React.FC<VirtualPhotoGridWithAdsProps> = (
 
   // Cria grid misto com fotos e banners
   const mixedItems = useMemo(() => {
-    if (!enableAds || galleryBanners.length === 0) {
+    if (!shouldEnableAds || galleryBanners.length === 0) {
       // Sem ads, apenas fotos
       return photos.map((photo, index) => ({
         type: 'photo' as const,
@@ -379,7 +389,7 @@ export const VirtualPhotoGridWithAds: React.FC<VirtualPhotoGridWithAdsProps> = (
     }
     
     return items;
-  }, [photos, galleryBanners, gridConfig.columnCount, enableAds]);
+  }, [photos, galleryBanners, gridConfig.columnCount, shouldEnableAds]);
 
   // Calcula número de linhas total
   const totalRows = useMemo(() => {
@@ -397,7 +407,8 @@ export const VirtualPhotoGridWithAds: React.FC<VirtualPhotoGridWithAdsProps> = (
     itemWidth: gridConfig.itemWidth,
     onBannerClick: trackBannerClick,
     onBannerImpression: trackBannerImpression,
-    onBannerDismiss: dismissBanner
+    onBannerDismiss: dismissBanner,
+    photoBrand
   }), [
     mixedItems, 
     gridConfig.columnCount, 
@@ -407,7 +418,8 @@ export const VirtualPhotoGridWithAds: React.FC<VirtualPhotoGridWithAdsProps> = (
     onToggleFavorite,
     trackBannerClick,
     trackBannerImpression,
-    dismissBanner
+    dismissBanner,
+    photoBrand
   ]);
 
   // Scroll handler melhorado para infinite loading

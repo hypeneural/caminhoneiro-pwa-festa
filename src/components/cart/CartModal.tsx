@@ -112,10 +112,6 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
                     {formattedTotal}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 mt-2 text-white/80 text-xs">
-                  <Clock className="w-3 h-3" />
-                  <span>Pronto em ~{estimatedTime} min</span>
-                </div>
               </motion.div>
             )}
 
@@ -181,26 +177,6 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
                 </div>
               </div>
 
-              {/* Order Notes */}
-              <div className="px-4 py-3 border-t border-gray-100">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-700">
-                      Observações do pedido
-                    </span>
-                  </div>
-                  
-                  <Textarea
-                    value={orderNotes}
-                    onChange={(e) => setOrderNotes(e.target.value)}
-                    placeholder="Ex: sem cebola, bem passado, entrega na mesa 5..."
-                    className="text-sm resize-none border-gray-200 rounded-xl focus:border-green-400 focus:ring-green-400"
-                    rows={3}
-                  />
-                </div>
-              </div>
-
               {/* Action Buttons */}
               <div className="p-4 bg-gray-50 space-y-3">
                 {/* Clear Cart Button */}
@@ -212,31 +188,6 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
                   <Trash2 className="w-4 h-4 mr-2" />
                   Limpar carrinho
                 </Button>
-
-                {/* Place Order Button */}
-                <Button
-                  onClick={handlePlaceOrder}
-                  disabled={isProcessingOrder}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl py-4 font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  {isProcessingOrder ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Enviando pedido...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center gap-2">
-                      <Check className="w-5 h-5" />
-                      <span>Confirmar Pedido • {formattedTotal}</span>
-                    </div>
-                  )}
-                </Button>
-
-                {/* Info Text */}
-                <div className="flex items-center justify-center gap-2 text-xs text-gray-500 pt-2">
-                  <AlertCircle className="w-3 h-3" />
-                  <span>Pedido será processado pelo estabelecimento</span>
-                </div>
               </div>
             </>
           )}

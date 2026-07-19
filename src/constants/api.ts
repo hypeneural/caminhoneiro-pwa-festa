@@ -1,5 +1,9 @@
+const DEFAULT_TRACKING_GATEWAY_URL = import.meta.env.DEV
+  ? 'http://localhost:3000'
+  : 'https://live.evydencia.com';
+
 export const API = {
-  BASE_URL: 'https://api.festadoscaminhoneiros.com.br/v1',
+  BASE_URL: import.meta.env.VITE_API_URL || 'https://api.festadoscaminhoneiros.com.br/v1',
   
   ENDPOINTS: {
     BANNERS: '/advertisements/banners',
@@ -16,11 +20,18 @@ export const API = {
 
   // Configurações do sistema Traccar
   TRACCAR: {
-    BASE_URL: import.meta.env.VITE_TRACCAR_URL || 'https://hypeneural.com',
+    ENABLED: import.meta.env.VITE_TRACCAR_ENABLED === 'true',
+    BASE_URL: (
+      import.meta.env.VITE_TRACKING_GATEWAY_URL ||
+      import.meta.env.VITE_LIVE_TRACKING_URL ||
+      import.meta.env.VITE_TRACCAR_URL ||
+      DEFAULT_TRACKING_GATEWAY_URL
+    ).replace(/\/+$/, ''),
     ENDPOINTS: {
-      POSITIONS: '/caminhao/api.php',
-      GEOJSON_ROUTE: '/caminhao/geojson.php?f=1',
-      GEOJSON_POINTS: '/caminhao/geojson.php?f=2'
+      POSITIONS: '/public/state',
+      STREAM: '/public/stream',
+      VEHICLES: '/public/vehicles',
+      WEBSOCKET: '/ws'
     },
     POLLING: {
       REALTIME: 5000,        // 5s para dados críticos (app em foco)
@@ -47,14 +58,9 @@ export const API = {
     FOOTER: 'footer'
   },
 
-  PACKAGE_TYPES: {
-    DESTAQUE: 1,
-    APOIADOR: 2
-  },
-
   DEFAULTS: {
     BANNERS_LIMIT: 15,
-    SPONSORS_LIMIT: 12,
+    SPONSORS_LIMIT: 1000,
     PAGE: 1,
     NOTIFICATION_POLL_INTERVAL: 60000 // 1 minuto
   },
@@ -76,4 +82,4 @@ export const API = {
   DEV: {
     BASE_URL: 'http://localhost:8080/v1'
   }
-}; 
+};

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'">
+    <title>Mosaico de Rastreamento</title>
+    <link rel="stylesheet" href="/leaflet/leaflet.css" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background-color: #e5e7eb;
+            width: 1080px;
+            height: 1350px;
+            overflow: hidden;
+        }
+        #map-collage {
+            width: 1080px;
+            height: 1350px;
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: relative;
+        }
+        header {
+            height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .header-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #111827;
+            line-height: 1.2;
+        }
+        .header-subtitle {
+            font-size: 20px;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            margin-top: 4px;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            display: inline-block;
+        }
+        .status-dot.moving {
+            background-color: #10b981;
+        }
+        .status-dot.stopped {
+            background-color: #3b82f6;
+        }
+        .map-section {
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+        }
+        #map-full-container {
+            height: 580px;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 24px;
+        }
+        .map-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+            padding: 12px 20px;
+            background-color: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .map-canvas {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            background-color: #f8fafc;
+        }
+        .bottom-grid {
+            height: 480px;
+            display: flex;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .grid-col {
+            width: 504px; /* (1080 - 48 - 24) / 2 */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        footer {
+            height: 48px;
+            background-color: #111827;
+            color: #9ca3af;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-size: 15px;
+        }
+        .footer-left {
+            font-weight: 500;
+        }
+        .footer-right {
+            font-style: italic;
+        }
+        
+        /* Marcadores Leaflet Customizados */
+        .start-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #dc2626;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .truck-marker-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .truck-marker {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 4px solid #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            position: relative;
+            background-color: #22c55e; /* Default moving */
+        }
+        .truck-marker.moving {
+            background-color: #22c55e;
+        }
+        .truck-marker.stopped {
+            background-color: #3b82f6;
+        }
+        .truck-marker .icon {
+            font-size: 22px;
+            line-height: 1;
+            /* O emoji 🚚 aponta para a esquerda por padrão. Vamos rotacioná-lo 90 graus
+               ou usar um caractere/ícone que aponte para cima (Norte).
+               Aqui usamos uma seta simples ou caminhão que aponta para cima.
+               Como emoji de caminhão geralmente aponta para a esquerda, rotacionamos o emoji internamente
+               para que ele aponte para o Norte (cima) na rotação zero. */
+            transform: rotate(90deg); 
+        }
+        .direction-arrow {
+            position: absolute;
+            top: -12px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid #ffffff;
+        }
+        .direction-arrow::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: -6px;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 10px solid #22c55e;
+        }
+        .truck-marker.stopped .direction-arrow::after {
+            border-bottom-color: #3b82f6;
+        }
+        .progress-bar-container {
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            width: 150px;
+            height: 8px;
+            overflow: hidden;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .progress-bar-fill {
+            background-color: #dc2626;
+            height: 100%;
+            width: 0%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map-collage">
+        <header>
+            <div class="header-title" id="title-text">Acompanhamento da Rota Oficial</div>
+            <div class="header-subtitle">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="status-text">Buscando sinal do GPS...</span>
+            </div>
+        </header>
+
+        <div class="map-section" id="map-full-container">
+            <div class="map-title">
+                <span>1. Rota Completa</span>
+                <div>
+                    <span id="progress-percentage-text" style="font-size: 16px; color: #4b5563;">Progresso: 0%</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="map-canvas" id="map-full"></div>
+        </div>
+
+        <div class="bottom-grid">
+            <div class="grid-col">
+                <div class="map-section" style="height: 100%; display: flex; flex-direction: column;">
+                    <div class="map-title">2. Localização Atual</div>
+                    <div class="map-canvas" id="map-close"></div>
+                </div>
+            </div>
+            <div class="grid-col">
+                <div class="map-section" style="height: 100%; display: flex; flex-direction: column;">
+                    <div class="map-title">3. Progresso do Caminho</div>
+                    <div class="map-canvas" id="map-progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-left">Progresso estimado na rota oficial · © OpenStreetMap contributors</div>
+            <div class="footer-right" id="footer-branding">Festa do Caminhoneiro</div>
+        </footer>
+    </div>
+
+    <script src="/leaflet/leaflet.js"></script>
+    <script>
+        window.__MAP_RENDER_RESULT = {
+            ready: false,
+            baseFeatureCount: 0,
+            externalRequests: 0
+        };
+
+        function countExternalRequests() {
+            const pageOrigin = window.location.origin;
+            return performance.getEntriesByType('resource').reduce((count, entry) => {
+                try {
+                    const resourceUrl = new URL(entry.name, window.location.href);
+                    if (!['http:', 'https:'].includes(resourceUrl.protocol)) {
+                        return count;
+                    }
+                    return count + (resourceUrl.origin === pageOrigin ? 0 : 1);
+                } catch (_err) {
+                    return count + 1;
+                }
+            }, 0);
+        }
+
+        async function loadVectorBasemap() {
+            const response = await fetch('/street_network.geojson', {
+                cache: 'no-store',
+                credentials: 'same-origin'
+            });
+            if (!response.ok) {
+                throw new Error(`vector_basemap_http_${response.status}`);
+            }
+            const document = await response.json();
+            const features = Array.isArray(document.features) ? document.features : [];
+            const metadata = document.metadata || {};
+            if (
+                document.type !== 'FeatureCollection' ||
+                metadata.schema !== 'tracker-vector-basemap-v1' ||
+                features.length < 100 ||
+                metadata.featureCount !== features.length
+            ) {
+                throw new Error('vector_basemap_invalid');
+            }
+            window.__MAP_RENDER_RESULT.baseFeatureCount = features.length;
+            return document;
+        }
+
+        function roadStyle(feature) {
+            const highway = String(feature?.properties?.highway || 'road');
+            if (['motorway', 'trunk', 'primary'].includes(highway)) {
+                return { color: '#94a3b8', weight: 3.0, opacity: 0.95 };
+            }
+            if (['secondary', 'tertiary'].includes(highway)) {
+                return { color: '#a8b3c2', weight: 2.2, opacity: 0.9 };
+            }
+            if (['path', 'footway', 'track'].includes(highway)) {
+                return { color: '#d7dee8', weight: 0.8, opacity: 0.65, dashArray: '2 3' };
+            }
+            return { color: '#c4cdd9', weight: 1.25, opacity: 0.82 };
+        }
+
+        function addVectorBasemap(map, basemap) {
+            L.geoJSON(basemap, {
+                interactive: false,
+                style: roadStyle
+            }).addTo(map);
+        }
+
+        async function initMaps(data) {
+            try {
+                const vectorBasemap = await loadVectorBasemap();
+                // 1. Atualizar textos do Cabeçalho e Progresso
+                document.getElementById('status-text').innerText = 
+                    `${data.status} · Velocidade: ${Math.round(data.speedKmh)} km/h · Atualizado em ${data.timestamp}`;
+                
+                const dot = document.getElementById('status-dot');
+                dot.className = 'status-dot ' + (data.isMoving ? 'moving' : 'stopped');
+
+                if (data.address) {
+                    document.getElementById('status-text').innerText += ` · ${data.address}`;
+                }
+
+                if (data.theme && data.theme.eventName) {
+                    document.getElementById('title-text').innerText = data.theme.eventName;
+                    document.getElementById('footer-branding').innerText = data.theme.eventName;
+                }
+
+                // Calcular porcentagem de progresso
+                const pct = Math.min(100, Math.max(0, Math.round((data.progressM / data.totalLengthM) * 100)));
+                document.getElementById('progress-percentage-text').innerText = `Progresso: ${pct}%`;
+                document.getElementById('progress-bar-fill').style.width = `${pct}%`;
+
+                // Configurações comuns dos mapas
+                const createMapOptions = () => ({
+                    renderer: L.canvas({ padding: 0.5 }),
+                    zoomControl: false,
+                    attributionControl: false, // Atribuição já está no rodapé customizado
+                    zoomAnimation: false,
+                    fadeAnimation: false,
+                    markerZoomAnimation: false,
+                    keyboard: false,
+                    scrollWheelZoom: false,
+                    doubleClickZoom: false,
+                    boxZoom: false,
+                    dragging: false
+                });
+
+                // Coordenadas
+                const routeLatLngs = data.routeWgs84.map(c => [c[1], c[0]]);
+                const progressLatLngs = data.progressWgs84.map(c => [c[1], c[0]]);
+                const currentLatLng = [data.current[0], data.current[1]];
+                const snappedLatLng = [data.snapped[0], data.snapped[1]];
+                const startLatLng = [data.start[0], data.start[1]];
+                const progressFocusBounds = L.latLngBounds([startLatLng, currentLatLng]);
+                progressFocusBounds.extend(snappedLatLng);
+                progressLatLngs.forEach(point => progressFocusBounds.extend(point));
+
+                // Ícone de partida (Saída)
+                const startIcon = L.divIcon({
+                    className: 'start-marker',
+                    html: 'S',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                });
+
+                // Ícone do caminhão rotacionável
+                const truckIcon = L.divIcon({
+                    className: 'truck-marker-container',
+                    html: `
+                    <div class="truck-marker ${data.isMoving ? 'moving' : 'stopped'}" style="transform: rotate(${data.bearing}deg)">
+                        <span class="icon">🚚</span>
+                        <div class="direction-arrow"></div>
+                    </div>
+                    `,
+                    iconSize: [44, 44],
+                    iconAnchor: [22, 22]
+                });
+
+                // 2. Inicializar Mapa 1: Rota Completa
+                const map1 = L.map('map-full', createMapOptions());
+                map1.fitBounds(L.latLngBounds(routeLatLngs), { padding: [15, 15] });
+                addVectorBasemap(map1, vectorBasemap);
+                
+                // Rota planejada (azul claro)
+                L.polyline(routeLatLngs, { color: '#93c5fd', weight: 6, opacity: 0.9 }).addTo(map1);
+                // Rota concluída (vermelho)
+                if (progressLatLngs.length > 1) {
+                    L.polyline(progressLatLngs, { color: '#dc2626', weight: 7, opacity: 1.0 }).addTo(map1);
+                }
+                // Marcadores
+                L.marker(startLatLng, { icon: startIcon }).addTo(map1);
+                L.marker(currentLatLng, { icon: truckIcon }).addTo(map1);
+                if (currentLatLng[0] !== snappedLatLng[0] || currentLatLng[1] !== snappedLatLng[1]) {
+                    L.polyline([currentLatLng, snappedLatLng], {
+                        color: '#64748b', weight: 2, dashArray: '5 5', opacity: 0.9
+                    }).addTo(map1);
+                }
+                
+                // Enquadramento
+                // 3. Inicializar Mapa 2: Localização Atual
+                const map2 = L.map('map-close', createMapOptions());
+                map2.setView(currentLatLng, 16);
+                addVectorBasemap(map2, vectorBasemap);
+                
+                L.polyline(routeLatLngs, { color: '#93c5fd', weight: 6, opacity: 0.8 }).addTo(map2);
+                if (progressLatLngs.length > 1) {
+                    L.polyline(progressLatLngs, { color: '#dc2626', weight: 7, opacity: 1.0 }).addTo(map2);
+                }
+                L.marker(currentLatLng, { icon: truckIcon }).addTo(map2);
+                
+                // Zoom adaptativo com base na velocidade
+                let closeZoom = 17;
+                if (data.speedKmh > 30) {
+                    closeZoom = 15;
+                } else if (data.speedKmh > 10) {
+                    closeZoom = 16;
+                }
+                map2.setView(currentLatLng, closeZoom);
+
+                // 4. Inicializar Mapa 3: Progresso do Caminho
+                const map3 = L.map('map-progress', createMapOptions());
+                map3.setView(currentLatLng, 16);
+                addVectorBasemap(map3, vectorBasemap);
+                
+                L.polyline(routeLatLngs, { color: '#2563eb', weight: 7, opacity: 0.9 }).addTo(map3);
+                if (progressLatLngs.length > 1) {
+                    L.polyline(progressLatLngs, { color: '#dc2626', weight: 4, opacity: 1.0 }).addTo(map3);
+                }
+                L.marker(startLatLng, { icon: startIcon }).addTo(map3);
+                L.marker(currentLatLng, { icon: truckIcon }).addTo(map3);
+                
+                // Enquadra saida + caminhao, mantendo o percurso percorrido como contexto.
+                if (progressFocusBounds.isValid()) {
+                    map3.fitBounds(progressFocusBounds, { padding: [45, 45], maxZoom: 16 });
+                } else {
+                    map3.setView(currentLatLng, 16);
+                }
+
+                // 5. A base vetorial já está em memória; aguarda somente fontes.
+                await document.fonts.ready;
+
+                // Renderizar 2 frames para garantir estabilidade visual no Chrome headless
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+                // Sinalizar sucesso para o Selenium
+                window.__MAP_RENDER_RESULT.externalRequests = countExternalRequests();
+                window.__MAP_RENDER_RESULT.ready = true;
+            } catch (err) {
+                console.error("Erro na inicialização dos mapas:", err);
+                window.__MAP_RENDER_RESULT.error = err?.stack || err.toString();
+                window.__MAP_RENDER_RESULT.externalRequests = countExternalRequests();
+                window.__MAP_RENDER_RESULT.ready = true; // Resolve para evitar travar o Selenium para sempre
+            }
+        }
+    </script>
+</body>
+</html>

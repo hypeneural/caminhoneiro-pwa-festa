@@ -1,0 +1,30 @@
+{
+  "name": "festacaminhoneiros-event-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx --node-options=--experimental-sqlite watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node --experimental-sqlite dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.2",
+    "@fastify/rate-limit": "^10.2.2",
+    "@fastify/websocket": "^11.0.1",
+    "fastify": "^5.2.1",
+    "qrcode": "^1.5.4",
+    "ws": "^8.21.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/qrcode": "^1.5.5",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.10"
+  }
+}

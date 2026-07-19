@@ -58,7 +58,7 @@ const More = () => {
       <Header />
 
       {/* Main content */}
-      <main className="pt-16 pb-20 px-4">
+      <main className="pt-app-header pb-app-nav px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -73,12 +73,12 @@ const More = () => {
               </div>
               <h2 className="text-xl font-bold mb-2">Festa do Caminhoneiro</h2>
               <p className="text-sm text-muted-foreground mb-4">
-                São Cristóvão 2025 • Tijucas/SC
+                São Cristóvão 2026 • Tijucas/SC
               </p>
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span>Versão 1.0.0</span>
                 <span>•</span>
-                <span>19-20 Julho</span>
+                <span>18-19 Julho</span>
               </div>
             </div>
           </Card>
@@ -158,7 +158,7 @@ const More = () => {
               Desenvolvido com ❤️ para a comunidade caminhoneira
             </p>
             <p className="text-xs text-muted-foreground">
-              © 2025 Festa do Caminhoneiro - Tijucas/SC
+              © 2026 Festa do Caminhoneiro - Tijucas/SC
             </p>
           </motion.div>
         </motion.div>

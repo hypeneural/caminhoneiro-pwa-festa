@@ -1,7 +1,7 @@
 export const APP_CONFIG = {
   // API Configuration
   API: {
-    BASE_URL: import.meta.env.VITE_API_URL || 'https://api.festacaminhoneiro.com.br',
+    BASE_URL: import.meta.env.VITE_API_URL || 'https://api.festadoscaminhoneiros.com.br/v1',
     TIMEOUT: 10000,
     RETRIES: 3,
     RETRY_DELAY: 1000
@@ -19,8 +19,7 @@ export const APP_CONFIG = {
     DEFAULT_LIMIT: 20,
     MAX_LIMIT: 100,
     NEWS_LIMIT: 10,
-    PHOTOS_LIMIT: 24,
-    CAMERAS_LIMIT: 12
+    PHOTOS_LIMIT: 24
   },
   
   // Media Settings
@@ -28,14 +27,12 @@ export const APP_CONFIG = {
     IMAGE_QUALITY: 80,
     THUMBNAIL_SIZE: 256,
     LAZY_LOAD_THRESHOLD: '200px',
-    VIDEO_AUTOPLAY: false,
-    STREAM_BUFFER: 30000 // 30 seconds
+    VIDEO_AUTOPLAY: false
   },
   
   // Refresh Intervals (in milliseconds)
   REFRESH_INTERVALS: {
     NEWS: 5 * 60 * 1000, // 5 minutes
-    CAMERAS: 10 * 1000, // 10 seconds
     TRACKER: 30 * 1000, // 30 seconds
     STORIES: 60 * 1000, // 1 minute
     WEATHER: 15 * 60 * 1000 // 15 minutes
@@ -54,13 +51,13 @@ export const APP_CONFIG = {
   
   // Event Information
   EVENT: {
-    NAME: 'Festa do Caminhoneiro 2025',
-    START_DATE: new Date('2025-07-25T08:00:00'),
-    END_DATE: new Date('2025-07-26T22:00:00'),
-    LOCATION: 'Praça Central',
+    NAME: 'Festa do Caminhoneiro 2026',
+    START_DATE: new Date('2026-07-18T18:00:00'),
+    END_DATE: new Date('2026-07-19T18:00:00'),
+    LOCATION: 'Capela Santa Teresinha',
     COORDINATES: {
-      lat: -23.5505,
-      lng: -46.6333
+      lat: -27.24173,
+      lng: -48.646721
     },
     TIMEZONE: 'America/Sao_Paulo'
   },

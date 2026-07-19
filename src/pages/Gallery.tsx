@@ -1,18 +1,34 @@
-
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import { motion } from "framer-motion";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
-import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
 import { VirtualPhotoGridWithAds } from "@/components/gallery/VirtualPhotoGridWithAds";
 import { TouchFriendlyLightbox } from "@/components/gallery/TouchFriendlyLightbox";
 import { LightboxErrorBoundary } from "@/components/gallery/LightboxErrorBoundary";
-import { TagSlider } from "@/components/gallery/TagSlider";
 import { AdvancedFilters } from "@/components/gallery/AdvancedFilters";
 import { useGallery } from "@/hooks/useGallery";
 import { useEffect, useState } from "react";
+import { LiveRouteBanner } from "@/components/tracker/LiveRouteBanner";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { useAdvertisements } from "@/hooks/useAdvertisements";
+import { SponsorGalleryHeader } from '@/components/gallery/SponsorGalleryHeader';
+import { useSponsorGallery } from '@/hooks/useSponsorGallery';
+import { useParams } from 'react-router-dom';
 
 const Gallery = () => {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const { sponsorSlug } = useParams<{ sponsorSlug?: string }>();
+  const isSponsorGallery = Boolean(sponsorSlug);
+  const {
+    branding: sponsorBrand,
+    isLoading: isSponsorLoading,
+    error: sponsorError,
+  } = useSponsorGallery(sponsorSlug);
+  const canRenderPhotos = !isSponsorGallery || Boolean(sponsorBrand);
+  const { banners } = useAdvertisements({
+    enabled: !isSponsorGallery,
+    position: 'home',
+  });
   
   const {
     filteredPhotos,
@@ -85,6 +101,11 @@ const Gallery = () => {
             <span className="text-sm text-muted-foreground">
               {totalPhotos} fotos
             </span>
+            {sponsorBrand && (
+              <span className='hidden max-w-44 truncate text-sm font-medium sm:inline'>
+                {sponsorBrand.name}
+              </span>
+            )}
             <AdvancedFilters
               filters={filters}
               filterOptions={filterOptions}
@@ -96,24 +117,34 @@ const Gallery = () => {
         </div>
       </motion.div>
 
-      {/* Tag Slider fixo no topo - ocupa espaço do header quando ele some */}
+      {/* Content Area - ocupa toda altura disponível */}
       <motion.div 
-        className="sticky top-0 z-40 bg-background border-b flex-shrink-0"
+        className="flex-1 min-h-0 relative flex flex-col"
         initial={{ paddingTop: "80px" }}
         animate={{ paddingTop: isHeaderVisible ? "80px" : "0px" }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <TagSlider
-          tags={filterOptions?.tags || []}
-          selectedTagId={selectedTagId}
-          onTagSelect={selectTag}
-          isLoading={!filterOptions}
-        />
-      </motion.div>
-
-      {/* Content Area - ocupa toda altura disponível */}
-      <div className="flex-1 min-h-0 relative">
-        {loading && filteredPhotos.length === 0 && (
+        {!isSponsorGallery && <LiveRouteBanner />}
+        {isSponsorGallery && (
+          <SponsorGalleryHeader
+            branding={sponsorBrand}
+            isLoading={isSponsorLoading}
+            error={sponsorError}
+          />
+        )}
+        {!isSponsorGallery && banners.length > 0 && (
+          <div className="px-4 py-2 bg-muted/20">
+            <BannerCarousel
+              banners={banners}
+              showControls={true}
+              showDots={true}
+              className="rounded-lg shadow-md"
+              autoplayDelay={5000}
+              compact={true}
+            />
+          </div>
+        )}
+        {canRenderPhotos && loading && filteredPhotos.length === 0 && (
           <div className="flex items-center justify-center h-64">
             <div className="flex flex-col items-center space-y-3">
               <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -124,32 +155,21 @@ const Gallery = () => {
           </div>
         )}
 
-        {!loading && filteredPhotos.length === 0 && (
+        {canRenderPhotos && !loading && filteredPhotos.length === 0 && (
           <div className="flex items-center justify-center h-64">
             <div className="text-center px-6">
               <div className="text-6xl mb-4">📸</div>
               <h3 className="text-lg font-semibold mb-2">
-                {selectedTagId ? 'Nenhuma foto encontrada nesta categoria' : 'Nenhuma foto encontrada'}
+                Nenhuma foto encontrada
               </h3>
               <p className="text-muted-foreground text-sm">
-                {selectedTagId 
-                  ? 'Tente selecionar outra categoria ou "Todas" para ver mais fotos'
-                  : 'Aguarde novas fotos serem adicionadas'
-                }
+                Aguarde novas fotos serem adicionadas
               </p>
-              {selectedTagId && (
-                <button
-                  onClick={() => selectTag(null)}
-                  className="mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium"
-                >
-                  Ver todas as fotos
-                </button>
-              )}
             </div>
           </div>
         )}
 
-        {filteredPhotos.length > 0 && (
+        {canRenderPhotos && filteredPhotos.length > 0 && (
           <VirtualPhotoGridWithAds
             photos={filteredPhotos}
             loading={loading}
@@ -161,10 +181,11 @@ const Gallery = () => {
             isRefreshing={false}
             isLoadingMore={isLoadingMore}
             onScroll={handleScroll}
+            photoBrand={sponsorBrand || undefined}
             enableAds={true} // ✅ Ativa sistema de banners
           />
         )}
-              </div>
+      </motion.div>
 
       {/* Touch Friendly Lightbox with Error Boundary */}
       <LightboxErrorBoundary onClose={closeLightbox}>
@@ -178,14 +199,10 @@ const Gallery = () => {
           totalPhotos={filteredPhotos.length}
           currentIndex={currentIndex}
           allPhotos={filteredPhotos}
+          photoBrand={sponsorBrand || undefined}
           enableBanners={true} // ✅ Ativa banner carousel
         />
       </LightboxErrorBoundary>
-
-      {/* FAB */}
-      <div className="fixed bottom-20 right-4 z-30">
-        <FloatingActionButton />
-      </div>
 
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-40">

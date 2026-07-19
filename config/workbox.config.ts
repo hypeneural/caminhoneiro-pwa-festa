@@ -26,17 +26,12 @@ export const workboxConfig: Partial<GenerateSWOptions> = {
         },
       },
     },
-    // External API caching (hypeneural.com)
+    // Live tracking data must never be served from cache.
     {
-      urlPattern: ({ url }) => url.hostname === 'hypeneural.com',
-      handler: 'NetworkFirst',
+      urlPattern: ({ url }) => url.hostname === 'live.festadoscaminhoneiros.com.br',
+      handler: 'NetworkOnly',
       options: {
-        cacheName: 'api-cache',
-        networkTimeoutSeconds: 3,
-        expiration: {
-          maxEntries: 50,
-          maxAgeSeconds: 60 * 60 * 24, // 1 day
-        },
+        cacheName: 'live-tracking-network-only',
       },
     },
   ],

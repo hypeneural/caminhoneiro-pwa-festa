@@ -131,8 +131,8 @@ export const getConnectionState = (position: TraccarPosition): ConnectionState =
   
   if (!isValid) return 'offline';
   if (dataAge <= 30) return 'live';       // < 30s = tempo real
-  if (dataAge <= 300) return 'delayed';   // < 5min = atrasado
-  return 'offline';                       // > 5min = offline
+  if (dataAge <= 600) return 'delayed';   // < 10min = atrasado
+  return 'offline';                       // > 10min = offline
 };
 
 // Status de conexão para UI
@@ -193,6 +193,7 @@ export const getConnectionStatus = (position: TraccarPosition): ConnectionStatus
 
 // Estado da bateria
 export const getBatteryState = (level: number): BatteryState => {
+  if (level < 0 || isNaN(level)) return 'unknown';
   if (level < 10) return 'critical';
   if (level < 30) return 'low';
   if (level < 70) return 'normal';
@@ -380,7 +381,7 @@ export const processTrackerData = (position: TraccarPosition): ProcessedTrackerD
   // Precisa de atenção se: bateria crítica, sem GPS, dados muito antigos
   const needsAttention = batteryStatus.showWarning || 
                         !hasValidGPS || 
-                        dataAge > 300; // > 5 minutos
+                        dataAge > 600; // > 10 minutos
   
   return {
     ...position,

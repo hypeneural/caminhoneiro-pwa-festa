@@ -8,7 +8,7 @@ import { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VoiceSearchButton } from './VoiceSearchButton';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
-import * as Fa from 'react-icons/fa';
+import { MenuCategoryIcon } from './MenuCategoryIcon';
 
 interface MenuHeaderProps {
   categories: APIMenuCategory[];
@@ -20,13 +20,6 @@ interface MenuHeaderProps {
   onViewModeToggle: () => void;
   onOpenFilters: () => void;
 }
-
-const CategoryIcon = memo(({ iconName }: { iconName: string }) => {
-  const IconComponent = (Fa as any)[iconName];
-  return IconComponent ? <IconComponent className="w-4 h-4 opacity-75" /> : null;
-});
-
-CategoryIcon.displayName = 'CategoryIcon';
 
 export const MenuHeader = memo(function MenuHeader({
   categories,
@@ -218,7 +211,7 @@ export const MenuHeader = memo(function MenuHeader({
                   activeCategory === category.id && "bg-green-600 hover:bg-green-700 text-white"
                 )}
               >
-                <CategoryIcon iconName={category.icon_url} />
+                <MenuCategoryIcon iconName={category.icon_url} className="w-4 h-4 opacity-75" />
                 {category.name}
               </Button>
             ))}
@@ -248,7 +241,10 @@ export const MenuHeader = memo(function MenuHeader({
               
               {activeCategory !== null && (
                 <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                  <CategoryIcon iconName={categories.find(c => c.id === activeCategory)?.icon_url || ''} />
+                  <MenuCategoryIcon
+                    iconName={categories.find(c => c.id === activeCategory)?.icon_url}
+                    className="w-3 h-3"
+                  />
                   <span>{categories.find(c => c.id === activeCategory)?.name}</span>
                 </div>
               )}

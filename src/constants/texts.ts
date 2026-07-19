@@ -14,7 +14,6 @@ export const APP_TEXTS = {
   SECTION_NEWS: 'Últimas Notícias',
   SECTION_PHOTOS: 'Momentos Especiais',
   SECTION_QUICK_ACCESS: 'Acesso Rápido',
-  SECTION_CAMERAS: 'Câmeras Ao Vivo',
   SECTION_STORIES: 'Stories',
   
   // Actions
@@ -34,22 +33,20 @@ export const APP_TEXTS = {
   STATUS_NO_DATA: 'Nenhum dado disponível',
   
   // Event Info
-  EVENT_DATE: '25 e 26 de Julho',
-  EVENT_LOCATION: 'Praça Central',
-  EVENT_TIME: '08h às 22h',
+  EVENT_DATE: '18 e 19 de Julho',
+  EVENT_LOCATION: 'Capela Santa Teresinha',
+  EVENT_TIME: 'Sáb 18h e Dom 7h30',
   EVENT_ENTRY: 'Gratuita',
   
   // Descriptions
   DESC_NEWS: 'Fique por dentro das últimas novidades do evento',
   DESC_GALLERY: 'Veja as melhores fotos dos momentos especiais',
-  DESC_CAMERAS: 'Acompanhe a festa em tempo real através das nossas câmeras',
-  DESC_MAP: 'Veja a localização em tempo real do evento',
+  DESC_MAP: 'Veja como chegar e acompanhe a rota da procissão',
   DESC_RADIO: 'Ouça a programação oficial da festa',
   
   // Messages
   MSG_NO_NEWS: 'Nenhuma notícia encontrada',
   MSG_NO_PHOTOS: 'Nenhuma foto encontrada',
-  MSG_NO_CAMERAS: 'Nenhuma câmera disponível',
   MSG_CONNECTION_ERROR: 'Erro de conexão. Tente novamente.',
   MSG_LOADING_CONTENT: 'Carregando conteúdo...',
   
@@ -74,7 +71,6 @@ export const APP_TEXTS = {
 export const PLACEHOLDER_TEXTS = {
   SEARCH_NEWS: 'Buscar notícias...',
   SEARCH_PHOTOS: 'Buscar fotos...',
-  SEARCH_CAMERAS: 'Buscar câmeras...',
   FILTER_CATEGORY: 'Filtrar por categoria',
   SELECT_DATE: 'Selecionar data'
 } as const;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import { LatLngBounds, DivIcon, LatLng } from 'leaflet';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Share2, MapPin, Navigation, Truck, Church } from 'lucide-react';
+import { Share2, MapPin, Navigation, Truck, Church, WifiOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { ProcessedTrackerData } from '@/types/tracker';
 
@@ -36,41 +36,64 @@ interface EnhancedProcissaoMapProps {
 // Create custom truck icon for real-time position
 const createLiveTruckIcon = (course: number = 0, isMoving: boolean = false) => {
   const size = isMoving ? 40 : 35;
-  const emoji = isMoving ? '🚛' : '🅿️';
-  const color = isMoving ? '#22c55e' : '#6b7280';
+  const color = isMoving ? '#22c55e' : '#3b82f6';
   
+  const truckSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+      <path d="M19 18h2a1 1 0 0 0 1-1v-5.14a1 1 0 0 0-.29-.71l-4.4-4.44A1 1 0 0 0 15.6 6H14"/>
+      <circle cx="7.5" cy="18.5" r="2.5"/>
+      <circle cx="16.5" cy="18.5" r="2.5"/>
+    </svg>
+  `;
+
+  const parkingSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect width="18" height="18" x="3" y="3" rx="2"/>
+      <path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>
+    </svg>
+  `;
+
   return new DivIcon({
     html: `
       <div style="
         transform: rotate(${course}deg);
-        transition: transform 0.3s ease;
+        transition: transform 0.3s ease, background-color 0.3s ease;
         display: flex;
         flex-direction: column;
         align-items: center;
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
       ">
         <div style="
-          font-size: ${size}px;
-          line-height: 1;
+          background-color: ${color};
+          color: white;
+          border-radius: 50%;
+          width: ${size}px;
+          height: ${size}px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2.5px solid white;
           margin-bottom: 2px;
-          ${isMoving ? 'animation: bounce 2s infinite;' : ''}
-        ">${emoji}</div>
+          ${isMoving ? 'animation: live-bounce 2s infinite;' : ''}
+        ">
+          ${isMoving ? truckSvg : parkingSvg}
+        </div>
         <div style="
           width: 8px;
           height: 8px;
           background-color: ${color};
           border-radius: 50%;
           border: 2px solid white;
-          ${isMoving ? 'animation: pulse 2s infinite;' : ''}
+          ${isMoving ? 'animation: live-pulse 2s infinite;' : ''}
         "></div>
       </div>
       <style>
-        @keyframes bounce {
-          0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-10px); }
-          60% { transform: translateY(-5px); }
+        @keyframes live-bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
         }
-        @keyframes pulse {
+        @keyframes live-pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
         }
@@ -93,7 +116,26 @@ const createChurchIcon = () => {
         align-items: center;
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
       ">
-        <div style="font-size: 24px; line-height: 1;">⛪</div>
+        <div style="
+          background-color: #dc2626;
+          color: white;
+          border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid white;
+          margin-bottom: 2px;
+        ">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 3-8 8V21h16V11l-8-8z"/>
+            <path d="M12 2v2"/>
+            <path d="M11 3h2"/>
+            <path d="M10 17v4h4v-4H10z"/>
+            <path d="M8 12h8"/>
+          </svg>
+        </div>
         <div style="
           width: 6px;
           height: 6px;
@@ -104,9 +146,9 @@ const createChurchIcon = () => {
       </div>
     `,
     className: 'church-marker',
-    iconSize: [30, 35],
-    iconAnchor: [15, 30],
-    popupAnchor: [0, -25]
+    iconSize: [36, 40],
+    iconAnchor: [18, 34],
+    popupAnchor: [0, -30]
   });
 };
 
@@ -278,8 +320,8 @@ const EnhancedProcissaoMap: React.FC<EnhancedProcissaoMapProps> = ({
       try {
         debugLog('Starting parallel fetch of route and point data');
         const [route, point] = await Promise.all([
-          fetchGeoJSON('https://hypeneural.com/caminhao/geojson.php?f=1'),
-          fetchGeoJSON('https://hypeneural.com/caminhao/geojson.php?f=2')
+          fetchGeoJSON('/1.geojson'),
+          fetchGeoJSON('/2.geojson')
         ]);
 
         if (mounted) {
@@ -366,6 +408,44 @@ const EnhancedProcissaoMap: React.FC<EnhancedProcissaoMapProps> = ({
     );
   }
 
+  // Calcula os pontos percorridos e posições de início/fim com base na rota
+  let routeCoords: [number, number][] = [];
+  let traveledPoints: [number, number][] = [];
+  let startLatLng: [number, number] | null = null;
+  let endLatLng: [number, number] | null = null;
+
+  if (routeData) {
+    const features = routeData.features || [];
+    const lineString = features.find((f: any) => f.geometry?.type === 'LineString');
+    if (lineString && lineString.geometry?.coordinates) {
+      const coords = lineString.geometry.coordinates;
+      routeCoords = coords.map((c: any) => [c[1], c[0]] as [number, number]);
+      
+      if (routeCoords.length > 0) {
+        startLatLng = routeCoords[0];
+        endLatLng = routeCoords[routeCoords.length - 1];
+
+        // Encontra o índice da rota mais próximo do caminhão
+        let closestIdx = 0;
+        let minDistance = Infinity;
+        
+        for (let i = 0; i < routeCoords.length; i++) {
+          const [lat, lng] = routeCoords[i];
+          const dy = lat - trackerData.latitude;
+          const dx = lng - trackerData.longitude;
+          const dist = dx * dx + dy * dy;
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestIdx = i;
+          }
+        }
+
+        traveledPoints = routeCoords.slice(0, closestIdx + 1);
+        traveledPoints.push([trackerData.latitude, trackerData.longitude]);
+      }
+    }
+  }
+
   try {
     return (
       <motion.div
@@ -377,8 +457,9 @@ const EnhancedProcissaoMap: React.FC<EnhancedProcissaoMapProps> = ({
         {/* Status indicator */}
         {isOffline && (
           <div className="absolute top-0 left-0 right-0 z-[1001] bg-yellow-50 border border-yellow-200 rounded-t-lg p-2 text-center">
-            <p className="text-xs text-yellow-800">
-              📴 Modo offline - Dados podem estar desatualizados
+            <p className="text-xs text-yellow-800 flex items-center justify-center gap-1">
+              <WifiOff className="w-3.5 h-3.5 text-yellow-700" />
+              <span>Modo offline - Dados podem estar desatualizados</span>
             </p>
           </div>
         )}
@@ -397,24 +478,67 @@ const EnhancedProcissaoMap: React.FC<EnhancedProcissaoMapProps> = ({
               attribution='© OpenStreetMap contributors'
             />
             
-            {/* Route GeoJSON */}
+            {/* Route GeoJSON (Planned - Blue) */}
             {routeData && (
               <GeoJSON
                 data={routeData}
                 style={{
-                  color: '#e63946',
+                  color: '#3b82f6',
                   weight: 6,
-                  opacity: 0.8,
+                  opacity: 0.7,
                   lineCap: 'round',
                   lineJoin: 'round'
                 }}
               />
             )}
+
+            {/* Traveled Path (Actual Progress - Red) */}
+            {traveledPoints.length > 1 && (
+              <Polyline
+                positions={traveledPoints}
+                pathOptions={{
+                  color: '#ef4444',
+                  weight: 6,
+                  opacity: 0.9,
+                  lineCap: 'round',
+                  lineJoin: 'round'
+                }}
+              />
+            )}
+
+            {/* Church Marker at Start (Partida) */}
+            {startLatLng && (
+              <Marker position={startLatLng} icon={createChurchIcon()}>
+                <Popup>
+                  <div className="text-center" style={{ fontFamily: 'inherit' }}>
+                    <div className="font-semibold" style={{ fontSize: '13px' }}>Saída da Procissão</div>
+                    <div className="text-xs text-gray-500" style={{ marginTop: '2px' }}>Capela Santa Terezinha</div>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+
+            {/* Church Marker at End (Chegada) */}
+            {endLatLng && (
+              <Marker position={endLatLng} icon={createChurchIcon()}>
+                <Popup>
+                  <div className="text-center" style={{ fontFamily: 'inherit' }}>
+                    <div className="font-semibold" style={{ fontSize: '13px' }}>Chegada da Procissão</div>
+                    <div className="text-xs text-gray-500" style={{ marginTop: '2px' }}>Paróquia São Sebastião</div>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
             
             {/* Point GeoJSON */}
             {pointData && (
               <GeoJSON
-                data={pointData}
+                data={{
+                  ...pointData,
+                  features: pointData.features.filter(
+                    (f: any) => !f.properties?.Name?.toLowerCase().includes('saida') && !f.properties?.name?.toLowerCase().includes('saida')
+                  )
+                }}
                 pointToLayer={(feature, latlng) => {
                   try {
                     const isTruck = feature.properties?.type === 'truck';
@@ -429,12 +553,15 @@ const EnhancedProcissaoMap: React.FC<EnhancedProcissaoMapProps> = ({
                   try {
                     if (feature.properties) {
                       const { name, description, type } = feature.properties;
-                      const emoji = type === 'truck' ? '🚛' : '⛪';
+                      const iconSvg = type === 'truck'
+                        ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5.14a1 1 0 0 0-.29-.71l-4.4-4.44A1 1 0 0 0 15.6 6H14"/><circle cx="7.5" cy="18.5" r="2.5"/><circle cx="16.5" cy="18.5" r="2.5"/></svg>`
+                        : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;"><path d="m12 3-8 8V21h16V11l-8-8z"/><path d="M12 2v2"/><path d="M11 3h2"/><path d="M10 17v4h4v-4H10z"/><path d="M8 12h8"/></svg>`;
+                      
                       layer.bindPopup(`
-                        <div class="text-center">
-                          <div class="text-lg mb-1">${emoji}</div>
-                          <div class="font-semibold">${name || 'Local'}</div>
-                          ${description ? `<div class="text-sm text-gray-600">${description}</div>` : ''}
+                        <div class="text-center" style="font-family: inherit;">
+                          <div style="margin-bottom: 6px;">${iconSvg}</div>
+                          <div class="font-semibold" style="font-size: 13px;">${name || 'Local'}</div>
+                          ${description ? `<div class="text-xs text-gray-500" style="margin-top: 2px;">${description}</div>` : ''}
                         </div>
                       `);
                     }
@@ -451,8 +578,10 @@ const EnhancedProcissaoMap: React.FC<EnhancedProcissaoMapProps> = ({
               icon={createLiveTruckIcon(trackerData.course, trackerData.isInMotion)}
             >
               <Popup>
-                <div className="text-center">
-                  <div className="text-lg mb-2">🚛</div>
+                <div className="text-center flex flex-col items-center">
+                  <div className="text-lg mb-2 text-trucker-blue">
+                    <Truck className="w-5 h-5" />
+                  </div>
                   <div className="font-semibold mb-1">São Cristóvão</div>
                   <div className="text-sm text-gray-600 mb-2">
                     {trackerData.movementStatus.label}
@@ -474,7 +603,7 @@ const EnhancedProcissaoMap: React.FC<EnhancedProcissaoMapProps> = ({
               trackerData={trackerData}
             />
           </MapContainer>
-
+ 
           {/* Tracker status overlay */}
           <TrackerStatusOverlay data={trackerData} />
 

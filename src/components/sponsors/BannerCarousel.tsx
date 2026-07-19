@@ -131,8 +131,7 @@ export function BannerCarousel({
       {/* Banner Container */}
       <div 
         className={cn(
-          "relative w-full",
-          compact ? "aspect-[6/1]" : "aspect-[3/1] sm:aspect-[16/5]"
+          "relative w-full aspect-[3/1]"
         )}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}

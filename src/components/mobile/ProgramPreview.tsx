@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, ArrowRight, MapPin, Video, Bell, Share2, X, Church, Coffee, Truck, Gift, Music, Utensils } from "lucide-react";
+import { Calendar, Clock, ArrowRight, MapPin, Bell, Share2, X, Church, Coffee, Truck, Gift, Music, Utensils, Ticket, HeartHandshake } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { WeatherEventCard } from "@/components/weather/WeatherEventCard";
 import { useToast } from "@/hooks/use-toast";
 import { useWeather } from "@/hooks/useWeather";
-import { Event, getEventsByDay, getNextEvent, getEventStatus, getEventTypeConfig } from "@/data/programacao";
+import { Event, EventDay, eventDays, getEventDateTime, getEventsByDay, getEventStatus, getEventTypeConfig } from "@/data/programacao";
 import { useCountdown } from "@/hooks/useCountdown";
 
 // Componente de ícone dinâmico
@@ -21,6 +21,8 @@ const DynamicIcon = ({ iconName, className }: { iconName: string; className?: st
     Gift,
     Music,
     Utensils,
+    Ticket,
+    HeartHandshake,
     Calendar,
     Clock,
     MapPin
@@ -30,19 +32,39 @@ const DynamicIcon = ({ iconName, className }: { iconName: string; className?: st
   return <Icon className={className} />;
 };
 
-export const ProgramPreview = () => {
-  const [selectedDay, setSelectedDay] = useState<'saturday' | 'sunday'>('saturday'); // Aba padrão é sábado
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+const LiveClock = React.memo(() => {
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <span className="flex items-center gap-2 text-sm text-muted-foreground">
+      <Clock className="w-3 h-3" />
+      {currentTime.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })}
+    </span>
+  );
+});
+
+export const ProgramPreview = () => {
+  const [selectedDay, setSelectedDay] = useState<EventDay>('saturday');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { toast } = useToast();
   const { weather } = useWeather();
 
-  const getCurrentEvents = () => {
-    return getEventsByDay(selectedDay);
-  };
-
-  const nextEvent = getNextEvent();
-  const countdown = useCountdown(nextEvent?.date || new Date());
+  const currentEvents = useMemo(() => getEventsByDay(selectedDay), [selectedDay]);
+  const heroEvent = useMemo(
+    () => currentEvents.find((event) => getEventStatus(event) !== 'past') || currentEvents[0],
+    [currentEvents]
+  );
+  const countdown = useCountdown(heroEvent ? getEventDateTime(heroEvent) : new Date(), { precision: "minute" });
 
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
@@ -61,7 +83,7 @@ export const ProgramPreview = () => {
           url: window.location.href
         });
       } catch (error) {
-        console.log('Share cancelled');
+        return;
       }
     } else {
       toast({
@@ -78,15 +100,7 @@ export const ProgramPreview = () => {
     });
   };
 
-  const upcomingEvents = getCurrentEvents().slice(0, 4);
-
-  // Real-time clock update
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const upcomingEvents = useMemo(() => currentEvents.slice(0, 4), [currentEvents]);
 
   return (
     <>
@@ -106,18 +120,11 @@ export const ProgramPreview = () => {
               <h2 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                 Programação
               </h2>
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Clock className="w-3 h-3" />
-                {currentTime.toLocaleTimeString('pt-BR', { 
-                  hour: '2-digit', 
-                  minute: '2-digit',
-                  second: '2-digit'
-                })}
-              </p>
+              <LiveClock />
             </div>
           </div>
           <Badge variant="outline" className="bg-primary/10 border-primary/30 text-primary font-medium">
-            {getCurrentEvents().length} eventos
+            {currentEvents.length} eventos
           </Badge>
         </div>
 
@@ -140,7 +147,7 @@ export const ProgramPreview = () => {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Sáb 19/07
+              {eventDays.saturday.tabLabel}
             </button>
             <button
               onClick={() => setSelectedDay('sunday')}
@@ -150,13 +157,13 @@ export const ProgramPreview = () => {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Dom 20/07
+              {eventDays.sunday.tabLabel}
             </button>
           </div>
         </div>
 
         {/* Hero Event Card with Real-time Countdown */}
-        {nextEvent && (
+        {heroEvent && (
           <motion.div
             layout
             initial={{ opacity: 0, scale: 0.95 }}
@@ -165,17 +172,17 @@ export const ProgramPreview = () => {
             className="mb-6"
           >
             <Card 
-              className={`relative overflow-hidden border-0 shadow-xl bg-gradient-to-br ${getEventTypeConfig(nextEvent.event.type).gradient} backdrop-blur-sm cursor-pointer hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]`}
-              onClick={() => handleEventClick(nextEvent.event)}
+              className={`relative overflow-hidden border-0 shadow-xl bg-gradient-to-br ${getEventTypeConfig(heroEvent.type).gradient} backdrop-blur-sm cursor-pointer hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]`}
+              onClick={() => handleEventClick(heroEvent)}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
               <div className="relative p-6">
                 <div className="flex items-start justify-between mb-4">
                   <Badge 
-                    className={`${getEventTypeConfig(nextEvent.event.type).color} font-semibold px-3 py-1 text-xs`}
+                    className={`${getEventTypeConfig(heroEvent.type).color} font-semibold px-3 py-1 text-xs`}
                     variant="secondary"
                   >
-                    {getEventStatus(nextEvent.event) === 'current' ? '🔴 AO VIVO' : '⏰ PRÓXIMO'}
+                    {getEventStatus(heroEvent) === 'current' ? '🔴 AO VIVO' : '⏰ DESTAQUE'}
                   </Badge>
                   <div className="flex gap-2">
                     <motion.div
@@ -183,14 +190,9 @@ export const ProgramPreview = () => {
                       whileTap={{ scale: 0.9 }}
                       className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center"
                     >
-                      <DynamicIcon iconName={nextEvent.event.icon} className="w-5 h-5 text-primary" />
+                      <DynamicIcon iconName={heroEvent.icon} className="w-5 h-5 text-primary" />
                     </motion.div>
-                    {nextEvent.event.hasCamera && (
-                      <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
-                        <Video className="w-4 h-4 text-red-500" />
-                      </div>
-                    )}
-                    {nextEvent.event.hasRoute && (
+                    {heroEvent.hasRoute && (
                       <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
                         <MapPin className="w-4 h-4 text-green-500" />
                       </div>
@@ -201,7 +203,7 @@ export const ProgramPreview = () => {
                 <div className="flex items-start gap-4">
                   <div className="text-center">
                     <div className="text-3xl font-black bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent">
-                      {nextEvent.event.time}
+                      {heroEvent.time}
                     </div>
                     {countdown.isActive && !countdown.isPast && (
                       <div className="text-xs font-medium text-muted-foreground mt-1 bg-muted/50 rounded-full px-2 py-1">
@@ -213,15 +215,15 @@ export const ProgramPreview = () => {
                   
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-lg text-foreground mb-2 line-clamp-2">
-                      {nextEvent.event.title}
+                      {heroEvent.title}
                     </h3>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                       <MapPin className="w-4 h-4 flex-shrink-0" />
-                      <span className="line-clamp-1">{nextEvent.event.location}</span>
+                      <span className="line-clamp-1">{heroEvent.location}</span>
                     </div>
-                    {nextEvent.event.description && (
+                    {heroEvent.description && (
                       <p className="text-sm text-muted-foreground/80 line-clamp-2">
-                        {nextEvent.event.description}
+                        {heroEvent.description}
                       </p>
                     )}
                   </div>
@@ -275,9 +277,6 @@ export const ProgramPreview = () => {
                     </div>
                     
                     <div className="flex gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                      {event.hasCamera && (
-                        <Video className="w-4 h-4 text-red-500" />
-                      )}
                       {event.hasRoute && (
                         <MapPin className="w-4 h-4 text-green-500" />
                       )}
@@ -411,16 +410,8 @@ export const ProgramPreview = () => {
                       </Button>
                     </div>
 
-                    {(selectedEvent.hasCamera || selectedEvent.hasRoute) && (
+                    {selectedEvent.hasRoute && (
                       <div className="flex gap-3">
-                        {selectedEvent.hasCamera && (
-                          <Link to="/cameras" className="flex-1">
-                            <Button variant="default" size="sm" className="w-full">
-                              <Video className="w-4 h-4 mr-2" />
-                              Ver Câmera
-                            </Button>
-                          </Link>
-                        )}
                         {selectedEvent.hasRoute && (
                           <Link to="/mapa" className="flex-1">
                             <Button variant="default" size="sm" className="w-full">

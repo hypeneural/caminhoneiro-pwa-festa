@@ -78,12 +78,12 @@ export default function Contact() {
               <div className="flex-1">
                 <h3 className="font-medium text-foreground">Endereço</h3>
                 <p className="text-sm text-muted-foreground">
-                  Praça Central da Festa<br />
-                  Cidade dos Caminhoneiros<br />
-                  CEP: 01234-567
+                  Capela Santa Teresinha<br />
+                  Bairro Universitário<br />
+                  Tijucas/SC
                 </p>
               </div>
-              <Button size="sm" variant="outline" onClick={() => window.open('https://www.google.com/maps/place/Capela+Santa+Terezinha/@-27.2363842,-48.6485797,17z/data=!4m10!1m2!2m1!1sSanta+Terezinha+Tijucas!3m6!1s0x94d8abe724bb480b:0x6ccf8fe95043e90e!8m2!3d-27.2363844!4d-48.6447987!15sChdTYW50YSBUZXJlemluaGEgVGlqdWNhc5IBD2NhdGhvbGljX2NodXJjaKoBVRABKhMiD3NhbnRhIHRlcmV6aW5oYSgMMh8QASIbF9oq7UbKLUAdGIVrKAJaeBNrkVuEzl05nRvLMhsQAiIXc2FudGEgdGVyZXppbmhhIHRpanVjYXPgAQA!16s%2Fg%2F11bytv072k?entry=ttu&g_ep=EgoyMDI1MDcxNi4wIKXMDSoASAFQAw%3D%3D', '_blank')}>
+              <Button size="sm" variant="outline" onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=Capela+Santa+Teresinha+Bairro+Universitario+Tijucas+SC', '_blank')}>
                 Ver Mapa
               </Button>
             </div>

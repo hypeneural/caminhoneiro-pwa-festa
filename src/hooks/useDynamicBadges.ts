@@ -8,46 +8,29 @@ interface BadgeData {
 export function useDynamicBadges() {
   const [badges, setBadges] = useState<BadgeData>({});
 
-  // Simular dados dinâmicos de badges
+  // Badges estáveis para destacar os pontos oficiais da edição 2026.
   useEffect(() => {
     const updateBadges = () => {
-      const now = new Date();
       const dynamicBadges: BadgeData = {};
 
-      // Galeria: mostrar novas fotos
-      if (Math.random() > 0.3) {
-        dynamicBadges.galeria = {
-          count: Math.floor(Math.random() * 10) + 1,
-          type: 'new',
-          pulse: true
-        };
-      }
-
-      // Programação: mostrar atualizações
-      if (now.getHours() >= 8 && now.getHours() <= 22) {
-        dynamicBadges.programacao = {
-          count: Math.floor(Math.random() * 3) + 1,
-          type: 'update',
-          pulse: false
-        };
-      }
-
-      // Notícias: sempre mostrar algumas
-      dynamicBadges.noticias = {
-        count: Math.floor(Math.random() * 5) + 1,
-        type: 'new',
-        pulse: true
+      dynamicBadges.programacao = {
+        count: 6,
+        type: 'update',
+        pulse: false
       };
 
-      // Mapa: mostrar se ao vivo
-      if (now.getHours() >= 6 && now.getHours() <= 23) {
-        dynamicBadges.mapa = {
-          count: 1,
-          type: 'notification',
-          color: 'bg-emerald-500',
-          pulse: true
-        };
-      }
+      dynamicBadges.rota = {
+        count: 1,
+        type: 'notification',
+        color: 'bg-emerald-500',
+        pulse: false
+      };
+
+      dynamicBadges.noticias = {
+        count: 2,
+        type: 'new',
+        pulse: false
+      };
 
       setBadges(dynamicBadges);
     };

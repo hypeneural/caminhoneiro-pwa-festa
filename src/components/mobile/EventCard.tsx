@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, MapPin, Route, Share2, Calendar, Camera, ExternalLink, Navigation, Zap, Users, Car, Truck, Trophy } from 'lucide-react';
+import { Clock, MapPin, Route, Share2, Calendar, ExternalLink, Navigation, Zap, Users, Car, Truck, Trophy } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ interface EventCardProps {
     description?: string;
     isLive?: boolean;
     hasRoute?: boolean;
-    hasCamera?: boolean;
+    duration?: number;
   };
   index: number;
   status: 'past' | 'current' | 'upcoming';
@@ -84,9 +84,9 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
       navigator.vibrate(50);
     }
     
-    const eventDate = new Date(`2025-07-${event.date.includes('19') ? '19' : '20'}T${event.time}:00`);
+    const eventDate = new Date(`${event.date}T${event.time}:00`);
     const startDate = eventDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const endDate = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const endDate = new Date(eventDate.getTime() + (event.duration || 120) * 60 * 1000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     
     const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(event.description || '')}&location=${encodeURIComponent(event.address || event.location)}`;
     
@@ -316,24 +316,6 @@ export const EventCard: React.FC<EventCardProps> = ({ event, index, status }) =>
                   </motion.div>
                 )}
                 
-                {event.hasCamera && (
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button 
-                      size="default" 
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (navigator.vibrate) navigator.vibrate(50);
-                        navigate('/cameras');
-                      }}
-                      className="w-full h-12 bg-background/50 hover:bg-trucker-red/10 border-trucker-red/30 text-sm font-medium"
-                    >
-                      <Camera className="w-4 h-4 mr-2" />
-                      Câmera
-                    </Button>
-                  </motion.div>
-                )}
-
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button 
                     size="default" 

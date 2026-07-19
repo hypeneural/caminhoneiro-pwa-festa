@@ -1,4 +1,15 @@
-import { Church, Coffee, Truck, Gift, Music, Utensils, Clock, MapPin } from "lucide-react";
+export type EventDay = 'saturday' | 'sunday';
+
+export interface EventDayInfo {
+  id: EventDay;
+  tabLabel: string;
+  title: string;
+  dateLabel: string;
+  isoDate: string;
+  shortDate: string;
+  focus: string;
+  summary: string;
+}
 
 export interface Event {
   id: number;
@@ -6,205 +17,228 @@ export interface Event {
   title: string;
   location: string;
   address: string;
-  type: 'religioso' | 'procissao' | 'alimentacao' | 'entretenimento';
+  type: 'religioso' | 'procissao' | 'alimentacao' | 'entretenimento' | 'comunitario';
   date: string;
   description: string;
-  hasCamera: boolean;
   hasRoute: boolean;
   isLive?: boolean;
-  duration: number; // em minutos
-  icon: string; // nome do ícone lucide
+  duration: number;
+  icon: string;
+  highlight?: string;
+  price?: string;
+  details?: string[];
 }
 
-// Dados atualizados da programação
+export const eventDays: Record<EventDay, EventDayInfo> = {
+  saturday: {
+    id: 'saturday',
+    tabLabel: 'Sáb 18/07',
+    title: 'Sábado',
+    dateLabel: '18 de julho de 2026',
+    isoDate: '2026-07-18',
+    shortDate: '18/07/26',
+    focus: 'Abertura da festa',
+    summary: 'Missa às 18h e bingo tradicional às 19h40, com cartelas à venda no local.'
+  },
+  sunday: {
+    id: 'sunday',
+    tabLabel: 'Dom 19/07',
+    title: 'Domingo',
+    dateLabel: '19 de julho de 2026',
+    isoDate: '2026-07-19',
+    shortDate: '19/07/26',
+    focus: 'Procissão e confraternização',
+    summary: 'Café da manhã, procissão automotiva, almoço festivo e tarde dançante com André e Cristiano.'
+  }
+};
+
+export const eventAddress = 'Capela Santa Teresinha, bairro Universitário, Tijucas - SC';
+
+export const scheduleSummary = {
+  edition: 'XXII Festa de São Cristóvão',
+  year: '2026',
+  dateRange: '18 e 19 de julho de 2026',
+  community: 'Comunidade da Capela Santa Teresinha',
+  neighborhood: 'Bairro Universitário, Tijucas/SC',
+  invitation: 'Reúna sua família e participe de dois dias de fé, tradição, confraternização e integração comunitária.',
+  kitchenNotice: 'Durante os dois dias haverá serviço completo de bar e cozinha.',
+  bingoPrice: 'Cartelas do bingo: R$ 8,00 a unidade ou 3 por R$ 20,00.'
+};
+
 export const saturdayEvents: Event[] = [
   {
     id: 1,
-    time: "18:00",
-    title: "Missa dos Festeiros e da Comunidade",
-    location: "Capela Santa Teresinha",
-    address: "Rua Santa Teresinha, 123 - Centro, Tijucas - SC",
-    type: "religioso",
-    date: "19/07/2025",
-    description: "⛪ Missa dos Festeiros e da Comunidade em momento de fé e união.",
-    hasCamera: true,
+    time: '18:00',
+    title: 'Missa de abertura',
+    location: 'Capela Santa Teresinha',
+    address: eventAddress,
+    type: 'religioso',
+    date: eventDays.saturday.isoDate,
+    description: 'Celebração que abre oficialmente a XXII Festa de São Cristóvão, reunindo moradores, fiéis e visitantes em momento de fé.',
     hasRoute: false,
-    duration: 60,
-    icon: "Church"
+    duration: 70,
+    icon: 'Church',
+    highlight: 'Abertura oficial',
+    details: ['Momento de fé e comunidade', 'Participação aberta ao público']
   },
   {
     id: 2,
-    time: "19:00",
-    title: "Galeto com bar & cozinha completos",
-    location: "Área de Alimentação",
-    address: "Praça Central - Centro, Tijucas - SC",
-    type: "alimentacao",
-    date: "19/07/2025",
-    description: "🍗 Galeto com bar & cozinha completos para todos os participantes.",
-    hasCamera: false,
+    time: '19:40',
+    title: 'Bingo tradicional',
+    location: 'Área da festa',
+    address: eventAddress,
+    type: 'comunitario',
+    date: eventDays.saturday.isoDate,
+    description: 'Uma das atrações mais aguardadas da programação, com cartelas disponíveis no local.',
     hasRoute: false,
-    duration: 180,
-    icon: "Utensils"
-  },
-  {
-    id: 3,
-    time: "20:00",
-    title: "Pista garantida com DJ Jr. Oliver",
-    location: "Palco Principal",
-    address: "Praça Central - Centro, Tijucas - SC",
-    type: "entretenimento",
-    date: "19/07/2025",
-    description: "🎧 Pista garantida com DJ Jr. Oliver animando a noite.",
-    hasCamera: true,
-    hasRoute: false,
-    duration: 240,
-    icon: "Music"
+    duration: 140,
+    icon: 'Ticket',
+    highlight: 'Cartelas à venda',
+    price: 'R$ 8,00 ou 3 por R$ 20,00',
+    details: ['Cartela unitária: R$ 8,00', 'Promoção: 3 cartelas por R$ 20,00']
   }
 ];
 
 export const sundayEvents: Event[] = [
   {
-    id: 4,
-    time: "07:30",
-    title: "Café da manhã quentinho à venda",
-    location: "Área de Alimentação",
-    address: "Praça Central - Centro, Tijucas - SC",
-    type: "alimentacao",
-    date: "20/07/2025",
-    description: "☕ Café da manhã quentinho à venda para começar bem o dia.",
-    hasCamera: false,
+    id: 3,
+    time: '07:30',
+    title: 'Café da manhã',
+    location: 'Área de alimentação',
+    address: eventAddress,
+    type: 'alimentacao',
+    date: eventDays.sunday.isoDate,
+    description: 'Abertura das atividades de domingo com café da manhã para acolher a comunidade logo cedo.',
     hasRoute: false,
-    duration: 90,
-    icon: "Coffee"
+    duration: 80,
+    icon: 'Coffee',
+    highlight: 'Comece o domingo na festa',
+    details: ['Serviço de bar e cozinha', 'Atendimento à comunidade']
+  },
+  {
+    id: 4,
+    time: '09:00',
+    title: 'Procissão automotiva',
+    location: 'Saída da Capela Santa Teresinha',
+    address: eventAddress,
+    type: 'procissao',
+    date: eventDays.sunday.isoDate,
+    description: 'Momento de devoção dedicado a São Cristóvão, protetor dos motoristas e viajantes.',
+    hasRoute: true,
+    isLive: false,
+    duration: 120,
+    icon: 'Truck',
+    highlight: 'Devoção sobre rodas',
+    details: ['Participação de motoristas e famílias', 'Homenagem a São Cristóvão']
   },
   {
     id: 5,
-    time: "09:00",
-    title: "Procissão automotiva (saída Capela Sta. Teresinha)",
-    location: "Capela Santa Teresinha",
-    address: "Rua Santa Teresinha, 123 - Centro, Tijucas - SC",
-    type: "procissao",
-    date: "20/07/2025",
-    description: "🚛 Procissão automotiva saindo da Capela Santa Teresinha.",
-    hasRoute: true,
-    hasCamera: true,
-    isLive: false,
+    time: '12:00',
+    title: 'Almoço festivo',
+    location: 'Área de alimentação',
+    address: eventAddress,
+    type: 'alimentacao',
+    date: eventDays.sunday.isoDate,
+    description: 'Almoço comunitário para reunir famílias, visitantes e participantes após a procissão.',
+    hasRoute: false,
     duration: 120,
-    icon: "Truck"
+    icon: 'Utensils',
+    highlight: 'Confraternização',
+    details: ['Almoço ao meio-dia', 'Completo serviço de bar e cozinha']
   },
   {
     id: 6,
-    time: "10:30",
-    title: "Bênção dos veículos no retorno",
-    location: "Capela Santa Teresinha",
-    address: "Rua Santa Teresinha, 123 - Centro, Tijucas - SC",
-    type: "religioso",
-    date: "20/07/2025",
-    description: "🙏 Bênção dos veículos no retorno em frente à Capela.",
-    hasCamera: true,
-    hasRoute: false,
-    duration: 30,
-    icon: "Church"
-  },
-  {
-    id: 7,
-    time: "11:00",
-    title: "Entrega do Kit Festeiro + almoço caprichado",
-    location: "Área Central do Evento",
-    address: "Praça Central - Centro, Tijucas - SC",
-    type: "alimentacao",
-    date: "20/07/2025",
-    description: "🎁 Entrega do Kit Festeiro + almoço caprichado para todos.",
-    hasCamera: false,
-    hasRoute: false,
-    duration: 180,
-    icon: "Gift"
-  },
-  {
-    id: 8,
-    time: "15:00",
-    title: "Tarde dançante com Alciney & Sandro",
-    location: "Palco Principal",
-    address: "Praça Central - Centro, Tijucas - SC",
-    type: "entretenimento",
-    date: "20/07/2025",
-    description: "💃 Tarde dançante com Alciney & Sandro para animar a galera.",
-    hasCamera: true,
+    time: '14:00',
+    title: 'Tarde dançante com André e Cristiano',
+    location: 'Área da festa',
+    address: eventAddress,
+    type: 'entretenimento',
+    date: eventDays.sunday.isoDate,
+    description: 'Música e confraternização para encerrar a programação com animação para toda a comunidade.',
     hasRoute: false,
     duration: 240,
-    icon: "Music"
+    icon: 'Music',
+    highlight: 'Música ao vivo',
+    details: ['Show com André e Cristiano', 'Tarde de integração comunitária']
   }
 ];
 
-// Função para obter eventos por dia
-export const getEventsByDay = (day: 'saturday' | 'sunday'): Event[] => {
+export const getEventsByDay = (day: EventDay): Event[] => {
   return day === 'saturday' ? saturdayEvents : sundayEvents;
 };
 
-// Função para obter todos os eventos
 export const getAllEvents = (): Event[] => {
-  return [...saturdayEvents, ...sundayEvents];
+  return [...saturdayEvents, ...sundayEvents].sort(
+    (a, b) => getEventDateTime(a).getTime() - getEventDateTime(b).getTime()
+  );
 };
 
-// Função para obter próximo evento
+export const getEventDateTime = (event: Pick<Event, 'date' | 'time'>): Date => {
+  return new Date(`${event.date}T${event.time}:00`);
+};
+
 export const getNextEvent = (): { event: Event; date: Date } | null => {
   const now = new Date();
   const allEvents = getAllEvents();
-  
-  for (const event of allEvents) {
-    const eventDate = new Date(`2025-07-${event.date.includes('19') ? '19' : '20'}T${event.time}:00`);
-    if (eventDate > now) {
-      return { event, date: eventDate };
-    }
+  const nextEvent = allEvents.find((event) => getEventDateTime(event) > now);
+
+  if (nextEvent) {
+    return { event: nextEvent, date: getEventDateTime(nextEvent) };
   }
-  
-  // Se não há eventos futuros, retorna o primeiro evento do sábado
-  return saturdayEvents[0] ? { 
-    event: saturdayEvents[0], 
-    date: new Date(`2025-07-19T${saturdayEvents[0].time}:00`)
-  } : null;
+
+  return allEvents[0] ? { event: allEvents[0], date: getEventDateTime(allEvents[0]) } : null;
 };
 
-// Função para obter status do evento
 export const getEventStatus = (event: Event): 'upcoming' | 'current' | 'past' => {
   const now = new Date();
-  const eventDate = new Date(`2025-07-${event.date.includes('19') ? '19' : '20'}T${event.time}:00`);
+  const eventDate = getEventDateTime(event);
   const eventEnd = new Date(eventDate.getTime() + event.duration * 60 * 1000);
-  
+
   if (now < eventDate) return 'upcoming';
   if (now >= eventDate && now <= eventEnd) return 'current';
   return 'past';
 };
 
-// Função para obter cores por tipo
 export const getEventTypeConfig = (type: Event['type']) => {
   switch (type) {
     case 'religioso':
       return {
-        color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400',
+        label: 'Fé',
+        color: 'text-blue-700 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300',
         gradient: 'from-blue-500/10 to-blue-600/20',
         border: 'border-blue-200/50 dark:border-blue-800/50'
       };
     case 'procissao':
       return {
-        color: 'text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400',
+        label: 'Procissão',
+        color: 'text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-300',
         gradient: 'from-red-500/10 to-red-600/20',
         border: 'border-red-200/50 dark:border-red-800/50'
       };
     case 'alimentacao':
       return {
-        color: 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400',
+        label: 'Gastronomia',
+        color: 'text-orange-700 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-300',
         gradient: 'from-orange-500/10 to-orange-600/20',
         border: 'border-orange-200/50 dark:border-orange-800/50'
       };
     case 'entretenimento':
       return {
-        color: 'text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400',
+        label: 'Música',
+        color: 'text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-300',
         gradient: 'from-green-500/10 to-green-600/20',
         border: 'border-green-200/50 dark:border-green-800/50'
       };
+    case 'comunitario':
+      return {
+        label: 'Comunidade',
+        color: 'text-violet-700 bg-violet-50 dark:bg-violet-900/20 dark:text-violet-300',
+        gradient: 'from-violet-500/10 to-violet-600/20',
+        border: 'border-violet-200/50 dark:border-violet-800/50'
+      };
     default:
       return {
+        label: 'Evento',
         color: 'text-muted-foreground bg-muted',
         gradient: 'from-muted/10 to-muted/20',
         border: 'border-muted/50'

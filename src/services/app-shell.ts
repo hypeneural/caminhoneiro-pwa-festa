@@ -12,7 +12,7 @@ export interface AppShellConfig {
 }
 
 export const APP_SHELL_CONFIG: AppShellConfig = {
-  criticalRoutes: ['/', '/galeria', '/mapa', '/programacao', '/noticias', '/vocesabia'],
+  criticalRoutes: ['/', '/programacao', '/mapa', '/rota-completa', '/menu', '/noticias'],
   staticAssets: [
     '/manifest.json',
     '/pwa-192x192.png',
@@ -23,7 +23,8 @@ export const APP_SHELL_CONFIG: AppShellConfig = {
     '/api/tracker',
     '/api/news',
     '/api/photos',
-    '/api/stories'
+    '/api/cardaoui',
+    '/api/weather'
   ],
   cacheFirst: [
     'images',
@@ -63,7 +64,6 @@ class AppShellManager {
       this.initPerformanceObserver();
       
       this.isInitialized = true;
-      console.log('🚀 App Shell initialized successfully');
     } catch (error) {
       console.error('❌ App Shell initialization failed:', error);
     }
@@ -78,7 +78,7 @@ class AppShellManager {
   private setupPreconnections(): void {
     const preconnectDomains = [
       'https://images.unsplash.com',
-      'https://api.festadocaminhoneiro.com.br',
+      'https://api.festadoscaminhoneiros.com.br',
       'https://fonts.googleapis.com',
       'https://fonts.gstatic.com'
     ];
@@ -117,7 +117,9 @@ class AppShellManager {
       loadComplete: entry.loadEventEnd - entry.loadEventStart
     };
 
-    console.log('📊 Navigation Metrics:', metrics);
+    if (import.meta.env.DEV) {
+      console.debug('Navigation Metrics:', metrics);
+    }
   }
 
   // Resource hints management

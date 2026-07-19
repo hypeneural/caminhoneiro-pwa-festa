@@ -71,7 +71,7 @@ export const mockFAQs: FAQItem[] = [
   {
     id: '1',
     question: 'Quais são os horários da festa?',
-    answer: 'A XXI Festa de São Cristóvão acontece nos dias 19 e 20 de julho de 2025. No sábado (19/07), a programação começa às 18h com a Missa dos Festeiros, seguida de serviço de bar e cozinha, galeto e música. No domingo (20/07), as atividades iniciam às 7h30 com café da manhã, seguido da procissão automotiva às 9h, almoço festivo às 11h e tarde dançante às 15h.',
+    answer: 'A XXII Festa de São Cristóvão acontece nos dias 18 e 19 de julho de 2026, na Capela Santa Teresinha, no bairro Universitário, em Tijucas/SC. No sábado (18/07), a programação começa às 18h com a missa de abertura e segue às 19h40 com o bingo tradicional. No domingo (19/07), as atividades iniciam às 7h30 com café da manhã, seguido da procissão automotiva às 9h, almoço festivo às 12h e tarde dançante com André e Cristiano às 14h.',
     category: 'programacao',
     tags: ['horario', 'cronograma', 'atividades'],
     popular: true,
@@ -81,7 +81,7 @@ export const mockFAQs: FAQItem[] = [
   {
     id: '2',
     question: 'Haverá shows musicais? Quais artistas se apresentarão?',
-    answer: 'Sim! Teremos shows de música sertaneja e popular brasileira. A programação completa dos artistas será divulgada em breve nas nossas redes sociais e aqui no app.',
+    answer: 'Sim. No domingo, 19 de julho de 2026, a partir das 14h, haverá tarde dançante com André e Cristiano, com música e confraternização para toda a comunidade.',
     category: 'programacao',
     tags: ['shows', 'musica', 'artistas', 'sertanejo'],
     popular: true,
@@ -103,7 +103,7 @@ export const mockFAQs: FAQItem[] = [
   {
     id: '4',
     question: 'Onde acontece a festa?',
-    answer: 'A festa acontece na Praça Central da cidade. Você pode ver a localização exata na aba "Mapa" do aplicativo, que mostra também rotas de acesso e pontos de referência.',
+    answer: 'A festa acontece na Capela Santa Teresinha, no bairro Universitário, em Tijucas/SC. Você pode ver a localização exata na aba "Mapa" do aplicativo.',
     category: 'localizacao',
     tags: ['local', 'endereco', 'praca', 'mapa'],
     popular: true,
@@ -189,7 +189,7 @@ export const mockFAQs: FAQItem[] = [
   {
     id: '12',
     question: 'O app funciona offline?',
-    answer: 'Sim! O app funciona offline para informações básicas como programação e FAQ. Funcionalidades que dependem de internet (como mapa ao vivo) precisam de conexão.',
+    answer: 'Sim! O app funciona offline para informações básicas como programação e FAQ. Funcionalidades que dependem de internet, como rotas externas, rádio e atualizações online, precisam de conexão.',
     category: 'tecnico',
     tags: ['offline', 'internet', 'funcionalidade'],
     popular: false,
@@ -211,7 +211,7 @@ export const mockFAQs: FAQItem[] = [
   {
     id: '14',
     question: 'Haverá bênção dos caminhões?',
-    answer: 'Sim! A tradicional bênção dos caminhões acontece no domingo às 16h, na praça principal. É um dos momentos mais emocionantes da festa.',
+    answer: 'A programação de 2026 destaca a procissão automotiva no domingo, 19 de julho, às 9h, em devoção a São Cristóvão, protetor dos motoristas e viajantes.',
     category: 'geral',
     tags: ['bencao', 'caminhoes', 'tradicao', 'religioso'],
     popular: true,

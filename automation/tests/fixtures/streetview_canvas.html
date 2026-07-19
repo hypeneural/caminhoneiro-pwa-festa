@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Fixture de canvas</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        background: #101820;
+        overflow: hidden;
+      }
+
+      #scene {
+        position: relative;
+        width: 960px;
+        height: 540px;
+        margin: 30px auto 0;
+      }
+
+      canvas {
+        display: block;
+        width: 960px;
+        height: 540px;
+      }
+
+      #attribution {
+        position: absolute;
+        right: 12px;
+        bottom: 10px;
+        padding: 5px 8px;
+        color: white;
+        background: rgba(0, 0, 0, 0.72);
+        font: 14px Arial, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="scene">
+      <canvas id="panorama" width="960" height="540"></canvas>
+      <div id="attribution">Fixture Street View · atribuição preservada</div>
+    </div>
+    <script>
+      setTimeout(() => {
+        const canvas = document.getElementById("panorama");
+        const context = canvas.getContext("2d");
+        const gradient = context.createLinearGradient(0, 0, 960, 540);
+        gradient.addColorStop(0, "#1d4ed8");
+        gradient.addColorStop(0.45, "#22c55e");
+        gradient.addColorStop(1, "#f59e0b");
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 960, 540);
+
+        context.fillStyle = "#334155";
+        context.fillRect(0, 350, 960, 190);
+        context.strokeStyle = "#f8fafc";
+        context.lineWidth = 8;
+        context.beginPath();
+        context.moveTo(0, 450);
+        context.lineTo(960, 405);
+        context.stroke();
+
+        context.fillStyle = "#7f1d1d";
+        context.fillRect(100, 180, 230, 190);
+        context.fillStyle = "#fef3c7";
+        for (let row = 0; row < 3; row += 1) {
+          for (let column = 0; column < 4; column += 1) {
+            context.fillRect(125 + column * 48, 205 + row * 45, 28, 28);
+          }
+        }
+      }, 500);
+    </script>
+  </body>
+</html>

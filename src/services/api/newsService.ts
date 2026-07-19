@@ -1,6 +1,7 @@
 import axios from '@/lib/axios';
 import { NewsItem, NewsResponse, NewsFilters, NewsCategory, NewsCategoriesResponse } from '@/types/news';
 import { API } from '@/constants/api';
+import { mockNews } from '@/data/mockNews';
 
 const BASE_URL = API.BASE_URL;
 const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
@@ -50,8 +51,11 @@ export const newsService = {
         timeout: 10000 // 10 seconds timeout
       });
 
+      const transformedItems = response.data.data.map(transformNewsItem);
+      const data = mergeOfficial2026News(transformedItems, filters);
+
       const transformedData = {
-        data: response.data.data.map(transformNewsItem),
+        data,
         meta: response.data.meta,
         timestamp: Date.now()
       };
@@ -126,7 +130,7 @@ export const newsService = {
       const response = await axios.get<NewsResponse>(`${BASE_URL}/news/featured`, {
         timeout: 10000
       });
-      const transformedData = response.data.data.map(transformNewsItem);
+      const transformedData = mergeOfficial2026News(response.data.data.map(transformNewsItem), { limit: 6 });
       
       newsCache.set(cacheKey, {
         data: transformedData,
@@ -225,5 +229,25 @@ const transformNewsItem = (item: any): NewsItem => ({
   trending: false,
   hot: false
 });
+
+const mergeOfficial2026News = (apiItems: NewsItem[], filters: NewsFilters = {}): NewsItem[] => {
+  const page = filters.page || 1;
+  const hasSearchOrCategory = Boolean(filters.search || filters.category);
+
+  if (page !== 1 || hasSearchOrCategory) {
+    return apiItems;
+  }
+
+  const officialItems = mockNews.filter((item) =>
+    item.title.includes('2026') || item.content.includes('2026')
+  );
+
+  const merged = [...officialItems, ...apiItems].filter((item, index, all) => {
+    const key = item.slug || String(item.id);
+    return all.findIndex((candidate) => (candidate.slug || String(candidate.id)) === key) === index;
+  });
+
+  return typeof filters.limit === 'number' ? merged.slice(0, filters.limit) : merged;
+};
 
 export default newsService;

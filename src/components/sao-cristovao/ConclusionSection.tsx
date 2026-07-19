@@ -117,7 +117,7 @@ export const ConclusionSection = () => {
                   size="lg" 
                   className="bg-trucker-yellow hover:bg-trucker-yellow/90 text-black font-semibold"
                 >
-                  Ver Programação 2025
+                  Ver Programação 2026
                 </Button>
                 <Button 
                   variant="outline" 

@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-85a116cc'], (function (workbox) { 'use strict';
+define(['./workbox-b5238423'], (function (workbox) { 'use strict';
 
   self.skipWaiting();
   workbox.clientsClaim();
@@ -82,7 +82,7 @@ define(['./workbox-85a116cc'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "/index.html",
-    "revision": "0.mth0f11504"
+    "revision": "0.5usb8m8d5gg"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("/index.html"), {
@@ -90,21 +90,21 @@ define(['./workbox-85a116cc'], (function (workbox) { 'use strict';
     denylist: [/^\/_/, /\/[^/?]+\.[^/]+$/, /^\/api\//, /\/manifest\.json$/]
   }));
   workbox.registerRoute(({
+    url
+  }) => (url.hostname === "live.festadoscaminhoneiros.com.br" || url.hostname === "localhost" && url.port === "3000" || url.hostname === "127.0.0.1" && url.port === "3000") && (url.pathname.startsWith("/public/") || url.pathname === "/ws"), new workbox.NetworkOnly({
+    "cacheName": "live-tracking-network-only",
+    plugins: []
+  }), 'GET');
+  workbox.registerRoute(({
     request
   }) => request.mode === "navigate", new workbox.NetworkFirst({
     "cacheName": "pages-cache",
     "networkTimeoutSeconds": 3,
     plugins: []
   }), 'GET');
-  workbox.registerRoute(/^https:\/\/api\.festadocaminhoneiro\.com\.br\/.*/i, new workbox.NetworkFirst({
-    "cacheName": "api-cache",
-    "networkTimeoutSeconds": 5,
-    plugins: [new workbox.ExpirationPlugin({
-      maxEntries: 200,
-      maxAgeSeconds: 172800
-    }), new workbox.CacheableResponsePlugin({
-      statuses: [0, 200]
-    })]
+  workbox.registerRoute(/^https:\/\/api\.festadoscaminhoneiros\.com\.br\/.*/i, new workbox.NetworkOnly({
+    "cacheName": "api-network-only",
+    plugins: []
   }), 'GET');
   workbox.registerRoute(/\/poll\/.*/i, new workbox.NetworkFirst({
     "cacheName": "poll-cache",

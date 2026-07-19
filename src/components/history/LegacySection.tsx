@@ -232,19 +232,19 @@ export const LegacySection = () => {
               <h3 className="text-2xl font-bold mb-4">Faça Parte da História</h3>
               <p className="mb-6 text-white/90 max-w-2xl mx-auto">
                 A próxima página da nossa história está sendo escrita agora. 
-                Junte-se a nós na 21ª edição e ajude a manter viva esta tradição 
+                Junte-se a nós na 22ª edição e ajude a manter viva esta tradição
                 que é patrimônio de Tijucas e de todo o setor de transportes brasileiro.
               </p>
               
               <div className="space-y-3 mb-6">
                 <div className="text-lg font-semibold">
-                  21ª Festa dos Caminhoneiros de São Cristóvão
+                  22ª Festa de São Cristóvão
                 </div>
                 <div className="text-white/90">
-                  19 e 20 de Julho de 2025
+                  18 e 19 de Julho de 2026
                 </div>
                 <div className="text-white/90">
-                  Igreja de Santa Terezinha - Tijucas/SC
+                  Capela Santa Teresinha - Bairro Universitário, Tijucas/SC
                 </div>
               </div>
 

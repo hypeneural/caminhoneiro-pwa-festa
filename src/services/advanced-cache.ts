@@ -149,9 +149,10 @@ class AdvancedCacheManager {
   // Smart preloading based on user behavior
   async preloadNextLikelyResource(userBehavior: { currentRoute: string; timeSpent: number }): Promise<void> {
     const preloadMap: Record<string, string[]> = {
-      '/': ['/galeria', '/mapa', '/noticias'],
-      '/galeria': ['/stories', '/videos'],
-      '/mapa': ['/cameras', '/rota-completa'],
+      '/': ['/programacao', '/mapa', '/menu'],
+      '/programacao': ['/mapa', '/rota-completa', '/menu'],
+      '/galeria': ['/stories', '/noticias'],
+      '/mapa': ['/rota-completa'],
       '/noticias': ['/galeria', '/historia']
     };
 

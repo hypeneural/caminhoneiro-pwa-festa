@@ -1,0 +1,11 @@
+diff --git a/automation/scripts/iniciar_sistema.bat b/automation/scripts/iniciar_sistema.bat
+--- a/automation/scripts/iniciar_sistema.bat
++++ b/automation/scripts/iniciar_sistema.bat
+@@ -286,3 +286,5 @@
+ :require_running_service
+-findstr.exe /X /C:"%~1" "!RUNNING_SERVICES_FILE!" >nul 2>&1
+-exit /b !errorlevel!
++for /f "usebackq delims=" %%S in ("!RUNNING_SERVICES_FILE!") do (
++    if /I "%%S"=="%~1" exit /b 0
++)
++exit /b 1

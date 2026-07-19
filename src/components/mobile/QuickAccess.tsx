@@ -1,23 +1,27 @@
-import React, { useState, useCallback } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { ErrorBoundary, CarouselErrorFallback } from "@/components/ui/error-boundary";
-import { GridSkeleton } from "@/components/ui/skeleton";
 import { TouchFeedback, RippleEffect } from "@/components/ui/touch-feedback";
 import { useQuickAccess } from "@/hooks/useQuickAccess";
 import { useDynamicBadges } from "@/hooks/useDynamicBadges";
-import { THEME_COLORS, APP_TEXTS } from "@/constants";
-import { Camera, Star, Heart, Zap, Clock } from "lucide-react";
+import { MoreHorizontal, Star, Heart, Zap, Clock } from "lucide-react";
 import { ContatoIgrejaModal } from "./ContatoIgrejaModal";
 
 const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { item: any; index: number; onContatoIgrejaClick?: () => void }) => {
   const { trackUsage, isFavorite, toggleFavorite } = useQuickAccess();
   const { getBadgeForItem } = useDynamicBadges();
-  const [isPressed, setIsPressed] = useState(false);
+  const longPressTimer = useRef<number | null>(null);
+  const longPressTriggered = useRef(false);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
+    if (longPressTriggered.current) {
+      e.preventDefault();
+      longPressTriggered.current = false;
+      return;
+    }
+
     trackUsage(item.id);
     
     // Haptic feedback
@@ -34,6 +38,7 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
 
   const handleLongPress = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
+    longPressTriggered.current = true;
     toggleFavorite(item.id);
     
     // Stronger haptic feedback for favorites
@@ -41,6 +46,20 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
       navigator.vibrate([20, 10, 20]);
     }
   }, [item.id, toggleFavorite]);
+
+  const startLongPress = useCallback((e: React.TouchEvent) => {
+    if (longPressTimer.current) {
+      window.clearTimeout(longPressTimer.current);
+    }
+    longPressTimer.current = window.setTimeout(() => handleLongPress(e), 420);
+  }, [handleLongPress]);
+
+  const cancelLongPress = useCallback(() => {
+    if (longPressTimer.current) {
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
 
   const getBadgeVariant = (type: string) => {
     switch (type) {
@@ -58,7 +77,6 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
     return 'col-span-1 row-span-1';
   };
 
-  const isLiveItem = item.id === 'mapa' || item.id === 'cameras';
   const favorite = isFavorite(item.id);
   const dynamicBadge = getBadgeForItem(item.id);
   const displayBadge = dynamicBadge || item.badge;
@@ -94,26 +112,16 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
                   backdrop-blur-md border border-border/30
                   hover:border-border/60 hover:shadow-xl hover:shadow-primary/5
                   ${favorite ? 'ring-2 ring-trucker-orange/50 border-trucker-orange/30' : ''}
-                  ${isLiveItem ? 'animate-pulse' : ''}
                 `}
                 role="button"
                 tabIndex={0}
-                onTouchStart={() => setIsPressed(true)}
-                onTouchEnd={() => setIsPressed(false)}
-                onTouchCancel={() => setIsPressed(false)}
+                onTouchStart={startLongPress}
+                onTouchEnd={cancelLongPress}
+                onTouchCancel={cancelLongPress}
               >
                 {/* Background Pattern */}
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-transparent opacity-60" />
                 
-                {/* Live Indicator */}
-                {isLiveItem && (
-                  <motion.div 
-                    className="absolute top-2 left-2 w-2 h-2 bg-emerald-500 rounded-full"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                )}
-
                 {/* Favorite Star */}
                 {favorite && (
                   <motion.div 
@@ -149,8 +157,8 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
                   <motion.div 
                     className={`w-14 h-14 ${item.bgColor} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 ring-2 ring-white/10 group-hover:ring-white/20`}
                     whileHover={{ rotate: [0, -5, 5, 0] }}
-                    animate={item.id === 'mapa' || item.id === 'cameras' ? { scale: [1, 1.12, 1] } : {}}
-                    transition={item.id === 'mapa' || item.id === 'cameras' ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
+                    animate={item.id === 'programacao' ? { scale: [1, 1.08, 1] } : {}}
+                    transition={item.id === 'programacao' ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
                     aria-hidden="true"
                   >
                     <item.icon className={`w-7 h-7 ${item.color} drop-shadow-sm`} />
@@ -161,16 +169,6 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
                     {item.title}
                   </span>
 
-                  {/* Subtle Activity Indicator */}
-                  {isLiveItem && (
-                    <motion.div 
-                      className="text-[10px] text-emerald-600 font-medium"
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      AO VIVO
-                    </motion.div>
-                  )}
                 </div>
 
                 {/* Glassmorphism Effect */}
@@ -193,26 +191,16 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
                   backdrop-blur-md border border-border/30
                   hover:border-border/60 hover:shadow-xl hover:shadow-primary/5
                   ${favorite ? 'ring-2 ring-trucker-orange/50 border-trucker-orange/30' : ''}
-                  ${isLiveItem ? 'animate-pulse' : ''}
                 `}
                 role="button"
                 tabIndex={0}
-                onTouchStart={() => setIsPressed(true)}
-                onTouchEnd={() => setIsPressed(false)}
-                onTouchCancel={() => setIsPressed(false)}
+                onTouchStart={startLongPress}
+                onTouchEnd={cancelLongPress}
+                onTouchCancel={cancelLongPress}
               >
                 {/* Background Pattern */}
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-transparent opacity-60" />
                 
-                {/* Live Indicator */}
-                {isLiveItem && (
-                  <motion.div 
-                    className="absolute top-2 left-2 w-2 h-2 bg-emerald-500 rounded-full"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                )}
-
                 {/* Favorite Star */}
                 {favorite && (
                   <motion.div 
@@ -248,8 +236,8 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
                   <motion.div 
                     className={`w-14 h-14 ${item.bgColor} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 ring-2 ring-white/10 group-hover:ring-white/20`}
                     whileHover={{ rotate: [0, -5, 5, 0] }}
-                    animate={item.id === 'mapa' || item.id === 'cameras' ? { scale: [1, 1.12, 1] } : {}}
-                    transition={item.id === 'mapa' || item.id === 'cameras' ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
+                    animate={item.id === 'programacao' ? { scale: [1, 1.08, 1] } : {}}
+                    transition={item.id === 'programacao' ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
                     aria-hidden="true"
                   >
                     <item.icon className={`w-7 h-7 ${item.color} drop-shadow-sm`} />
@@ -260,16 +248,6 @@ const QuickAccessCard = React.memo(({ item, index, onContatoIgrejaClick }: { ite
                     {item.title}
                   </span>
 
-                  {/* Subtle Activity Indicator */}
-                  {isLiveItem && (
-                    <motion.div 
-                      className="text-[10px] text-emerald-600 font-medium"
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      AO VIVO
-                    </motion.div>
-                  )}
                 </div>
 
                 {/* Glassmorphism Effect */}
@@ -343,6 +321,7 @@ const EnhancedLoadingState = React.memo(() => (
 export const QuickAccess = React.memo(() => {
   const { items, loading } = useQuickAccess();
   const [isContatoIgrejaModalOpen, setIsContatoIgrejaModalOpen] = useState(false);
+  const visibleItems = items.slice(0, 6);
 
   const handleContatoIgrejaClick = useCallback(() => {
     setIsContatoIgrejaModalOpen(true);
@@ -370,7 +349,7 @@ export const QuickAccess = React.memo(() => {
           layout
         >
           <AnimatePresence mode="sync">
-            {items.map((item, index) => (
+            {visibleItems.map((item, index) => (
               <QuickAccessCard 
                 key={item.id} 
                 item={item} 
@@ -380,6 +359,16 @@ export const QuickAccess = React.memo(() => {
             ))}
           </AnimatePresence>
         </motion.div>
+
+        <div className="mt-4">
+          <Link
+            to="/mais"
+            className="touch-feedback flex h-12 items-center justify-center gap-2 rounded-2xl border border-border/50 bg-background/80 text-sm font-bold text-foreground shadow-sm active:scale-[0.98]"
+          >
+            <MoreHorizontal className="h-5 w-5 text-trucker-blue" />
+            Mais opções
+          </Link>
+        </div>
 
         {/* Quick Stats */}
         <motion.div 
@@ -391,7 +380,7 @@ export const QuickAccess = React.memo(() => {
           <div className="flex items-center gap-4 px-4 py-2 bg-background/50 backdrop-blur-sm rounded-full border border-border/30">
             <div className="flex items-center gap-1">
               <Heart className="w-3 h-3 text-trucker-red" />
-              <span className="text-xs text-muted-foreground">{items.filter((_, i) => i < 3).length} populares</span>
+              <span className="text-xs text-muted-foreground">{visibleItems.filter((_, i) => i < 3).length} populares</span>
             </div>
             <div className="w-px h-3 bg-border" />
             <div className="flex items-center gap-1">

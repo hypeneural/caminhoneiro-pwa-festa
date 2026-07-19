@@ -11,6 +11,9 @@ import { Mic, Loader2, WifiOff, RefreshCw, Youtube } from "lucide-react";
 import { usePodcast } from "@/hooks/usePodcast";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { PodcastItem, PodcastFilters as PodcastFiltersType } from "@/types/podcast";
+import { BannerCarousel } from "@/components/sponsors/BannerCarousel";
+import { useAdvertisements } from "@/hooks/useAdvertisements";
+import { LiveRouteBanner } from "@/components/tracker/LiveRouteBanner";
 
 const Podcast = () => {
   const [selectedPodcast, setSelectedPodcast] = useState<PodcastItem | null>(null);
@@ -24,6 +27,7 @@ const Podcast = () => {
   
   const loadingRef = useRef<HTMLDivElement>(null);
   const { isOnline } = useNetworkStatus();
+  const { banners } = useAdvertisements({ position: "home" });
   
   const { 
     items: podcasts, 
@@ -91,6 +95,19 @@ const Podcast = () => {
       <Header />
       
       <main className="pt-16 pb-20 px-4">
+        <LiveRouteBanner />
+        {banners.length > 0 && (
+          <div className="py-2 bg-muted/20 -mx-4 px-4 mb-4">
+            <BannerCarousel
+              banners={banners}
+              showControls={true}
+              showDots={true}
+              className="rounded-lg shadow-md"
+              autoplayDelay={5000}
+              compact={true}
+            />
+          </div>
+        )}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

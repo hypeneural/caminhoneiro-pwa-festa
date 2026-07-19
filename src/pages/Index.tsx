@@ -1,6 +1,5 @@
 import { Header } from "@/components/mobile/Header";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
-import { PWAInstaller } from "@/components/PWAInstaller";
 import { SponsorCarousel } from "@/components/sponsors/SponsorCarousel";
 import { SponsorGrid } from "@/components/sponsors/SponsorGrid";
 import { usePrefetch } from "@/hooks/usePrefetch";
@@ -8,6 +7,8 @@ import { useEffect, useRef } from "react";
 import { useAdvertisements } from '@/hooks/useAdvertisements';
 import { Section } from "@/components/layout/Section";
 import { ContentSections } from "@/components/home/ContentSections";
+import { HomeHero } from "@/components/home/HomeHero";
+import { LiveRouteBanner } from "@/components/tracker/LiveRouteBanner";
 
 const Index = () => {
   const { recordVisit, prefetchPredicted } = usePrefetch();
@@ -22,13 +23,9 @@ const Index = () => {
     loadMoreSponsors
   } = useAdvertisements({
     position: 'home',
-    bannersLimit: 25,
-    sponsorsLimit: 50
+    bannersLimit: 12,
+    sponsorsLimit: 16
   });
-
-  console.log('🏠 Index: bannersByPosition =', bannersByPosition);
-  console.log('🏠 Index: isLoading =', isLoading);
-  console.log('🏠 Index: error =', error);
 
   // Record page visit and prefetch predicted routes
   useEffect(() => {
@@ -56,8 +53,11 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="pt-16 pb-20">
-        {/* Main Content com banners distribuídos */}
+      <main className="pt-app-header pb-app-nav">
+        <LiveRouteBanner />
+
+        <HomeHero />
+
         <ContentSections 
           bannersByPosition={bannersByPosition}
           isLoading={isLoading}
@@ -83,7 +83,6 @@ const Index = () => {
       </main>
 
       <BottomNavigation />
-      <PWAInstaller />
     </div>
   );
 };

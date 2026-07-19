@@ -9,7 +9,13 @@ export interface CountdownTime {
   isPast: boolean;
 }
 
-export const useCountdown = (targetDate: Date): CountdownTime => {
+interface CountdownOptions {
+  precision?: 'second' | 'minute';
+}
+
+export const useCountdown = (targetDate: Date, options: CountdownOptions = {}): CountdownTime => {
+  const precision = options.precision ?? 'second';
+
   const [time, setTime] = useState<CountdownTime>({
     days: 0,
     hours: 0,
@@ -45,7 +51,9 @@ export const useCountdown = (targetDate: Date): CountdownTime => {
       const days = Math.floor(difference / (1000 * 60 * 60 * 24));
       const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      const seconds = precision === 'second'
+        ? Math.floor((difference % (1000 * 60)) / 1000)
+        : 0;
 
       setTime(prev => {
         // Only update if values actually changed
@@ -64,10 +72,10 @@ export const useCountdown = (targetDate: Date): CountdownTime => {
     };
 
     updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
+    const interval = setInterval(updateCountdown, precision === 'second' ? 1000 : 60000);
 
     return () => clearInterval(interval);
-  }, [targetDate.getTime()]); // Use getTime() for stable dependency
+  }, [targetDate.getTime(), precision]); // Use getTime() for stable dependency
 
   return time;
 };

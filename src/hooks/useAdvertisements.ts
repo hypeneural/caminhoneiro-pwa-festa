@@ -3,8 +3,10 @@ import { advertisementService } from '@/services/api/advertisementService';
 import { Banner, SponsorLogo } from '@/types/sponsors';
 import { API } from '@/constants/api';
 import { mockSponsorsData } from '@/data/sponsorsData';
+import { selectSafeImageSrc } from '@/lib/image-safety';
 
 interface UseAdvertisementsOptions {
+  enabled?: boolean;
   position?: string;
   bannersLimit?: number;
   sponsorsLimit?: number;
@@ -141,6 +143,7 @@ const createMockBanners = (position: string): Banner[] => {
 };
 
 export function useAdvertisements({
+  enabled = true,
   position = 'home',
   bannersLimit = API.DEFAULTS.BANNERS_LIMIT || 10,
   sponsorsLimit = API.DEFAULTS.SPONSORS_LIMIT || 10
@@ -160,13 +163,11 @@ export function useAdvertisements({
       setIsLoading(true);
       setError(null);
 
-      console.log(`�� useAdvertisements: Buscando dados da API para posição "${position}"`);
-
       // Tenta buscar da API primeiro
       const [bannersResponse, sponsorsResponse] = await Promise.all([
         advertisementService.getBanners({
           position_group: position,
-          limit: Math.max(bannersLimit, 25),
+          limit: bannersLimit,
           page: 1
         }),
         advertisementService.getSponsors({
@@ -176,81 +177,80 @@ export function useAdvertisements({
         })
       ]);
 
-      console.log('✅ useAdvertisements: Resposta da API:', {
-        bannersData: bannersResponse.data,
-        bannersCount: bannersResponse.data?.length || 0,
-        sponsorsCount: sponsorsResponse.data?.length || 0,
-        status: bannersResponse.status
-      });
-
       // Verifica se temos dados válidos da API
-      if (bannersResponse.data && Array.isArray(bannersResponse.data) && bannersResponse.data.length > 0) {
-        console.log('🎯 useAdvertisements: Processando banners da API...');
-        
+      if (bannersResponse.data && Array.isArray(bannersResponse.data)) {
         const bannersByPos: Record<number, Banner[]> = {};
         for (let i = 1; i <= 12; i++) {
           bannersByPos[i] = [];
         }
 
-        // Processa banners da API com validação
-        const processedBanners = bannersResponse.data.map((apiItem, index) => {
-          const banner: Banner = {
-            id: apiItem.id || (index + 1),
-            title: apiItem.title || 'Banner sem título',
-            description: apiItem.description || '',
-            imageUrlWebp: apiItem.imageUrlWebp || apiItem.imageUrl || '',
-            imageUrl: apiItem.imageUrl || '',
-            linkUrl: apiItem.linkUrl || '#',
-            target: apiItem.target || '_blank',
-            priority: apiItem.priority || 1,
-            position: apiItem.position || (index + 1),
-            altText: apiItem.altText || apiItem.title || 'Banner',
-            isActive: true
-          };
-          
-          // Distribui nas posições
-          const pos = banner.position >= 1 && banner.position <= 12 ? banner.position : 1;
-          bannersByPos[pos].push(banner);
-          
-          return banner;
-        });
+        if (bannersResponse.data.length > 0) {
+          // Processa banners da API com validação
+          const processedBanners = bannersResponse.data.map((apiItem, index): Banner | null => {
+            const safeImageUrl = selectSafeImageSrc(apiItem.imageUrl, apiItem.imageUrlWebp);
+            const safeImageUrlWebp = selectSafeImageSrc(apiItem.imageUrlWebp, apiItem.imageUrl);
 
-        setBanners(processedBanners);
-        setBannersByPosition(bannersByPos);
-        
-        console.log('🎉 useAdvertisements: Banners da API processados com sucesso!', {
-          total: processedBanners.length,
-          sample: processedBanners[0]
-        });
+            if (!safeImageUrl && !safeImageUrlWebp) {
+              return null;
+            }
+
+            const banner: Banner = {
+              id: apiItem.id || (index + 1),
+              title: apiItem.title || 'Banner sem título',
+              description: apiItem.description || '',
+              imageUrlWebp: safeImageUrlWebp || safeImageUrl || '',
+              imageUrl: safeImageUrl || safeImageUrlWebp || '',
+              linkUrl: apiItem.linkUrl || '#',
+              target: apiItem.target || '_blank',
+              priority: apiItem.priority || 1,
+              position: apiItem.position || (index + 1),
+              altText: apiItem.altText || apiItem.title || 'Banner',
+              isActive: true
+            };
+            
+            // Distribui nas posições
+            const pos = banner.position >= 1 && banner.position <= 12 ? banner.position : 1;
+            bannersByPos[pos].push(banner);
+            
+            return banner;
+          }).filter((banner): banner is Banner => Boolean(banner));
+
+          setBanners(processedBanners);
+          setBannersByPosition(bannersByPos);
+        } else {
+          setBanners([]);
+          setBannersByPosition(bannersByPos);
+        }
       } else {
-        console.warn('⚠️ useAdvertisements: API não retornou banners válidos, usando fallback');
-        throw new Error('API response invalid or empty');
+        throw new Error('API response invalid');
       }
 
       // Processa sponsors da API
       if (sponsorsResponse.data && Array.isArray(sponsorsResponse.data) && sponsorsResponse.data.length > 0) {
-        const processedSponsors = sponsorsResponse.data.map(sponsor => ({
-          id: sponsor.id,
-          companyName: sponsor.companyName,
-          logoUrlWebp: sponsor.logoUrlWebp,
-          logoUrl: sponsor.logoUrl,
-          websiteUrl: sponsor.websiteUrl,
-          packageType: sponsor.packageType,
-          priority: sponsor.priority,
-          isActive: true,
-          altText: sponsor.altText || sponsor.companyName
-        }));
+        const processedSponsors = sponsorsResponse.data.map(sponsor => {
+          const safeLogoUrl = selectSafeImageSrc(sponsor.logoUrl, sponsor.logoUrlWebp);
+          const safeLogoUrlWebp = selectSafeImageSrc(sponsor.logoUrlWebp, sponsor.logoUrl);
+
+          return {
+            id: sponsor.id,
+            companyName: sponsor.companyName,
+            logoUrlWebp: safeLogoUrlWebp || safeLogoUrl || '',
+            logoUrl: safeLogoUrl || safeLogoUrlWebp || '',
+            websiteUrl: sponsor.websiteUrl,
+            packageType: sponsor.packageType,
+            priority: sponsor.priority,
+            isActive: true,
+            altText: sponsor.altText || sponsor.companyName
+          };
+        });
 
         setSponsors(processedSponsors);
-        console.log('👥 useAdvertisements: Sponsors processados:', processedSponsors.length);
       }
 
       setHasMoreBanners(currentBannerPage < (bannersResponse.meta?.total_paginas || 1));
       setHasMoreSponsors(currentSponsorPage < (sponsorsResponse.meta?.total_paginas || 1));
 
     } catch (apiError) {
-      console.warn('⚠️ useAdvertisements: Erro na API, usando dados mock:', apiError);
-      
       // Fallback para dados mock apenas quando API falha
       const mockBanners = createMockBanners(position);
       const bannersByPos: Record<number, Banner[]> = {};
@@ -276,8 +276,6 @@ export function useAdvertisements({
       
       setHasMoreBanners(false);
       setHasMoreSponsors(false);
-      
-      console.log('📦 useAdvertisements: Fallback para dados mock aplicado:', mockBanners.length);
     } finally {
       setIsLoading(false);
     }
@@ -294,8 +292,23 @@ export function useAdvertisements({
         page: nextPage
       });
 
+      const safeBanners = response.data.map((banner): Banner | null => {
+        const safeImageUrl = selectSafeImageSrc(banner.imageUrl, banner.imageUrlWebp);
+        const safeImageUrlWebp = selectSafeImageSrc(banner.imageUrlWebp, banner.imageUrl);
+
+        if (!safeImageUrl && !safeImageUrlWebp) {
+          return null;
+        }
+
+        return {
+          ...banner,
+          imageUrlWebp: safeImageUrlWebp || safeImageUrl || '',
+          imageUrl: safeImageUrl || safeImageUrlWebp || ''
+        };
+      }).filter((banner): banner is Banner => Boolean(banner));
+
       const newBannersByPos = { ...bannersByPosition };
-      response.data.forEach(banner => {
+      safeBanners.forEach(banner => {
         const pos = banner.position || 1;
         if (!newBannersByPos[pos]) {
           newBannersByPos[pos] = [];
@@ -303,7 +316,7 @@ export function useAdvertisements({
         newBannersByPos[pos].push(banner);
       });
 
-      setBanners(prev => [...prev, ...response.data]);
+      setBanners(prev => [...prev, ...safeBanners]);
       setBannersByPosition(newBannersByPos);
       setCurrentBannerPage(nextPage);
       setHasMoreBanners(nextPage < response.meta.total_paginas);
@@ -323,16 +336,21 @@ export function useAdvertisements({
         page: nextPage
       });
 
-      const mappedSponsors = response.data.map(sponsor => ({
-        id: sponsor.id,
-        companyName: sponsor.companyName,
-        logoUrlWebp: sponsor.logoUrlWebp,
-        logoUrl: sponsor.logoUrl,
-        websiteUrl: sponsor.websiteUrl,
-        packageType: sponsor.packageType,
-        priority: sponsor.priority,
-        isActive: true
-      }));
+      const mappedSponsors = response.data.map(sponsor => {
+        const safeLogoUrl = selectSafeImageSrc(sponsor.logoUrl, sponsor.logoUrlWebp);
+        const safeLogoUrlWebp = selectSafeImageSrc(sponsor.logoUrlWebp, sponsor.logoUrl);
+
+        return {
+          id: sponsor.id,
+          companyName: sponsor.companyName,
+          logoUrlWebp: safeLogoUrlWebp || safeLogoUrl || '',
+          logoUrl: safeLogoUrl || safeLogoUrlWebp || '',
+          websiteUrl: sponsor.websiteUrl,
+          packageType: sponsor.packageType,
+          priority: sponsor.priority,
+          isActive: true
+        };
+      });
 
       setSponsors(prev => [...prev, ...mappedSponsors]);
       setCurrentSponsorPage(nextPage);
@@ -343,8 +361,16 @@ export function useAdvertisements({
   };
 
   useEffect(() => {
-    fetchAdvertisements();
-  }, [position]);
+    if (enabled) {
+      fetchAdvertisements();
+      return;
+    }
+
+    setBanners([]);
+    setSponsors([]);
+    setIsLoading(false);
+    setError(null);
+  }, [position, enabled]);
 
   return {
     banners,
@@ -366,4 +392,4 @@ function calculateBannerPosition(index: number, totalBanners: number): number {
   if (index < 4) return index + 1;
   if (index < 8) return index + 5;
   return ((index - 8) % 2) + 5;
-} 
+}

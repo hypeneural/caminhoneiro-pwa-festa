@@ -101,24 +101,70 @@ export const mockSponsorsData: SponsorsData = {
   ],
   sponsors: [
     {
-      id: 1,
-      companyName: 'Scania',
-      logoUrl: 'https://via.placeholder.com/200x100/000000/ffffff?text=Scania',
-      logoUrlWebp: 'https://via.placeholder.com/200x100/000000/ffffff?text=Scania',
-      websiteUrl: 'https://scania.com.br',
+      id: 11,
+      companyName: 'Tyuco Imóveis',
+      logoUrl: '/assets/images/advertisers/icon/fallback/tyuco.png',
+      logoUrlWebp: '/assets/images/advertisers/icon/webp/tyuco.webp',
+      websiteUrl: 'https://www.instagram.com/tyucoimoveis/',
       packageType: 1,
       priority: 10,
-      altText: 'Logo da Scania'
+      altText: 'Logo Tyuco Imóveis',
+      category: 'ouro'
     },
     {
-      id: 2,
-      companyName: 'Volvo',
-      logoUrl: 'https://via.placeholder.com/200x100/000000/ffffff?text=Volvo',
-      logoUrlWebp: 'https://via.placeholder.com/200x100/000000/ffffff?text=Volvo',
-      websiteUrl: 'https://volvo.com.br',
+      id: 26,
+      companyName: 'Terraza',
+      logoUrl: '/assets/images/advertisers/icon/fallback/terraza.png',
+      logoUrlWebp: '/assets/images/advertisers/icon/webp/terraza.webp',
+      websiteUrl: 'https://www.instagram.com/terrazaurbanismo/',
       packageType: 2,
       priority: 9,
-      altText: 'Logo da Volvo'
+      altText: 'Logo Terraza',
+      category: 'apoiador'
+    },
+    {
+      id: 51,
+      companyName: 'CC Seguros',
+      logoUrl: '/assets/images/advertisers/icon/fallback/cc.png',
+      logoUrlWebp: '/assets/images/advertisers/icon/webp/cc.webp',
+      websiteUrl: 'https://www.instagram.com/ccsegurosoficial/',
+      packageType: 2,
+      priority: 8,
+      altText: 'Logo CC Seguros',
+      category: 'apoiador'
+    },
+    {
+      id: 14,
+      companyName: 'Lupel',
+      logoUrl: '/assets/images/advertisers/icon/fallback/lupel.png',
+      logoUrlWebp: '/assets/images/advertisers/icon/webp/lupel.webp',
+      websiteUrl: 'https://www.instagram.com/lupel.com.br/',
+      packageType: 2,
+      priority: 7,
+      altText: 'Logo Lupel',
+      category: 'apoiador'
+    },
+    {
+      id: 33,
+      companyName: 'Mais Net',
+      logoUrl: '/assets/images/advertisers/icon/fallback/mais-net.png',
+      logoUrlWebp: '/assets/images/advertisers/icon/webp/mais-net.webp',
+      websiteUrl: 'https://www.instagram.com/internetmaisnet/',
+      packageType: 2,
+      priority: 6,
+      altText: 'Logo Mais Net',
+      category: 'apoiador'
+    },
+    {
+      id: 20,
+      companyName: 'BST Caminhões',
+      logoUrl: '/assets/images/advertisers/icon/fallback/bst.png',
+      logoUrlWebp: '/assets/images/advertisers/icon/webp/bst.webp',
+      websiteUrl: 'https://www.instagram.com/bstcaminhoes/',
+      packageType: 2,
+      priority: 5,
+      altText: 'Logo BST Caminhões',
+      category: 'apoiador'
     }
   ],
   positions: [
